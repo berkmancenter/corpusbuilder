@@ -1,0 +1,23 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: postgres
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: corpus_builder_development
+  username: corpus_builder
+  password: <%= ENV['CORPUS_BUILDER_DATABASE_PASSWORD'] %>
+
+test:
+  <<: *default
+  database: corpus_builder_test
+  username: corpus_builder
+  password: <%= ENV['CORPUS_BUILDER_DATABASE_PASSWORD'] %>
+
+production:
+  <<: *default
+  database: corpus_builder_production
+  username: corpus_builder
+  password: <%= ENV['CORPUS_BUILDER_DATABASE_PASSWORD'] %>

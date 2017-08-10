@@ -1,0 +1,21 @@
+version: '2'
+services:
+  postgres:
+    image: postgres:9.6.3
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=zse45rdx
+      - POSTGRES_USER=corpus_builder
+      - POSTGRES_DB=corpus_builder
+    ports:
+      - "5432:5432"
+  app:
+    build: .
+    command: rails server -p 3000 -b '0.0.0.0'
+    volumes:
+      - .:/corpus_builder
+    ports:
+      - "3000:3000"
+    links:
+      - postgres
