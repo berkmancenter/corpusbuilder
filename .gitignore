@@ -14,3 +14,8 @@
 !/tmp/.keep
 
 .byebug_history
+**.swp
+**.swo
+
+/node_modules/
+/postgres/
