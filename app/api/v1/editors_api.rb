@@ -1,4 +1,4 @@
-class V1::Editors < Grape::API
+class V1::EditorsAPI < Grape::API
   include V1Base
 
   resource :editors do
@@ -8,13 +8,19 @@ class V1::Editors < Grape::API
       optional :last_name, type: String, desc: 'Last name'
     end
     post do
-      Editors::Create.run
-      # todo: implement me
+      action = Editors::Create.run email: params[:email],
+        first_name: params[:first_name],
+        last_name: params[:last_name]
+      if action.valid?
+        action.result
+      else
+        status_fail
+        action.errors
+      end
     end
 
-    desc "All"
-    get :all do
-      [ 1, 2, 3 ]
+    get do
+      Editor.all
     end
   end
 end
