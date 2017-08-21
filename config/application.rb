@@ -12,5 +12,10 @@ module CorpusBuilder
     config.generators do |g|
       g.orm :active_record, primary_key_type: :uuid
     end
+    [ 'api', 'actions' ].each do |path|
+      config.paths.add File.join('app', path), glob: File.join('**', '*.rb')
+      config.autoload_paths += Dir[Rails.root.join('app', path, '*')]
+    end
+    config.autoload_paths += Dir["#{config.root}/lib"]
   end
 end

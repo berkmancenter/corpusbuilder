@@ -15,6 +15,8 @@ gem 'webpacker'
 gem 'dotenv-rails', groups: [:development, :test]
 gem 'trestle'
 gem 'trestle-auth'
+gem 'grape'
+gem 'grape_on_rails_routes'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
