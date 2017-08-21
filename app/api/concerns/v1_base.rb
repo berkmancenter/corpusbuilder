@@ -10,6 +10,16 @@ module V1Base
       def status_fail
         status 403
       end
+
+      def action! action
+        action = action.run params
+        if action.valid?
+          action.result
+        else
+          status_fail
+          action.errors
+        end
+      end
     end
   end
 end
