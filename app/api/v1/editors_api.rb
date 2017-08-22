@@ -2,6 +2,7 @@ class V1::EditorsAPI < Grape::API
   include V1Base
 
   resource :editors do
+
     desc "Creates a new editor"
     params do
       requires :email, type: String, desc: 'Email address that identifies the editor in the network'
@@ -12,8 +13,5 @@ class V1::EditorsAPI < Grape::API
       action! Editors::Create
     end
 
-    get do
-      Editor.all
-    end
   end
 end

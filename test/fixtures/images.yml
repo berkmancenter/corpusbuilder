@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  id: 
+  name: MyString
+  image_scan: MyString
+
+two:
+  id: 
+  name: MyString
+  image_scan: MyString
