@@ -3,7 +3,7 @@ module Documents
     attr_accessor :images, :metadata
 
     def execute
-      Document.create! title: @metadata[:title],
+      document = Document.create! title: @metadata[:title],
         author: @metadata[:author],
         authority: @metadata[:authority],
         date: @metadata[:date],
@@ -12,6 +12,10 @@ module Documents
         notes: @metadata[:notes],
         publisher: @metadata[:publisher],
         status: Document.statuses[:initial]
+
+      ProcessDocumentJob.perform_later document
+
+      document
     end
   end
 end
