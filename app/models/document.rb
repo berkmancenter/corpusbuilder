@@ -1,13 +1,7 @@
 class Document < ApplicationRecord
-  enum status: [ :initial, :processing, :error, :ready ]
+  include Workflow
 
-  def processing!
-    update_status :processing
-  end
+  workflow status: [ :initial, :processing, :error, :ready ]
 
-  private
-
-  def update_status(status)
-    update_attribute :status, Document.statuses[status]
-  end
+  has_one :pipeline
 end

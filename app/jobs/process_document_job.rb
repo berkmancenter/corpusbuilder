@@ -13,6 +13,17 @@ class ProcessDocumentJob < ApplicationJob
     reschedule
   end
 
+  def when_processing(document)
+    case document.pipeline.poll
+    when "error"
+      document.error!
+    when "success"
+      document.ready!
+    else
+      reschedule
+    end
+  end
+
   private
 
   def reschedule(wait = 1.minute)

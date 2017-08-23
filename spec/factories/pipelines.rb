@@ -1,7 +1,12 @@
 FactoryGirl.define do
   factory :pipeline do
     type ""
-    status 1
+    status 0
+    document_id ""
+  end
+
+  factory :nidaba_pipeline, class: Pipeline::Nidaba do
+    status 0
     document_id ""
   end
 end

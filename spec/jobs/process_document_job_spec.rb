@@ -3,6 +3,18 @@ require 'rails_helper'
 RSpec.describe ProcessDocumentJob, type: :job do
   include ActiveJob::TestHelper
 
+  def assert_reschedule(&block)
+    assert_enqueued_jobs 1, only: ProcessDocumentJob do
+      block.call
+    end
+  end
+
+  def assert_no_reschedule(&block)
+    assert_enqueued_jobs 0, only: ProcessDocumentJob do
+      block.call
+    end
+  end
+
   context "Document is in initial state" do
     let(:perform_initial) do
       ProcessDocumentJob.perform_now(document_initial)
@@ -23,7 +35,7 @@ RSpec.describe ProcessDocumentJob, type: :job do
     end
 
     it "Schedules another run of the same job" do
-      assert_enqueued_jobs 1, only: ProcessDocumentJob do
+      assert_reschedule do
         perform_initial
       end
     end
@@ -36,20 +48,63 @@ RSpec.describe ProcessDocumentJob, type: :job do
   end
 
   context "Document is in processing state" do
-    it "Polls the pipeline for changes"
-    it "Schedules another run of the same job"
+    let(:perform_processing) do
+      ProcessDocumentJob.perform_now(document_processing)
+    end
+
+    let(:document_processing) do
+      document = create :document, status: "processing"
+      create :nidaba_pipeline, document_id: document.id
+      document
+    end
+
+    it "Polls the pipeline for changes" do
+      expect_any_instance_of(Pipeline::Nidaba).to receive(:poll)
+
+      perform_processing
+    end
 
     context "Pipeline returns info that it is still processing" do
-      it "Schedules another run of the same job"
+      before(:each) do
+        expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return(:processing)
+      end
+
+      it "Schedules another run of the same job" do
+        assert_reschedule do
+          perform_processing
+        end
+      end
     end
 
     context "Pipeline returns an error" do
-      it "Puts document in the processing state"
-      it "Does not schedule another run of the same job"
+      before(:each) do
+        expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return("error")
+      end
+
+      it "Puts document in the error state" do
+        perform_processing
+
+        expect(document_processing.reload.status).to eq("error")
+      end
+
+      it "Does not schedule another run of the same job" do
+        assert_no_reschedule do
+          perform_processing
+        end
+      end
     end
 
     context "Pipeline returns success" do
-      it "Puts document in the ready state"
+      before(:each) do
+        expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return("success")
+      end
+
+      it "Puts document in the ready state" do
+        perform_processing
+
+        expect(document_processing.reload.status).to eq("ready")
+      end
+
       it "Creates the document tree with the results"
       it "Creates the main revision"
       it "Does not schedule another run of the same job"
