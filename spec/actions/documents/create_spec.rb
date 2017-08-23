@@ -19,6 +19,6 @@ describe Documents::Create do
   it "Enqueues the ProcessDocument job" do
     proper_call
 
-    assert_enqueued_jobs(1)
+    assert_enqueued_jobs 1, only: ProcessDocumentJob
   end
 end

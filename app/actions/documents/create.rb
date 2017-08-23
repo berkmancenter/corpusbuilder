@@ -13,7 +13,9 @@ module Documents
         publisher: @metadata[:publisher],
         status: Document.statuses[:initial]
 
-      ProcessDocumentJob.perform_later document
+      ProcessDocumentJob.
+        set(wait: 5.seconds).
+        perform_later(document)
 
       document
     end

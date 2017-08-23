@@ -82,6 +82,11 @@ GEM
     equalizer (0.0.11)
     erubi (1.6.1)
     execjs (2.7.0)
+    factory_girl (4.8.0)
+      activesupport (>= 3.0.0)
+    factory_girl_rails (4.8.0)
+      factory_girl (~> 4.8.0)
+      railties (>= 3.0.0)
     ffi (1.9.18)
     formatador (0.2.5)
     globalid (0.4.0)
@@ -281,6 +286,7 @@ DEPENDENCIES
   byebug
   carrierwave (~> 1.0)
   dotenv-rails
+  factory_girl_rails (~> 4.0)
   grape
   grape_on_rails_routes
   guard-rspec

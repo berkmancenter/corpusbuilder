@@ -16,6 +16,13 @@ RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
   config.filter_rails_from_backtrace!
 
+  config.include FactoryGirl::Syntax::Methods
+
+ # config.before(:suite) do
+ #   FactoryGirl.find_definitions
+ # end
+
+
   config.include RSpec::Rails::RequestExampleGroup,
     type: :request,
     file_path: /spec\/api/
