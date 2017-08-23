@@ -107,16 +107,54 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
       it "Creates the document tree with the results"
       it "Creates the main revision"
-      it "Does not schedule another run of the same job"
+      it "Does not schedule another run of the same job" do
+        assert_no_reschedule do
+          perform_processing
+        end
+      end
     end
   end
 
   context "Document is in error state" do
-    it "Does not schedule another run of the same job"
+    let(:perform_error) do
+      ProcessDocumentJob.perform_now(document_error)
+    end
+
+    let(:document_error) do
+      document = create :document, status: "error"
+      create :nidaba_pipeline, document_id: document.id
+      document
+    end
+
+    it "Does not schedule another run of the same job" do
+      assert_no_reschedule do
+        perform_error
+      end
+    end
+
+    it "Puts document in the error state" do
+      perform_error
+
+      expect(document_error.reload.status).to eq("error")
+    end
   end
 
   context "Document is in ready state" do
-    it "Does not schedule another run of the same job"
+    let(:perform_ready) do
+      ProcessDocumentJob.perform_now(document_ready)
+    end
+
+    let(:document_ready) do
+      document = create :document, status: "ready"
+      create :nidaba_pipeline, document_id: document.id
+      document
+    end
+
+    it "Does not schedule another run of the same job" do
+      assert_no_reschedule do
+        perform_ready
+      end
+    end
   end
 
 end

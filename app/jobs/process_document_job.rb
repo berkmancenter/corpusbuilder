@@ -24,6 +24,14 @@ class ProcessDocumentJob < ApplicationJob
     end
   end
 
+  def when_error(document)
+    # no-op
+  end
+
+  def when_ready(document)
+    # no-op
+  end
+
   private
 
   def reschedule(wait = 1.minute)
