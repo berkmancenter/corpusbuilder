@@ -20,5 +20,7 @@
 /node_modules/
 /postgres/
 /public/packs
+/public/uploads
 /node_modules
 tags
+.env
