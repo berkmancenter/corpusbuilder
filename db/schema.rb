@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170823133643) do
+ActiveRecord::Schema.define(version: 20170824124437) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,6 +31,13 @@ ActiveRecord::Schema.define(version: 20170823133643) do
     t.string "secret", null: false
     t.string "name", null: false
     t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "branches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name", null: false
+    t.uuid "revision_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -57,6 +64,19 @@ ActiveRecord::Schema.define(version: 20170823133643) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "graphemes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "zone_id", null: false
+    t.box "area", null: false
+    t.string "value", limit: 1, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "graphemes_revisions", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+  end
+
   create_table "images", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.string "image_scan"
@@ -81,6 +101,29 @@ ActiveRecord::Schema.define(version: 20170823133643) do
     t.integer "error_count", default: 0, null: false
     t.text "last_error"
     t.text "queue", default: "", null: false
+  end
+
+  create_table "revisions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "document_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "parent_id"
+  end
+
+  create_table "surfaces", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "document_id", null: false
+    t.box "area", null: false
+    t.integer "number", null: false
+    t.uuid "image_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "surface_id", null: false
+    t.box "area", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
 end

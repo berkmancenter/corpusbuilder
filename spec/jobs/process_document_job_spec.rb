@@ -105,8 +105,13 @@ RSpec.describe ProcessDocumentJob, type: :job do
         expect(document_processing.reload.status).to eq("ready")
       end
 
-      it "Creates the document tree with the results"
-      it "Creates the main revision"
+      it "Creates the document tree with the results" do
+        perform_processing
+
+        expect(document_processing.reload.master).to be_present
+        expect(document_processing.reload.master.graphemes).to be_present
+      end
+
       it "Does not schedule another run of the same job" do
         assert_no_reschedule do
           perform_processing

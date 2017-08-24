@@ -4,4 +4,11 @@ class Document < ApplicationRecord
   workflow status: [ :initial, :processing, :error, :ready ]
 
   has_one :pipeline
+  has_many :revisions
+  has_many :branches, through: :revisions
+  has_many :surfaces
+
+  def master
+    branches.where(name: 'master').first
+  end
 end

@@ -19,6 +19,15 @@ module Documents
       when "error"
         @document.error!
       when "success"
+        # todo: implement the proper document graph creation
+        image = Image.new name: "myimage.png"
+        image.save(validate: false)
+        head = Revision.create! document: @document
+        surface = Surface.create! document: @document, image: image, number: 1, area: '((0,0),(0,0))'
+        zone = Zone.create! surface: surface, area: '((0,0),(0,0))'
+        g = Grapheme.create! zone: zone, area: '((0,0),(0,0))', value: 'y'
+        head.graphemes << g
+        Branch.create!(name: 'master', revision: head)
         @document.ready!
       else
         reschedule
