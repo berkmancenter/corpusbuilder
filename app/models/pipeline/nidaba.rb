@@ -14,7 +14,7 @@ class Pipeline::Nidaba < Pipeline
   def start
     assert_status :initial
 
-    if create_batch && send_images
+    if create_batch && send_images && send_metadata
       processing!
     end
   end
@@ -59,6 +59,19 @@ class Pipeline::Nidaba < Pipeline
     end
   end
 
+  def send_metadata
+    begin
+      Dir.mktmpdir do |dir|
+        temp_metadata = metadata_file(dir)
+        response = RestClient.post send_metadata_url, file: temp_metadata
+        self.data["metadata"] = JSON.parse(response.body)
+      end
+      true
+    rescue RestClient::RequestFailed
+      false
+    end
+  end
+
   def assert_status(status)
     if self.status != status.to_s
       raise Pipeline::Error.new, "Expected pipeline with status #{status}"
@@ -73,6 +86,10 @@ class Pipeline::Nidaba < Pipeline
     "#{self.base_url}/api/v1/batch/#{batch.id}/pages"
   end
 
+  def send_metadata_url
+    "#{self.base_url}/api/v1/batch/#{batch.id}/pages?auxiliary=1"
+  end
+
   def send_image(image)
     begin
       response = RestClient.post send_image_url,
@@ -83,6 +100,23 @@ class Pipeline::Nidaba < Pipeline
     rescue RestClient::RequestFailed
       false
     end
+  end
+
+  def metadata_file(dir)
+    file = File.new(File.join(dir, "metadata.yml"), "w+")
+    file.puts(
+      {
+        title: document.title,
+        author: document.author,
+        authority: document.authority,
+        date: document.date,
+        editor: document.editor,
+        license: document.license,
+        notes: document.notes,
+        publisher: document.publisher
+      }.to_yaml
+    )
+    file
   end
 
   class Batch

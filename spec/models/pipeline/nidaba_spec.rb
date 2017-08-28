@@ -80,6 +80,10 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         "#{nidaba_base_url}/api/v1/batch/#{batch_id}/pages"
       end
 
+      let(:send_metadata_url) do
+        "#{nidaba_base_url}/api/v1/batch/#{batch_id}/pages?auxiliary=1"
+      end
+
       let(:batch_id) do
         "a7b4cb6714384599bd064052e78c36f1"
       end
@@ -124,6 +128,14 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         image
       end
 
+      let(:metadata_file_response_1) do
+        file_name = "metadata.yml"
+        {
+          name: file_name,
+          url: "/api/v1/pages/#{batch_id}/metadata.yml"
+        }
+      end
+
       let(:image_file_response_1) do
         image_file_response(1)
       end
@@ -161,8 +173,14 @@ RSpec.describe Pipeline::Nidaba, type: :model do
           to_return(status: 401)
       end
 
+      let(:send_metadata_request) do
+        stub_request(:post, send_metadata_url).
+          with(headers: { 'Content-Type' => /^multipart\/form-data; boundary=.*/ }).
+          to_return(body: metadata_file_response_1.to_json)
+      end
+
       it "makes a POST request to <nidaba>/api/v1/batch" do
-        create_batch_request
+        create_batch_request && send_metadata_request
 
         pipeline.start
 
@@ -170,7 +188,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       it "creates a new batch in the system" do
-        create_batch_request
+        create_batch_request && send_metadata_request
 
         pipeline.start
 
@@ -179,7 +197,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       it "turns document and pipeline into error state if the batch create is not successful" do
-        create_bad_batch_request && send_image_request && image_1 && image_2
+        create_bad_batch_request && send_image_request && send_metadata_request && image_1 && image_2
 
         pipeline.start
 
@@ -188,11 +206,19 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       it "sends images as pages to /api/v1/batch/:batch_id/pages" do
-        create_batch_request && send_image_request && image_1 && image_2
+        create_batch_request && send_image_request && send_metadata_request && image_1 && image_2
 
         pipeline.start
 
         expect(send_image_request).to have_been_requested.twice
+      end
+
+      it "sends metadata along with the images to /api/v1/batch/:batch_id/pages?auxiliary=1" do
+        create_batch_request && send_image_request && send_metadata_request && image_1 && image_2
+
+        pipeline.start
+
+        expect(send_metadata_request).to have_been_requested.once
       end
 
       it "turns document and pipeline into error state if the image send is not successful" do
@@ -206,7 +232,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       it "turns document and pipeline into the processing state" do
-        create_batch_request && send_image_request && image_1 && image_2
+        create_batch_request && send_image_request && send_metadata_request && image_1 && image_2
 
         pipeline.start
 
