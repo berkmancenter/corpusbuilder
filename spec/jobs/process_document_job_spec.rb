@@ -15,6 +15,10 @@ RSpec.describe ProcessDocumentJob, type: :job do
     end
   end
 
+  before(:each) do
+    allow(RestClient).to receive(:post)
+  end
+
   context "Document is in initial state" do
     let(:perform_initial) do
       ProcessDocumentJob.perform_now(document_initial)
@@ -32,6 +36,12 @@ RSpec.describe ProcessDocumentJob, type: :job do
       perform_initial
 
       expect(pipeline_for_initial).to be_present
+    end
+
+    it "Calls the pipeline's start method" do
+      expect_any_instance_of(Pipeline::Nidaba).to receive(:start)
+
+      perform_initial
     end
 
     it "Schedules another run of the same job" do
@@ -103,6 +113,12 @@ RSpec.describe ProcessDocumentJob, type: :job do
         perform_processing
 
         expect(document_processing.reload.status).to eq("ready")
+      end
+
+      it "Calls the pipeline's result method" do
+        expect_any_instance_of(Pipeline::Nidaba).to receive(:result)
+
+        perform_processing
       end
 
       it "Creates the document tree with the results" do

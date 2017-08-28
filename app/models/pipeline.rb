@@ -8,4 +8,15 @@ class Pipeline < ApplicationRecord
   def poll
     raise NotImplementedError
   end
+
+  def start
+    raise NotImplementedError
+  end
+
+  def result
+    raise NotImplementedError
+  end
+
+  class Error < StandardError
+  end
 end

@@ -19,6 +19,7 @@ gem 'grape'
 gem 'grape_on_rails_routes'
 gem 'carrierwave', '~> 1.0'
 gem 'que'
+gem 'rest-client'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

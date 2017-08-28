@@ -9,7 +9,7 @@ module Documents
     protected
 
     def when_initial
-      Pipeline::Nidaba.create! document_id: @document.id
+      Pipelines::Create.run! document: @document
       @document.processing!
       reschedule
     end
@@ -20,6 +20,7 @@ module Documents
         @document.error!
       when "success"
         # todo: implement the proper document graph creation
+        @document.pipeline.result
         image = Image.new name: "myimage.png"
         image.save(validate: false)
         head = Revision.create! document: @document

@@ -6,7 +6,7 @@ FactoryGirl.define do
   end
 
   factory :nidaba_pipeline, class: Pipeline::Nidaba do
-    status 0
+    status "initial"
     document_id ""
   end
 end
