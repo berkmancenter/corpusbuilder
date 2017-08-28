@@ -204,6 +204,15 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         expect(pipeline.reload.status).to eq("error")
         expect(pipeline.document.reload.status).to eq("error")
       end
+
+      it "turns document and pipeline into the processing state" do
+        create_batch_request && send_image_request && image_1 && image_2
+
+        pipeline.start
+
+        expect(pipeline.reload.status).to eq("processing")
+        expect(pipeline.document.reload.status).to eq("processing")
+      end
     end
   end
 

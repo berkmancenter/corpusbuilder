@@ -7,10 +7,16 @@ class Pipeline::Nidaba < Pipeline
     document.error!
   end
 
+  def on_processing
+    document.processing!
+  end
+
   def start
     assert_status :initial
 
-    create_batch && send_images
+    if create_batch && send_images
+      processing!
+    end
   end
 
   def poll
