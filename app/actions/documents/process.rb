@@ -20,6 +20,7 @@ module Documents
         @document.error!
       when "success"
         # todo: implement the proper document graph creation
+        @document.pipeline.update_attribute(:status, Pipeline.statuses["success"])
         @document.pipeline.result
         image = Image.new name: "myimage.png"
         image.save(validate: false)

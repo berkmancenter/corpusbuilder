@@ -17,6 +17,8 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
   before(:each) do
     allow(RestClient).to receive(:post)
+    allow_any_instance_of(Pipeline::Nidaba).to receive(:create_batch)
+    allow_any_instance_of(Pipeline::Nidaba).to receive(:send_images)
   end
 
   context "Document is in initial state" do
@@ -64,7 +66,7 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
     let(:document_processing) do
       document = create :document, status: "processing"
-      create :nidaba_pipeline, document_id: document.id
+      create :nidaba_pipeline, document_id: document.id, status: Pipeline.statuses["processing"]
       document
     end
 

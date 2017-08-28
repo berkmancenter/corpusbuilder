@@ -61,7 +61,9 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline wasn't started yet" do
       let(:initial_document) do
-        FactoryGirl.create :document, status: Document.statuses[:initial]
+        FactoryGirl.create :document,
+          status: Document.statuses[:initial],
+          title: "Initial pipeline document"
       end
 
       let(:pipeline) do
@@ -74,14 +76,60 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         "#{nidaba_base_url}/api/v1/batch"
       end
 
+      let(:send_image_url) do
+        "#{nidaba_base_url}/api/v1/batch/#{batch_id}/pages"
+      end
+
       let(:batch_id) do
         "a7b4cb6714384599bd064052e78c36f1"
       end
 
-      let(:create_batch_response) do
-        instance_double "RestClient::Response",
-          code: 201,
-          body: create_batch_response_body.to_json
+      def image_file(num)
+        {
+          file: File.new(Rails.root.join("spec", "support", "uploads", "image", "file_#{num}.png"))
+        }
+      end
+
+      def image_file_response(num)
+        file_name = "file_#{num}.png"
+        {
+          name: file_name,
+          url: "/api/v1/pages/#{batch_id}/#{file_name}"
+        }
+      end
+
+      let(:image_file_1) do
+        image_file(1)
+      end
+
+      let(:image_file_2) do
+        image_file(2)
+      end
+
+      let(:image_1) do
+        image = FactoryGirl.build :image,
+          name: "image_1.png",
+          image_scan: File.new(Rails.root.join("spec", "support", "files", "file_1.png")),
+          document_id: pipeline.document.id
+        image.save! validate: false
+        image
+      end
+
+      let(:image_2) do
+        image = FactoryGirl.build :image,
+          name: "image_2.png",
+          image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+          document_id: pipeline.document.id
+        image.save! validate: false
+        image
+      end
+
+      let(:image_file_response_1) do
+        image_file_response(1)
+      end
+
+      let(:image_file_response_2) do
+        image_file_response(2)
       end
 
       let(:create_batch_response_body) do
@@ -91,10 +139,40 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         }
       end
 
+      let(:create_batch_request) do
+        stub_request(:post, create_batch_url).
+          to_return(body: create_batch_response_body.to_json, status: 201)
+      end
+
+      let(:send_image_request) do
+        stub_request(:post, send_image_url).
+          with(headers: { 'Content-Type' => /^multipart\/form-data; boundary=.*/ })
+      end
+
       it "makes a POST request to <nidaba>/api/v1/batch" do
-        expect(RestClient).to receive(:post).with(create_batch_url, {}).and_return(create_batch_response)
+        create_batch_request
 
         pipeline.start
+
+        expect(create_batch_request).to have_been_requested
+      end
+
+      it "creates a new batch in the system" do
+        create_batch_request
+
+        pipeline.start
+
+        expect(create_batch_request).to have_been_requested
+        expect(pipeline.reload.batch.id).to eq(batch_id)
+      end
+
+      it "sends images as pages to /api/v1/batch/:batch_id/pages" do
+        create_batch_request && send_image_request && image_1 && image_2
+
+        pipeline.start
+
+        expect(create_batch_request).to have_been_requested
+        expect(send_image_request).to have_been_requested.twice
       end
     end
   end

@@ -7,6 +7,7 @@ class Document < ApplicationRecord
   has_many :revisions
   has_many :branches, through: :revisions
   has_many :surfaces
+  has_many :images
 
   def master
     branches.where(name: 'master').first

@@ -6,6 +6,7 @@ require File.expand_path('../../config/environment', __FILE__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 
 require 'rspec/rails'
+require 'webmock/rspec'
 # Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
 
 ActiveRecord::Migration.maintain_test_schema!
@@ -18,10 +19,11 @@ RSpec.configure do |config|
 
   config.include FactoryGirl::Syntax::Methods
 
- # config.before(:suite) do
- #   FactoryGirl.find_definitions
- # end
-
+  config.after(:each) do
+    if Rails.env.test?
+      FileUtils.rm_rf(Dir["#{Rails.root}/spec/support/uploads"])
+    end
+  end
 
   config.include RSpec::Rails::RequestExampleGroup,
     type: :request,
