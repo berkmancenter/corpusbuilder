@@ -144,9 +144,21 @@ RSpec.describe Pipeline::Nidaba, type: :model do
           to_return(body: create_batch_response_body.to_json, status: 201)
       end
 
+      let(:create_bad_batch_request) do
+        stub_request(:post, create_batch_url).
+          to_return(status: 401)
+      end
+
       let(:send_image_request) do
         stub_request(:post, send_image_url).
-          with(headers: { 'Content-Type' => /^multipart\/form-data; boundary=.*/ })
+          with(headers: { 'Content-Type' => /^multipart\/form-data; boundary=.*/ }).
+          to_return(body: image_file_response_1.to_json)
+      end
+
+      let(:send_bad_image_request) do
+        stub_request(:post, send_image_url).
+          with(headers: { 'Content-Type' => /^multipart\/form-data; boundary=.*/ }).
+          to_return(status: 401)
       end
 
       it "makes a POST request to <nidaba>/api/v1/batch" do
@@ -166,13 +178,31 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         expect(pipeline.reload.batch.id).to eq(batch_id)
       end
 
+      it "turns document and pipeline into error state if the batch create is not successful" do
+        create_bad_batch_request && send_image_request && image_1 && image_2
+
+        pipeline.start
+
+        expect(pipeline.reload.status).to eq("error")
+        expect(pipeline.document.reload.status).to eq("error")
+      end
+
       it "sends images as pages to /api/v1/batch/:batch_id/pages" do
         create_batch_request && send_image_request && image_1 && image_2
 
         pipeline.start
 
-        expect(create_batch_request).to have_been_requested
         expect(send_image_request).to have_been_requested.twice
+      end
+
+      it "turns document and pipeline into error state if the image send is not successful" do
+        create_batch_request && send_bad_image_request && image_1 && image_2
+
+        pipeline.start
+
+        expect(send_bad_image_request).to have_been_requested.twice
+        expect(pipeline.reload.status).to eq("error")
+        expect(pipeline.document.reload.status).to eq("error")
       end
     end
   end

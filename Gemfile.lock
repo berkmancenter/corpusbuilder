@@ -296,6 +296,7 @@ DEPENDENCIES
   airborne
   byebug
   carrierwave (~> 1.0)
+  concurrent-ruby
   dotenv-rails
   factory_girl_rails (~> 4.0)
   grape

@@ -3,11 +3,14 @@ class Pipeline::Nidaba < Pipeline
 
   config_accessor :base_url
 
+  def on_error
+    document.error!
+  end
+
   def start
     assert_status :initial
 
-    create_batch
-    send_images
+    create_batch && send_images
   end
 
   def poll
@@ -29,21 +32,25 @@ class Pipeline::Nidaba < Pipeline
   private
 
   def create_batch
-    response = RestClient.post(create_batch_url, {})
-    self.data["batch"] = JSON.parse(response.body)
-    self.save!
+    begin
+      response = RestClient.post(create_batch_url, {})
+      self.data["batch"] = JSON.parse(response.body)
+      self.save!
+      true
+    rescue RestClient::RequestFailed
+      error!
+      false
+    end
   end
 
   def send_images
-    document.images.each do |image|
-      response = RestClient.post send_image_url,
-        file: File.new(image.image_scan.current_path)
-      if response.code == 201
-        self["images"] ||= []
-        self["images"] << JSON.parse(response.body)
-      end
+    all_successful = document.images.map { |i| send_image(i) }.all?
+    if all_successful
+      true
+    else
+      error!
+      false
     end
-    self.save!
   end
 
   def assert_status(status)
@@ -58,6 +65,18 @@ class Pipeline::Nidaba < Pipeline
 
   def send_image_url
     "#{self.base_url}/api/v1/batch/#{batch.id}/pages"
+  end
+
+  def send_image(image)
+    begin
+      response = RestClient.post send_image_url,
+        file: File.new(image.image_scan.current_path)
+      self.data["images"] ||= []
+      self.data["images"] << JSON.parse(response.body)
+      true
+    rescue RestClient::RequestFailed
+      false
+    end
   end
 
   class Batch
