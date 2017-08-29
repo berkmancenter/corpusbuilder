@@ -11,6 +11,10 @@ class Pipeline::Nidaba < Pipeline
     document.processing!
   end
 
+  def on_success
+    document.ready!
+  end
+
   def start
     assert_status :initial
 
@@ -24,7 +28,12 @@ class Pipeline::Nidaba < Pipeline
   def poll
     assert_status :processing
 
-    # todo: implement me
+    case check_batch
+    when :success
+      success!
+    when :error
+      error!
+    end
   end
 
   def result
@@ -53,6 +62,23 @@ class Pipeline::Nidaba < Pipeline
 
   def send_images
     document.images.map { |i| send_image(i) }.all?
+  end
+
+  def check_batch
+    response = RestClient.get(batch_url)
+    batch = JSON.parse(response.body)
+    states = batch["chains"].values.map do |task|
+      task["state"]
+    end.uniq
+    if states.include? "FAILURE"
+      return :error
+    elsif states.include? "PENDING"
+      return :processing
+    else
+      return :success
+    end
+  rescue RestClient::RequestFailed
+    return :processing
   end
 
   def tasks
@@ -86,6 +112,10 @@ class Pipeline::Nidaba < Pipeline
 
   def task_url(type, name)
     "#{self.base_url}/api/v1/batch/#{batch_id}/tasks/#{type}/#{name}"
+  end
+
+  def batch_url
+    "#{self.base_url}/api/v1/batch/#{batch_id}"
   end
 
   def send_metadata

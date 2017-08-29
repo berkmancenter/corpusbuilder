@@ -363,6 +363,87 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         "abcd123456789"
       end
 
+      let(:get_batch_url) do
+        "#{nidaba_base_url}/api/v1/batch/#{batch_id}"
+      end
+
+      def batch_response_body(state)
+        {
+          tasks: "<not-used-url>",
+          pages: "<not-used-url>",
+          chains: {
+            abcd1: {
+              task: [ "img", "any_to_png" ],
+              state: state
+            },
+            abcd2: {
+              task: [ "binarize", "nlbin" ],
+              state: state
+            },
+            abcd3: {
+              task: [ "segmentation", "tesseract" ],
+              state: state
+            },
+            abcd4: {
+              task: [ "ocr", "kraken" ],
+              state: state
+            },
+            abcd5: {
+              task: [ "output", "metadata" ],
+              state: state
+            }
+          }
+        }
+      end
+
+      let(:get_pending_batch_request) do
+        stub_request(:get, get_batch_url).
+          to_return(status: 201, body: batch_response_body("PENDING").to_json)
+      end
+
+      before(:each) do
+        allow_any_instance_of(Pipeline::Nidaba).to receive(:batch_id).and_return(batch_id)
+      end
+
+      it "creates a GET request to the created batch endpoint" do
+        get_pending_batch_request
+
+        pipeline.poll
+
+        expect(get_pending_batch_request).to have_been_requested.once
+      end
+
+      context "when any task in the batch is reported as failure" do
+        let(:get_failure_batch_request) do
+          stub_request(:get, get_batch_url).
+            to_return(status: 201, body: batch_response_body("FAILURE").to_json)
+        end
+
+        it "turns the pipeline and document into the error state" do
+          get_failure_batch_request
+
+          pipeline.poll
+
+          expect(pipeline.reload.status).to eq("error")
+          expect(pipeline.document.reload.status).to eq("error")
+        end
+      end
+
+      context "when all tasks in the batch are reported as success" do
+        let(:get_success_batch_request) do
+          stub_request(:get, get_batch_url).
+            to_return(status: 201, body: batch_response_body("SUCCESS").to_json)
+        end
+
+        it "turns the pipeline and document into the error state" do
+          get_success_batch_request
+
+          pipeline.poll
+
+          expect(pipeline.reload.status).to eq("success")
+          expect(pipeline.document.reload.status).to eq("ready")
+        end
+      end
     end
   end
 
