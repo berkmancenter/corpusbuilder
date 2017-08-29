@@ -497,6 +497,20 @@ RSpec.describe Pipeline::Nidaba, type: :model do
     end
 
     context "when pipeline is in the success state" do
+      let(:document) do
+        FactoryGirl.create :document, status: Document.statuses[:ready]
+      end
+
+      let(:pipeline) do
+        FactoryGirl.create :nidaba_pipeline,
+          status: Pipeline.statuses[:success],
+          document: document
+      end
+
+      let(:batch_id) do
+        "abcd123456789"
+      end
+
     end
   end
 end
