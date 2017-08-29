@@ -185,25 +185,63 @@ RSpec.describe Pipeline::Nidaba, type: :model do
           to_return(status: 401)
       end
 
-      it "makes a POST request to <nidaba>/api/v1/batch" do
-        create_batch_request && send_metadata_request
+      def task_url(type, name)
+        "#{nidaba_base_url}/api/v1/batch/#{batch_id}/tasks/#{type}/#{name}"
+      end
 
+      let(:create_any_to_png_request) do
+        stub_request(:post, task_url("img", "any_to_png")).
+          to_return(status: 201)
+      end
+
+      let(:create_nlbin_request) do
+        stub_request(:post, task_url("binarize", "nlbin")).
+          to_return(status: 201)
+      end
+
+      let(:create_tesseract_segmentation_request) do
+        stub_request(:post, task_url("segmentation", "tesseract")).
+          to_return(status: 201)
+      end
+
+      let(:create_kraken_ocr_request) do
+        stub_request(:post, task_url("ocr", "kraken")).
+          to_return(status: 201)
+      end
+
+      let(:create_output_metadata_request) do
+        stub_request(:post, task_url("output", "metadata")).
+          to_return(status: 201)
+      end
+
+      before(:each) do
+        image_1
+        image_2
+        create_batch_request
+        send_metadata_request
+        send_image_request
+        create_any_to_png_request
+        create_nlbin_request
+        create_tesseract_segmentation_request
+        create_kraken_ocr_request
+        create_output_metadata_request
+      end
+
+      it "makes a POST request to <nidaba>/api/v1/batch" do
         pipeline.start
 
         expect(create_batch_request).to have_been_requested
       end
 
       it "creates a new batch in the system" do
-        create_batch_request && send_metadata_request
-
         pipeline.start
 
         expect(create_batch_request).to have_been_requested
-        expect(pipeline.reload.batch.id).to eq(batch_id)
+        expect(pipeline.reload.batch_id).to eq(batch_id)
       end
 
       it "turns document and pipeline into error state if the batch create is not successful" do
-        create_bad_batch_request && send_image_request && send_metadata_request && image_1 && image_2
+        create_bad_batch_request
 
         pipeline.start
 
@@ -212,23 +250,19 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       it "sends images as pages to /api/v1/batch/:batch_id/pages" do
-        create_batch_request && send_image_request && send_metadata_request && image_1 && image_2
-
         pipeline.start
 
         expect(send_image_request).to have_been_requested.twice
       end
 
       it "sends metadata along with the images to /api/v1/batch/:batch_id/pages?auxiliary=1" do
-        create_batch_request && send_image_request && send_metadata_request && image_1 && image_2
-
         pipeline.start
 
         expect(send_metadata_request).to have_been_requested.once
       end
 
       it "turns document and pipeline into error state if the metadata send is not successful" do
-        create_batch_request && send_image_request && send_bad_metadata_request && image_1 && image_2
+        send_bad_metadata_request
 
         pipeline.start
 
@@ -237,7 +271,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       it "turns document and pipeline into error state if the image send is not successful" do
-        create_batch_request && send_bad_image_request && image_1 && image_2
+        send_bad_image_request
 
         pipeline.start
 
@@ -247,22 +281,103 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       it "turns document and pipeline into the processing state" do
-        create_batch_request && send_image_request && send_metadata_request && image_1 && image_2
-
         pipeline.start
 
         expect(pipeline.reload.status).to eq("processing")
         expect(pipeline.document.reload.status).to eq("processing")
       end
+
+      it "should create proper tasks by calling API" do
+        pipeline.start
+
+        expect(create_any_to_png_request).to have_been_requested.once
+        expect(create_nlbin_request).to have_been_requested.once
+        expect(create_tesseract_segmentation_request).to have_been_requested.once
+        expect(create_kraken_ocr_request).to have_been_requested.once
+        expect(create_output_metadata_request).to have_been_requested.once
+      end
     end
   end
 
   context "The poll method" do
+    context "when pipeline is in initial state" do
+      let(:document) do
+        FactoryGirl.create :document, status: Document.statuses[:initial]
+      end
 
+      let(:pipeline) do
+        FactoryGirl.create :nidaba_pipeline,
+          status: Pipeline.statuses[:initial],
+          document: document
+      end
+
+      it "raises the error" do
+        expect { pipeline.poll }.to raise_error(Pipeline::Error)
+      end
+    end
+
+    context "when pipeline is in error state" do
+      let(:document) do
+        FactoryGirl.create :document, status: Document.statuses[:error]
+      end
+
+      let(:pipeline) do
+        FactoryGirl.create :nidaba_pipeline,
+          status: Pipeline.statuses[:error],
+          document: document
+      end
+
+      it "raises the error" do
+        expect { pipeline.poll }.to raise_error(Pipeline::Error)
+      end
+    end
+
+    context "when pipeline is in the success state" do
+      let(:document) do
+        FactoryGirl.create :document, status: Document.statuses[:ready]
+      end
+
+      let(:pipeline) do
+        FactoryGirl.create :nidaba_pipeline,
+          status: Pipeline.statuses[:success],
+          document: document
+      end
+
+      it "raises the error" do
+        expect { pipeline.poll }.to raise_error(Pipeline::Error)
+      end
+    end
+
+    context "when pipeline is in the processing state" do
+      let(:document) do
+        FactoryGirl.create :document, status: Document.statuses[:processing]
+      end
+
+      let(:pipeline) do
+        FactoryGirl.create :nidaba_pipeline,
+          status: Pipeline.statuses[:processing],
+          document: document
+      end
+
+      let(:batch_id) do
+        "abcd123456789"
+      end
+
+    end
   end
 
   context "The result method" do
+    context "when pipeline is in initial state" do
+    end
 
+    context "when pipeline is in error state" do
+    end
+
+    context "when pipeline is in the processing state" do
+    end
+
+    context "when pipeline is in the success state" do
+    end
   end
 end
 

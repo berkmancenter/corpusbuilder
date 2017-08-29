@@ -14,7 +14,7 @@ class Pipeline::Nidaba < Pipeline
   def start
     assert_status :initial
 
-    if create_batch && send_images && send_metadata
+    if create_batch && send_images && send_metadata && create_tasks
       processing!
     else
       error!
@@ -33,8 +33,8 @@ class Pipeline::Nidaba < Pipeline
     # todo: implement me
   end
 
-  def batch
-    Batch.new(data["batch"])
+  def batch_id
+    data.fetch("batch", {}).fetch("id", nil)
   end
 
   private
@@ -47,13 +47,45 @@ class Pipeline::Nidaba < Pipeline
     end
   end
 
+  def create_tasks
+    tasks.map { |create| create.call }.all?
+  end
+
   def send_images
-    all_successful = document.images.map { |i| send_image(i) }.all?
-    if all_successful
-      true
-    else
-      false
+    document.images.map { |i| send_image(i) }.all?
+  end
+
+  def tasks
+    [
+      task(:img, :any_to_png),
+      task(:binarize, :nlbin, {
+        border: 0.1,
+        escale: 1,
+        high: 90,
+        low: 5,
+        perc: 80,
+        range: 20,
+        threshold: 0.5,
+        zoom: 0.5
+      }),
+      task(:segmentation, :tesseract),
+      task(:ocr, :kraken),
+      task(:output, :metadata)
+    ]
+  end
+
+  def task(type, name, options = {})
+    Proc.new do
+      is_rest_successful? do
+        RestClient.post task_url(type, name), options
+        self.data["tasks"] ||= []
+        self.data["tasks"] << { type: type, name: name }
+      end
     end
+  end
+
+  def task_url(type, name)
+    "#{self.base_url}/api/v1/batch/#{batch_id}/tasks/#{type}/#{name}"
   end
 
   def send_metadata
@@ -77,11 +109,11 @@ class Pipeline::Nidaba < Pipeline
   end
 
   def send_image_url
-    "#{self.base_url}/api/v1/batch/#{batch.id}/pages"
+    "#{self.base_url}/api/v1/batch/#{batch_id}/pages"
   end
 
   def send_metadata_url
-    "#{self.base_url}/api/v1/batch/#{batch.id}/pages?auxiliary=1"
+    "#{self.base_url}/api/v1/batch/#{batch_id}/pages?auxiliary=1"
   end
 
   def send_image(image)
@@ -118,19 +150,4 @@ class Pipeline::Nidaba < Pipeline
       false
     end
   end
-
-  class Batch
-    attr_accessor :id
-
-    def initialize(json)
-      @id = json["id"]
-    end
-
-    def as_json
-      {
-        id: @id
-      }
-    end
-  end
-
 end
