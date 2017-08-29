@@ -449,12 +449,51 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
   context "The result method" do
     context "when pipeline is in initial state" do
+      let(:document) do
+        FactoryGirl.create :document, status: Document.statuses[:initial]
+      end
+
+      let(:pipeline) do
+        FactoryGirl.create :nidaba_pipeline,
+          status: Pipeline.statuses[:initial],
+          document: document
+      end
+
+      it "raises the error" do
+        expect { pipeline.result }.to raise_error(Pipeline::Error)
+      end
     end
 
     context "when pipeline is in error state" do
+      let(:document) do
+        FactoryGirl.create :document, status: Document.statuses[:error]
+      end
+
+      let(:pipeline) do
+        FactoryGirl.create :nidaba_pipeline,
+          status: Pipeline.statuses[:error],
+          document: document
+      end
+
+      it "raises the error" do
+        expect { pipeline.result }.to raise_error(Pipeline::Error)
+      end
     end
 
     context "when pipeline is in the processing state" do
+      let(:document) do
+        FactoryGirl.create :document, status: Document.statuses[:processing]
+      end
+
+      let(:pipeline) do
+        FactoryGirl.create :nidaba_pipeline,
+          status: Pipeline.statuses[:processing],
+          document: document
+      end
+
+      it "raises the error" do
+        expect { pipeline.result }.to raise_error(Pipeline::Error)
+      end
     end
 
     context "when pipeline is in the success state" do
