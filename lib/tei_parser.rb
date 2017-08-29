@@ -1,0 +1,3 @@
+class TeiParser < Parser
+
+end

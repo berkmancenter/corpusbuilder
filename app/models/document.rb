@@ -12,4 +12,9 @@ class Document < ApplicationRecord
   def master
     branches.where(name: 'master').first
   end
+
+  def parse!(tei_xml)
+    # todo: implement me
+    ready!
+  end
 end

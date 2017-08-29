@@ -107,27 +107,29 @@ RSpec.describe ProcessDocumentJob, type: :job do
     end
 
     context "Pipeline returns success" do
-      before(:each) do
-        expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return("success")
+      let(:tei_result) do
+        "tei-result-stub"
       end
 
-      it "Puts document in the ready state" do
+      before(:each) do
+        expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return("success")
+        expect_any_instance_of(Pipeline::Nidaba).to receive(:result).and_return(tei_result)
+      end
+
+      it "puts document in the ready state" do
         perform_processing
 
         expect(document_processing.reload.status).to eq("ready")
       end
 
-      it "Calls the pipeline's result method" do
-        expect_any_instance_of(Pipeline::Nidaba).to receive(:result)
-
+      it "calls the pipeline's result method" do
         perform_processing
       end
 
-      it "Creates the document tree with the results" do
-        perform_processing
+      it "calls the Document parse method with the resulting tei data" do
+        expect_any_instance_of(Document).to receive(:parse!).with(tei_result)
 
-        expect(document_processing.reload.master).to be_present
-        expect(document_processing.reload.master.graphemes).to be_present
+        perform_processing
       end
 
       it "Does not schedule another run of the same job" do
