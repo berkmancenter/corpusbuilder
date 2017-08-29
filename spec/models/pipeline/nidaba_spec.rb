@@ -179,6 +179,12 @@ RSpec.describe Pipeline::Nidaba, type: :model do
           to_return(body: metadata_file_response_1.to_json)
       end
 
+      let(:send_bad_metadata_request) do
+        stub_request(:post, send_metadata_url).
+          with(headers: { 'Content-Type' => /^multipart\/form-data; boundary=.*/ }).
+          to_return(status: 401)
+      end
+
       it "makes a POST request to <nidaba>/api/v1/batch" do
         create_batch_request && send_metadata_request
 
@@ -219,6 +225,15 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         pipeline.start
 
         expect(send_metadata_request).to have_been_requested.once
+      end
+
+      it "turns document and pipeline into error state if the metadata send is not successful" do
+        create_batch_request && send_image_request && send_bad_metadata_request && image_1 && image_2
+
+        pipeline.start
+
+        expect(pipeline.reload.status).to eq("error")
+        expect(pipeline.document.reload.status).to eq("error")
       end
 
       it "turns document and pipeline into error state if the image send is not successful" do

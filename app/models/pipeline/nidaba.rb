@@ -16,6 +16,8 @@ class Pipeline::Nidaba < Pipeline
 
     if create_batch && send_images && send_metadata
       processing!
+    else
+      error!
     end
   end
 
@@ -38,14 +40,10 @@ class Pipeline::Nidaba < Pipeline
   private
 
   def create_batch
-    begin
+    is_rest_successful? do
       response = RestClient.post(create_batch_url, {})
       self.data["batch"] = JSON.parse(response.body)
       self.save!
-      true
-    rescue RestClient::RequestFailed
-      error!
-      false
     end
   end
 
@@ -54,21 +52,17 @@ class Pipeline::Nidaba < Pipeline
     if all_successful
       true
     else
-      error!
       false
     end
   end
 
   def send_metadata
-    begin
+    is_rest_successful? do
       Dir.mktmpdir do |dir|
         temp_metadata = metadata_file(dir)
         response = RestClient.post send_metadata_url, file: temp_metadata
         self.data["metadata"] = JSON.parse(response.body)
       end
-      true
-    rescue RestClient::RequestFailed
-      false
     end
   end
 
@@ -91,14 +85,11 @@ class Pipeline::Nidaba < Pipeline
   end
 
   def send_image(image)
-    begin
+    is_rest_successful? do
       response = RestClient.post send_image_url,
         file: File.new(image.image_scan.current_path)
       self.data["images"] ||= []
       self.data["images"] << JSON.parse(response.body)
-      true
-    rescue RestClient::RequestFailed
-      false
     end
   end
 
@@ -117,6 +108,15 @@ class Pipeline::Nidaba < Pipeline
       }.to_yaml
     )
     file
+  end
+
+  def is_rest_successful?(&block)
+    begin
+      block.call
+      true
+    rescue RestClient::RequestFailed
+      false
+    end
   end
 
   class Batch
