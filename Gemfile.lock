@@ -296,7 +296,6 @@ DEPENDENCIES
   airborne
   byebug
   carrierwave (~> 1.0)
-  concurrent-ruby
   dotenv-rails
   factory_girl_rails (~> 4.0)
   grape
@@ -304,6 +303,7 @@ DEPENDENCIES
   guard-rspec
   jbuilder (~> 2.5)
   listen (>= 3.0.5, < 3.2)
+  nokogiri
   pg (~> 0.18)
   puma (~> 3.7)
   que

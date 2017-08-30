@@ -2,6 +2,10 @@ require 'rails_helper'
 
 RSpec.describe TeiParser do
   describe "The parse method" do
+    let(:parse_result) do
+      TeiParser.parse(result_tei)
+    end
+
     let(:result_tei) do
       <<-xml
         <?xml version='1.0' encoding='utf-8'?>
@@ -637,6 +641,37 @@ RSpec.describe TeiParser do
       xml
     end
 
-    it "returns the Parser::Result when fed with proper data"
+    it "returns the Parser::Result when fed with proper data" do
+      expect(parse_result).to be_an_instance_of(TeiParser)
+    end
+
+    context "result" do
+      it "contains the surfaces enumerator" do
+        expect(parse_result.surfaces).to be_an_instance_of(Enumerator::Lazy)
+      end
+
+      context "surfaces enumerator item" do
+        let(:surface) do
+          parse_result.surfaces.first
+        end
+
+        it "contains the zones enumerator" do
+          expect(surface.zones).to be_an_instance_of(Enumerator::Lazy)
+        end
+
+        it "contains the area attribute"
+
+        context "zones enumerator item" do
+          it "contains the graphemes enumerator"
+          it "contains the area attribute"
+
+          context "grapheme enumerator item" do
+            it "contains the value attribute"
+            it "contains the area attribute"
+            it "contains the certainty attribute"
+          end
+        end
+      end
+    end
   end
 end
