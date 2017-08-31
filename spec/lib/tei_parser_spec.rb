@@ -646,30 +646,94 @@ RSpec.describe TeiParser do
     end
 
     context "result" do
-      it "contains the surfaces enumerator" do
-        expect(parse_result.surfaces).to be_an_instance_of(Enumerator::Lazy)
+      let(:surfaces) do
+          parse_result.elements.select { |el| el.name == "surface" }
       end
 
-      context "surfaces enumerator item" do
+      let(:zones) do
+          parse_result.elements.select { |el| el.name == "zone" }
+      end
+
+      let(:graphemes) do
+          parse_result.elements.select { |el| el.name == "grapheme" }
+      end
+
+      it "contains the elements enumerator" do
+        expect(parse_result.elements).to be_an_instance_of(Enumerator::Lazy)
+      end
+
+      it "contains a proper number of surface elements" do
+        expect(surfaces.count).to eq(1)
+      end
+
+      it "contains a proper number of zone elements" do
+        expect(zones.count).to eq(26)
+      end
+
+      it "contains a proper number of grapheme elements" do
+        expect(graphemes.count).to eq(85)
+      end
+
+      it "gathers proper grapheme values" do
+        expect(graphemes.take(5).map(&:value).to_a.join).to eq(" اهقق")
+      end
+
+      it "gathers proper grapheme certainty values" do
+        expect(graphemes.take(5).map(&:certainty).to_a).to eq([0.95, 0.15, 0.15, 0.15, 0.15])
+      end
+
+      context "items being a surface" do
         let(:surface) do
-          parse_result.surfaces.first
+          surfaces.first
         end
 
-        it "contains the zones enumerator" do
-          expect(surface.zones).to be_an_instance_of(Enumerator::Lazy)
+        it "contains the area attribute" do
+          expect(surface).to respond_to(:area)
         end
 
-        it "contains the area attribute"
+        it "contains proper values for the area attribute" do
+          expect(surface.area.lrx).to eq(1275)
+          expect(surface.area.lry).to eq(1650)
+          expect(surface.area.ulx).to eq(0)
+          expect(surface.area.uly).to eq(0)
+        end
+      end
 
-        context "zones enumerator item" do
-          it "contains the graphemes enumerator"
-          it "contains the area attribute"
+      context "items being a zone" do
+        let(:zone) do
+          zones.first
+        end
 
-          context "grapheme enumerator item" do
-            it "contains the value attribute"
-            it "contains the area attribute"
-            it "contains the certainty attribute"
-          end
+        it "contains the area attribute" do
+          expect(zone).to respond_to(:area)
+        end
+
+        it "contains proper values for the area attribute" do
+          expect(zone.area.lrx).to eq(1050)
+          expect(zone.area.lry).to eq(194)
+          expect(zone.area.ulx).to eq(225)
+          expect(zone.area.uly).to eq(186)
+        end
+      end
+
+      context "items being a grapheme" do
+        let(:grapheme) do
+          graphemes.first
+        end
+
+        it "contains the area attribute" do
+          expect(grapheme).to respond_to(:area)
+        end
+
+        it "contains the certainty attribute" do
+          expect(grapheme).to respond_to(:certainty)
+        end
+
+        it "contains proper values for the area attribute" do
+          expect(grapheme.area.lrx).to eq(1050)
+          expect(grapheme.area.lry).to eq(194)
+          expect(grapheme.area.ulx).to eq(225)
+          expect(grapheme.area.uly).to eq(186)
         end
       end
     end

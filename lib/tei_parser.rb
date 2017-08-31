@@ -1,6 +1,3 @@
-require 'nokogiri'
-include Nokogiri
-
 ##
 # Parser for the TEI format that is able to work on the XML strings
 # as well as their streams. It doesn't parse all the contents into
@@ -15,10 +12,8 @@ class TeiParser < Parser
     new(tei_string.gsub(/\<\?.*$/, ''))
   end
 
-  def surfaces
-    enumerator.lazy.select do |element|
-      element.is_a? SurfaceElement
-    end
+  def elements
+    enumerator.lazy
   end
 
   private
@@ -34,9 +29,7 @@ class TeiParser < Parser
   end
 
   def init_parser(yielder)
-    parser = TeiElementParser.new
-
-    parser.push_yielder(yielder)
+    parser = TeiElementParser.new(yielder)
 
     Nokogiri::XML::SAX::Parser.new(parser).
       parse(@tei_string)
@@ -44,39 +37,54 @@ class TeiParser < Parser
 
   class TeiElementParser < Nokogiri::XML::SAX::Document
 
-    def push_yielder(yielder)
-      @yielders ||= []
-      @yielders.push yielder
+    def initialize(yielder)
+      @yielder = yielder
     end
 
     def start_element(name, attrs = [])
       case name
       when "surface"
         area = area_from_attributes(attrs)
-        @yielders.last << SurfaceElement.new(area: area, parser: self)
+        @yielder << Element.new(area: area, name: "surface")
       when "zone"
         type = type_from_attributes(attrs)
         case type
         when "segment"
           area = area_from_attributes(attrs)
-          @yielders.last << ZoneElement.new(area: area, parser: self)
+          @yielder << Element.new(area: area, name: "zone")
         when "grapheme"
           # we're only storing the area for future encounter of the real grapheme
           # node - <g>
           @_last_area = area_from_attributes(attrs)
+          @_in_zone_grapheme = true
         end
       when "g"
         # we're doing nothing here since we want to grab the string representation
         # that is inside of the tyag we're in now - we'll get it inside the #characters
         # method
+        @_in_g = true
+      when "certainty"
+        if @_in_zone_grapheme
+          @_last_grapheme.certainty = certainty_from_attributes(attrs)
+          @yielder << @_last_grapheme
+        end
       else
         # no-op
       end
     end
 
+    def end_element(name)
+      case name
+      when "g"
+        @_in_g = false
+      when "zone"
+        @_in_zone_grapheme = false
+      end
+    end
+
     def area_from_attributes(attrs)
       AreaAttr.new(attrs.inject({}) do |sum, attr|
-        sum[attr.first] = attr.last
+        sum[attr.first.to_sym] = attr.last
         sum
       end)
     end
@@ -87,63 +95,27 @@ class TeiParser < Parser
       end.try(&:last)
     end
 
+    def certainty_from_attributes(attrs)
+      attrs.find do |pair|
+        pair.first == "degree"
+      end.try(&:last).try(&:to_f)
+    end
+
     def characters(string)
-      @yielders.last << GraphemeElement.new(area: @_last_area, value: string)
-    end
+      return if !@_in_g
 
-    def end_element(name)
-      case name
-      when "surface", "zone"
-        @yielders.pop
-      else
-      end
+      @_last_grapheme = Element.new(area: @_last_area, value: string, name: "grapheme")
     end
   end
 
-  class SurfaceElement
-    attr_accessor :area, :parser
-
-    def initialize(options)
-      @area = options[:area]
-      @parser = options[:parser]
-
-      @_zones = Enumerator.new do |yielder|
-        @parser.push_yielder(yielder)
-      end
-    end
-
-    def zones
-      @_zones.lazy.select do |element|
-        element.is_a? ZoneElement
-      end
-    end
-  end
-
-  class ZoneElement
-    attr_accessor :area, :parser
-
-    def initialize(options)
-      @area = options[:area]
-      @parser = options[:parser]
-
-      @_graphemes = Enumerator.new do |yielder|
-        @parser.push_yielder(yielder)
-      end
-    end
-
-    def graphemes
-      @_graphemes.lazy.select do |element|
-        element.is_a? GraphemeElement
-      end
-    end
-  end
-
-  class GraphemeElement
-    attr_accessor :area, :value
+  class Element
+    attr_accessor :area, :value, :name, :certainty
 
     def initialize(options)
       @area = options[:area]
       @value = options[:value]
+      @name = options[:name]
+      @certainty = options[:certainty]
     end
   end
 
@@ -151,10 +123,10 @@ class TeiParser < Parser
     attr_accessor :lrx, :lry, :ulx, :uly
 
     def initialize(options)
-      @lrx = options[:lrx]
-      @lry = options[:lry]
-      @ulx = options[:ulx]
-      @uly = options[:uly]
+      @lrx = options[:lrx].to_i
+      @lry = options[:lry].to_i
+      @ulx = options[:ulx].to_i
+      @uly = options[:uly].to_i
     end
   end
 end
