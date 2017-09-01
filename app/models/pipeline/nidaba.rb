@@ -39,11 +39,27 @@ class Pipeline::Nidaba < Pipeline
   def result
     assert_status :success
 
-    # todo: implement me
+    self.pages.lazy.map do |page|
+      url = page.values.first
+      id = images.find do |image|
+        image.keys.first == page.keys.first
+      end.values.first
+      {
+        id => RestClient.get(url).body
+      }
+    end
   end
 
   def batch_id
     data.fetch("batch", {}).fetch("id", nil)
+  end
+
+  def pages
+    data.fetch("pages", [])
+  end
+
+  def images
+    data.fetch("images", [])
   end
 
   private
@@ -75,6 +91,13 @@ class Pipeline::Nidaba < Pipeline
     elsif states.include? "PENDING"
       return :processing
     else
+      pages = batch["chains"].values.select do |task|
+        task["task"].first == "ocr"
+      end.map do |task|
+        { task["root_documents"].first => task["result"] }
+      end
+      self.data["pages"] = pages
+      self.save!
       return :success
     end
   rescue RestClient::RequestFailed
@@ -150,8 +173,11 @@ class Pipeline::Nidaba < Pipeline
     is_rest_successful? do
       response = RestClient.post send_image_url,
         file: File.new(image.image_scan.current_path)
+      data = JSON.parse(response.body)
       self.data["images"] ||= []
-      self.data["images"] << JSON.parse(response.body)
+      self.data["images"] << {
+        data["url"] => image.id
+      }
     end
   end
 

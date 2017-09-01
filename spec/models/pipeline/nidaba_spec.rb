@@ -113,6 +113,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       let(:image_1) do
         image = FactoryGirl.build :image,
           name: "image_1.png",
+          order: 1,
           image_scan: File.new(Rails.root.join("spec", "support", "files", "file_1.png")),
           document_id: pipeline.document.id
         image.save! validate: false
@@ -122,6 +123,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       let(:image_2) do
         image = FactoryGirl.build :image,
           name: "image_2.png",
+          order: 2,
           image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
           document_id: pipeline.document.id
         image.save! validate: false
@@ -164,7 +166,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       let(:send_image_request) do
         stub_request(:post, send_image_url).
           with(headers: { 'Content-Type' => /^multipart\/form-data; boundary=.*/ }).
-          to_return(body: image_file_response_1.to_json)
+          to_return({ body: image_file_response_1.to_json }, { body: image_file_response_2.to_json })
       end
 
       let(:send_bad_image_request) do
@@ -253,6 +255,14 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         pipeline.start
 
         expect(send_image_request).to have_been_requested.twice
+      end
+
+      it "stores images in order in pipeline data attribute" do
+        pipeline.start
+
+        expect(pipeline.data["images"].count).to eq(2)
+        expect(pipeline.data["images"][0]["/api/v1/pages/#{batch_id}/file_1.png"]).to eq(image_1.id)
+        expect(pipeline.data["images"][1]["/api/v1/pages/#{batch_id}/file_2.png"]).to eq(image_2.id)
       end
 
       it "sends metadata along with the images to /api/v1/batch/:batch_id/pages?auxiliary=1" do
@@ -386,9 +396,21 @@ RSpec.describe Pipeline::Nidaba, type: :model do
             },
             abcd4: {
               task: [ "ocr", "kraken" ],
-              state: state
+              state: state,
+              result: "page1-url.xml",
+              root_documents: [
+                "/api/something/image_1.png"
+              ]
             },
             abcd5: {
+              task: [ "ocr", "kraken" ],
+              state: state,
+              result: "page2-url.xml",
+              root_documents: [
+                "/api/something/image_2.png"
+              ]
+            },
+            abcd6: {
               task: [ "output", "metadata" ],
               state: state
             }
@@ -435,13 +457,23 @@ RSpec.describe Pipeline::Nidaba, type: :model do
             to_return(status: 201, body: batch_response_body("SUCCESS").to_json)
         end
 
-        it "turns the pipeline and document into the error state" do
+        before(:each) do
           get_success_batch_request
+        end
 
+        it "turns the pipeline and document into the success state" do
           pipeline.poll
 
           expect(pipeline.reload.status).to eq("success")
           expect(pipeline.document.reload.status).to eq("ready")
+        end
+
+        it "stores all pages results under the json data within the pipeline" do
+          pipeline.poll
+
+          expect(pipeline.pages.count).to eq(2)
+          expect(pipeline.pages.first).to eq({ "/api/something/image_1.png" => "page1-url.xml" })
+          expect(pipeline.pages.last).to eq({ "/api/something/image_2.png" => "page2-url.xml"})
         end
       end
     end
@@ -507,8 +539,83 @@ RSpec.describe Pipeline::Nidaba, type: :model do
           document: document
       end
 
-      let(:batch_id) do
-        "abcd123456789"
+      let(:image_1) do
+        image = FactoryGirl.build :image,
+          name: "image_1.png",
+          order: 1,
+          image_scan: File.new(Rails.root.join("spec", "support", "files", "file_1.png")),
+          document_id: pipeline.document.id
+        image.save! validate: false
+        image
+      end
+
+      let(:image_2) do
+        image = FactoryGirl.build :image,
+          name: "image_2.png",
+          order: 2,
+          image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+          document_id: pipeline.document.id
+        image.save! validate: false
+        image
+      end
+
+      let(:batch_id) { "abcd1234" }
+
+      let(:page_result_url_1) { "someurl/page1.xml" }
+      let(:page_result_url_2) { "someurl/page2.xml" }
+
+      let(:image_1_url) { "/api/v1/pages/#{batch_id}/file_1.png" }
+      let(:image_2_url) { "/api/v1/pages/#{batch_id}/file_2.png" }
+
+      before(:each) do
+        pages = [
+          { image_1_url => page_result_url_1 },
+          { image_2_url => page_result_url_2 }
+        ]
+        images = [
+          { image_1_url => image_1.id },
+          { image_2_url => image_2.id },
+        ]
+        allow_any_instance_of(Pipeline::Nidaba).to receive(:batch_id).and_return(batch_id)
+        allow_any_instance_of(Pipeline::Nidaba).to receive(:images).and_return(images)
+        allow_any_instance_of(Pipeline::Nidaba).to receive(:pages).and_return(pages)
+      end
+
+      let(:get_page_tei_1) do
+        stub_request(:get, page_result_url_1).
+          to_return(status: 201, body: "<TEI>1</TEI>")
+      end
+
+      let(:get_page_tei_2) do
+        stub_request(:get, page_result_url_2).
+          to_return(status: 201, body: "<TEI>2</TEI>")
+      end
+
+      it "makes GET requests for the resulting TEI xml data" do
+        get_page_tei_1
+        get_page_tei_2
+
+        pipeline.result.to_a
+
+        expect(get_page_tei_1).to have_been_requested.once
+        expect(get_page_tei_2).to have_been_requested.once
+      end
+
+      it "returns a lazy enumerator to streams of tei xml data" do
+        get_page_tei_1
+        get_page_tei_2
+
+        expect(pipeline.result).to be_an_instance_of(Enumerator::Lazy)
+      end
+
+      it "yields proper tei data" do
+        get_page_tei_1
+        get_page_tei_2
+
+        result = pipeline.result
+
+        expect(result.next).to eq({ image_1.id => "<TEI>1</TEI>" })
+        expect(result.next).to eq({ image_2.id => "<TEI>2</TEI>" })
       end
 
     end

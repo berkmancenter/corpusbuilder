@@ -1,0 +1,16 @@
+development:
+  adapter: postgresql
+  host: 0.0.0.0
+  database: corpusbuilder_dev
+  username: shariasource_dev
+  password: 26vi4fuh
+  port: 8923
+
+test:
+  adapter: postgresql
+  host: 0.0.0.0
+  database: corpusbuilder_test
+  username: shariasource_dev
+  password: 26vi4fuh
+  port: 8923
+
