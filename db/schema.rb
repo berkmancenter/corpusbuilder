@@ -122,11 +122,10 @@ ActiveRecord::Schema.define(version: 20170828113253) do
   end
 
   create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "document_id"
-    t.box "area"
+    t.uuid "surface_id", null: false
+    t.box "area", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "surface_id", null: false
   end
 
 end
