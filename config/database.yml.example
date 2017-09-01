@@ -1,16 +1,23 @@
-development:
+default: &default
   adapter: postgresql
-  host: 0.0.0.0
-  database: corpusbuilder_dev
-  username: shariasource_dev
-  password: 26vi4fuh
-  port: 8923
+  encoding: unicode
+  host: postgres
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: corpus_builder_development
+  username: corpus_builder
+  password: <%= ENV['CORPUS_BUILDER_DATABASE_PASSWORD'] %>
 
 test:
-  adapter: postgresql
-  host: 0.0.0.0
-  database: corpusbuilder_test
-  username: shariasource_dev
-  password: 26vi4fuh
-  port: 8923
+  <<: *default
+  database: corpus_builder_test
+  username: corpus_builder
+  password: <%= ENV['CORPUS_BUILDER_DATABASE_PASSWORD'] %>
 
+production:
+  <<: *default
+  database: corpus_builder_production
+  username: corpus_builder
+  password: <%= ENV['CORPUS_BUILDER_DATABASE_PASSWORD'] %>
