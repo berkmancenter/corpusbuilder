@@ -19,7 +19,10 @@ module Documents
       when "error"
         @document.error!
       when "success"
-        @document.parse! @document.pipeline.result
+        @document.pipeline.result.each do |result|
+          Documents::Compile.run! image_ocr_result: result
+        end
+        @document.ready!
       else
         reschedule
       end

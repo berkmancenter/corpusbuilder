@@ -108,12 +108,17 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
     context "Pipeline returns success" do
       let(:tei_result) do
-        "tei-result-stub"
+        [
+          { "abcd1" => "<TEI>1</TEI>" },
+          { "abcd2" => "<TEI>2</TEI>" }
+        ].lazy
       end
 
       before(:each) do
         expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return("success")
         expect_any_instance_of(Pipeline::Nidaba).to receive(:result).and_return(tei_result)
+        expect(Documents::Compile).to receive(:run!).with({ image_ocr_result: {"abcd1" => "<TEI>1</TEI>"}})
+        expect(Documents::Compile).to receive(:run!).with({ image_ocr_result: {"abcd2" => "<TEI>2</TEI>"}})
       end
 
       it "puts document in the ready state" do
@@ -123,12 +128,6 @@ RSpec.describe ProcessDocumentJob, type: :job do
       end
 
       it "calls the pipeline's result method" do
-        perform_processing
-      end
-
-      it "calls the Document parse method with the resulting tei data" do
-        expect_any_instance_of(Document).to receive(:parse!).with(tei_result)
-
         perform_processing
       end
 
