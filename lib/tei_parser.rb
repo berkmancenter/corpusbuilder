@@ -45,13 +45,13 @@ class TeiParser < Parser
       case name
       when "surface"
         area = area_from_attributes(attrs)
-        @yielder << Element.new(area: area, name: "surface")
+        @yielder << Parser::Element.new(area: area, name: "surface")
       when "zone"
         type = type_from_attributes(attrs)
         case type
         when "segment"
           area = area_from_attributes(attrs)
-          @yielder << Element.new(area: area, name: "zone")
+          @yielder << Parser::Element.new(area: area, name: "zone")
         when "grapheme"
           # we're only storing the area for future encounter of the real grapheme
           # node - <g>
@@ -83,7 +83,7 @@ class TeiParser < Parser
     end
 
     def area_from_attributes(attrs)
-      AreaAttr.new(attrs.inject({}) do |sum, attr|
+      Parser::AreaAttr.new(attrs.inject({}) do |sum, attr|
         sum[attr.first.to_sym] = attr.last
         sum
       end)
@@ -104,29 +104,7 @@ class TeiParser < Parser
     def characters(string)
       return if !@_in_g
 
-      @_last_grapheme = Element.new(area: @_last_area, value: string, name: "grapheme")
-    end
-  end
-
-  class Element
-    attr_accessor :area, :value, :name, :certainty
-
-    def initialize(options)
-      @area = options[:area]
-      @value = options[:value]
-      @name = options[:name]
-      @certainty = options[:certainty]
-    end
-  end
-
-  class AreaAttr
-    attr_accessor :lrx, :lry, :ulx, :uly
-
-    def initialize(options)
-      @lrx = options[:lrx].to_i
-      @lry = options[:lry].to_i
-      @ulx = options[:ulx].to_i
-      @uly = options[:uly].to_i
+      @_last_grapheme = Parser::Element.new(area: @_last_area, value: string, name: "grapheme")
     end
   end
 end
