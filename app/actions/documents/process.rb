@@ -20,7 +20,8 @@ module Documents
         @document.error!
       when "success"
         @document.pipeline.result.each do |result|
-          Documents::Compile.run! image_ocr_result: result
+          Documents::Compile.run! image_ocr_result: result.values.first,
+            document: @document, image_id: result.keys.first
         end
         @document.ready!
       else

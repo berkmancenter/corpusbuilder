@@ -14,17 +14,28 @@ module Action
     def self.run(params = {})
       instance = new
 
+      if params.nil? && has_setters?(instance)
+        raise ArgumentError, "Expected parameters passed to action #{name}"
+      end
+
       params.each do |name, value|
         instance.send "#{name}=", value
       end
 
       begin
-        instance.instance_variable_set "@_result", instance.execute
+        instance.validate
+        if instance.valid?
+          instance.instance_variable_set "@_result", instance.execute
+        end
       rescue
         instance.add_error($!)
       end
 
       instance
+    end
+
+    def self.has_setters?(instance)
+      instance.methods.select { |m| m.to_s[/^[^!=]*=$/] }.present?
     end
 
     def valid?
@@ -47,10 +58,12 @@ module Action
       @_errors << exception
     end
 
-    protected
-
     def execute
       throw :unimplemented
+    end
+
+    def validate
+      # no-op by default - to be overriden in child classes
     end
 
     private

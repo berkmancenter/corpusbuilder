@@ -83,7 +83,7 @@ class TeiParser < Parser
     end
 
     def area_from_attributes(attrs)
-      Parser::AreaAttr.new(attrs.inject({}) do |sum, attr|
+      Area.new(attrs.inject({}) do |sum, attr|
         sum[attr.first.to_sym] = attr.last
         sum
       end)

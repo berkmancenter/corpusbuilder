@@ -117,8 +117,8 @@ RSpec.describe ProcessDocumentJob, type: :job do
       before(:each) do
         expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return("success")
         expect_any_instance_of(Pipeline::Nidaba).to receive(:result).and_return(tei_result)
-        expect(Documents::Compile).to receive(:run!).with({ image_ocr_result: {"abcd1" => "<TEI>1</TEI>"}})
-        expect(Documents::Compile).to receive(:run!).with({ image_ocr_result: {"abcd2" => "<TEI>2</TEI>"}})
+        expect(Documents::Compile).to receive(:run!).with({ image_ocr_result: anything, image_id: "abcd1", document: document_processing})
+        expect(Documents::Compile).to receive(:run!).with({ image_ocr_result: anything, image_id: "abcd2", document: document_processing})
       end
 
       it "puts document in the ready state" do

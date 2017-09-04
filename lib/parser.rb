@@ -17,15 +17,4 @@ class Parser
       @certainty = options[:certainty]
     end
   end
-
-  class AreaAttr
-    attr_accessor :lrx, :lry, :ulx, :uly
-
-    def initialize(options)
-      @lrx = options[:lrx].to_i
-      @lry = options[:lry].to_i
-      @ulx = options[:ulx].to_i
-      @uly = options[:uly].to_i
-    end
-  end
 end
