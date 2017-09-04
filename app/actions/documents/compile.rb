@@ -20,9 +20,10 @@ module Documents
       image_ocr_result.elements.each do |element|
         case element.name
         when "surface"
-          @document.surfaces.create! area: element.area,
+          @_surface = @document.surfaces.create! area: element.area,
             image_id: @image_id, number: image.order
         when "zone"
+          @_surface.zones.create! area: element.area
         when "grapheme"
         else
           fail "Invalid OCR element name: #{element.name}"

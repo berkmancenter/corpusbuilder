@@ -5,9 +5,19 @@ describe Documents::Compile do
 
   let(:elements) do
     [
-      Parser::Element.new(name: "surface", area: Area.new(lrx: 100, lry: 0, ulx: 0, uly: 10)),
-      Parser::Element.new(name: "zone", area: Area.new(lrx: 100, lry: 0, ulx: 0, uly: 10)),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 10, lry: 0, ulx: 0, uly: 10), value: 'h')
+      Parser::Element.new(name: "surface", area: Area.new(lrx: 100, lry: 10, ulx: 0, uly: 0)),
+      Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 10, ulx: 0, uly: 0)),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 10, lry: 10, ulx: 0, uly: 0), value: 'h'),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 20, lry: 10, ulx: 10, uly: 0), value: 'e'),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 30, lry: 10, ulx: 20, uly: 0), value: 'l'),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 40, lry: 10, ulx: 30, uly: 0), value: 'l'),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 50, lry: 10, ulx: 40, uly: 0), value: 'o'),
+      Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 20, ulx: 0, uly: 10)),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 10, lry: 20, ulx: 0, uly: 10), value: 'w'),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 20, lry: 20, ulx: 10, uly: 10), value: 'o'),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 30, lry: 20, ulx: 20, uly: 10), value: 'r'),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 40, lry: 20, ulx: 30, uly: 10), value: 'l'),
+      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: 'd')
     ].lazy
   end
 
@@ -50,6 +60,12 @@ describe Documents::Compile do
     Surface.where(document_id: document.id)
   end
 
+  let(:zones) do
+    Zone.where(surface_id: surfaces.first.id).sort_by do |zone|
+      zone.area.lry
+    end
+  end
+
   let(:proper_call) do
     Documents::Compile.run proper_params
   end
@@ -79,7 +95,15 @@ describe Documents::Compile do
 
     expect(surfaces.count).to eq(1)
     expect(surfaces.first.number).to eq(image.order)
-    expect(surfaces.first.area).to eq(Area.new(lrx: 100, lry: 0, ulx: 0, uly: 10))
+    expect(surfaces.first.area).to eq(Area.new(lrx: 100, lry: 10, ulx: 0, uly: 0))
+  end
+
+  it "properly creates zones" do
+    proper_call
+
+    expect(zones.count).to eq(2)
+    expect(zones.first.area).to eq(Area.new(lrx: 60, lry: 10, ulx: 0, uly: 0))
+    expect(zones.last.area).to eq(Area.new(lrx: 60, lry: 20, ulx: 0, uly: 10))
   end
 end
 

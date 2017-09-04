@@ -107,9 +107,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.15" locus="value" target="#grapheme_10" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="770" lry="257" type="segment" ulx="924" uly="232" xml:id="seg_3" resp="#resp_2">
+                  <zone lrx="770" lry="257" type="segment" ulx="665" uly="232" xml:id="seg_3" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_3" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_11" ulx="924" uly="232" lrx="675" lry="257" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_11" ulx="665" uly="232" lrx="675" lry="257" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -155,9 +155,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.16" locus="value" target="#grapheme_17" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="667" lry="257" type="segment" ulx="770" uly="232" xml:id="seg_5" resp="#resp_2">
+                  <zone lrx="780" lry="257" type="segment" ulx="770" uly="232" xml:id="seg_5" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_5" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_18" ulx="770" uly="232" lrx="636" lry="257" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_18" ulx="770" uly="232" lrx="780" lry="257" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -179,9 +179,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.24" locus="value" target="#grapheme_20" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="625" lry="257" type="segment" ulx="667" uly="232" xml:id="seg_7" resp="#resp_2">
+                  <zone lrx="700" lry="257" type="segment" ulx="667" uly="232" xml:id="seg_7" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_7" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_21" ulx="667" uly="232" lrx="515" lry="257" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_21" ulx="667" uly="232" lrx="700" lry="257" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -209,9 +209,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.10" locus="value" target="#grapheme_24" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="506" lry="257" type="segment" ulx="625" uly="232" xml:id="seg_9" resp="#resp_2">
+                  <zone lrx="700" lry="257" type="segment" ulx="625" uly="232" xml:id="seg_9" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_9" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_25" ulx="625" uly="232" lrx="350" lry="257" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_25" ulx="625" uly="232" lrx="700" lry="257" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -333,9 +333,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.07" locus="value" target="#grapheme_42" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="826" lry="370" type="segment" ulx="950" uly="352" xml:id="seg_13" resp="#resp_2">
+                  <zone lrx="960" lry="370" type="segment" ulx="950" uly="352" xml:id="seg_13" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_13" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_43" ulx="950" uly="352" lrx="772" lry="370" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_43" ulx="950" uly="352" lrx="960" lry="370" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -375,9 +375,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.11" locus="value" target="#grapheme_48" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="742" lry="366" type="segment" ulx="826" uly="351" xml:id="seg_15" resp="#resp_2">
+                  <zone lrx="900" lry="366" type="segment" ulx="826" uly="351" xml:id="seg_15" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_15" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_49" ulx="826" uly="351" lrx="681" lry="366" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_49" ulx="826" uly="351" lrx="900" lry="366" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -411,9 +411,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.05" locus="value" target="#grapheme_53" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="675" lry="366" type="segment" ulx="742" uly="351" xml:id="seg_17" resp="#resp_2">
+                  <zone lrx="800" lry="366" type="segment" ulx="742" uly="351" xml:id="seg_17" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_17" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_54" ulx="742" uly="351" lrx="635" lry="366" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_54" ulx="742" uly="351" lrx="800" lry="366" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -441,9 +441,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.22" locus="value" target="#grapheme_57" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="606" lry="366" type="segment" ulx="675" uly="352" xml:id="seg_19" resp="#resp_2">
+                  <zone lrx="700" lry="366" type="segment" ulx="675" uly="352" xml:id="seg_19" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_19" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_58" ulx="675" uly="352" lrx="556" lry="366" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_58" ulx="675" uly="352" lrx="700" lry="366" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -477,9 +477,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.08" locus="value" target="#grapheme_62" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="550" lry="366" type="segment" ulx="606" uly="351" xml:id="seg_21" resp="#resp_2">
+                  <zone lrx="700" lry="366" type="segment" ulx="606" uly="351" xml:id="seg_21" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_21" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_63" ulx="606" uly="351" lrx="486" lry="366" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_63" ulx="606" uly="351" lrx="700" lry="366" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -525,9 +525,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.14" locus="value" target="#grapheme_69" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="458" lry="366" type="segment" ulx="550" uly="351" xml:id="seg_23" resp="#resp_2">
+                  <zone lrx="600" lry="366" type="segment" ulx="550" uly="351" xml:id="seg_23" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_23" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_70" ulx="550" uly="351" lrx="410" lry="366" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_70" ulx="550" uly="351" lrx="600" lry="366" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>
@@ -555,9 +555,9 @@ RSpec.describe TeiParser do
                       <certainty degree="0.06" locus="value" target="#grapheme_73" resp="#resp_2"/>
                     </zone>
                   </zone>
-                  <zone lrx="405" lry="370" type="segment" ulx="458" uly="352" xml:id="seg_25" resp="#resp_2">
+                  <zone lrx="500" lry="370" type="segment" ulx="458" uly="352" xml:id="seg_25" resp="#resp_2">
                     <certainty degree="1.00" locus="value" target="#seg_25" resp="#resp_2"/>
-                    <zone type="grapheme" xml:id="grapheme_74" ulx="458" uly="352" lrx="307" lry="370" resp="#resp_2">
+                    <zone type="grapheme" xml:id="grapheme_74" ulx="458" uly="352" lrx="500" lry="370" resp="#resp_2">
                       <seg>
                         <g> </g>
                       </seg>

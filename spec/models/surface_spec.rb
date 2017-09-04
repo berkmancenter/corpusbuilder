@@ -15,7 +15,11 @@ RSpec.describe Surface, type: :model do
     create :surface,
       document_id: document.id,
       image_id: image.id,
-      area: Area.new(lrx: 3, lry: 1, ulx: 1, uly: 4)
+      area: area
+  end
+
+  let(:area) do
+    Area.new(lrx: 3, lry: 4, ulx: 1, uly: 1)
   end
 
   it "properly serializes the area" do
@@ -23,6 +27,7 @@ RSpec.describe Surface, type: :model do
 
     area = surface.area
 
+    expect(surface.reload.area).to eq(area)
     expect(surface.reload.area.lrx).to eq(area.lrx)
     expect(surface.reload.area.lry).to eq(area.lry)
     expect(surface.reload.area.ulx).to eq(area.ulx)

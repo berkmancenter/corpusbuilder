@@ -8,6 +8,14 @@ class Area
     @lry = options[:lry].to_i
     @ulx = options[:ulx].to_i
     @uly = options[:uly].to_i
+
+    if @lry <= @uly
+      raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards (lry = #{@lry} and uly = #{@uly})"
+    end
+
+    if @lrx <= @ulx
+      raise ArgumentError, "Lower right corner should point at **higher** x value since X axis points to the right (lrx = #{@lrx} and ulx = #{@ulx})"
+    end
   end
 
   def <=>(other)
@@ -27,16 +35,23 @@ class Area
     def self.load(value)
       return nil if value.nil?
 
-      urx, ury, llx, lly = value.gsub(/(\(|\))/, '').split(',').map(&:to_i)
+      lrx, lry, ulx, uly = value.gsub(/(\(|\))/, '').split(',').map(&:to_i)
 
-      Area.new lrx: urx, lry: lly, ulx: llx, uly: ury
+      Area.new lrx: lrx, lry: lry, ulx: ulx, uly: uly
     end
 
     def self.dump(value)
       return nil if value.nil?
 
-      # in PG that is: (ur),(ll)
-      "((#{value.lrx},#{value.uly}),(#{value.ulx},#{value.lry}))"
+      if value.lry <= value.uly
+        raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards"
+      end
+
+      if value.lrx <= value.ulx
+        raise ArgumentError, "Lower right corner should point at **higher** x value since X axis points to the right"
+      end
+
+      "((#{value.lrx},#{value.lry}),(#{value.ulx},#{value.uly}))"
     end
   end
 end
