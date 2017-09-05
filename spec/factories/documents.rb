@@ -1,3 +1,5 @@
+require 'securerandom'
+
 FactoryGirl.define do
 
   sequence :document_title do |i|
@@ -7,6 +9,6 @@ FactoryGirl.define do
   factory :document do
     title { generate(:document_title) }
     status Document.statuses[:initial]
+    app_id SecureRandom.uuid
   end
-
 end

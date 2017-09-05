@@ -2,11 +2,7 @@ class V1::DocumentsAPI < Grape::API
   include V1Base
 
   resources :documents do
-    desc <<-doc
-     Starts up the process of the document creation.
-     The resulting document initially is in the "not ready"
-     state and awaits the data from the OCR pipeline.
-    doc
+    desc "Starts up the process of the document creation. The resulting document initially is in the \"not ready\" state and awaits the data from the OCR pipeline."
     params do
       requires :images, type: Array do
         requires :id, type: String
@@ -23,7 +19,16 @@ class V1::DocumentsAPI < Grape::API
       end
     end
     post do
-      action! Documents::Create
+      action! Documents::Create, app: @current_app
+    end
+
+    desc "Returns document status"
+    get ':id/status', requirements: { id: uuid_pattern } do
+      document = Document.only_status.find(params[:id])
+
+      with_authorized_document document do
+        present document, with: Document::Status
+      end
     end
   end
 end

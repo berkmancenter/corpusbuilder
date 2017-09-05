@@ -13,8 +13,16 @@ class Document < ApplicationRecord
     branches.where(name: 'master').first
   end
 
+  def self.only_status
+    select(:id, :status, :app_id)
+  end
+
   def parse!(tei_xml)
     # todo: implement me
     ready!
+  end
+
+  class Status < Grape::Entity
+    expose :status
   end
 end

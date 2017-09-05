@@ -25,6 +25,8 @@ RSpec.configure do |config|
     end
   end
 
+  config.before(:suite) { FactoryGirl.reload }
+
   config.include RSpec::Rails::RequestExampleGroup,
     type: :request,
     file_path: /spec\/api/

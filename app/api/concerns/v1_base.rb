@@ -6,13 +6,30 @@ module V1Base
     prefix :api
     version 'v1', using: :header, vendor: 'corpus-builder'
 
+    before do
+      @current_app = App.find headers['X-App-Id']
+      authorize!
+    end
+
     helpers do
       def status_fail
-        status 403
+        status 400
       end
 
-      def action! action
-        action = action.run params
+      def authorize!
+        # todo: implement the check against app's secret
+      end
+
+      def with_authorized_document(document, &block)
+        if document.app_id == @current_app.id
+          block.call
+        else
+          status 403
+        end
+      end
+
+      def action! action, additional_params
+        action = action.run params.merge(additional_params)
         if action.valid?
           action.result
         else
@@ -20,6 +37,12 @@ module V1Base
           action.errors
         end
       end
+    end
+  end
+
+  class_methods do
+    def uuid_pattern
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
     end
   end
 end

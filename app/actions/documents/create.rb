@@ -1,6 +1,12 @@
 module Documents
   class Create < Action::Base
-    attr_accessor :images, :metadata
+    attr_accessor :images, :metadata, :app
+
+    def validate
+      if @app.nil?
+        fail "Can't create document without pointing at an app that should own it"
+      end
+    end
 
     def execute
       document = Document.create! title: @metadata[:title],
@@ -11,7 +17,8 @@ module Documents
         license: @metadata[:license],
         notes: @metadata[:notes],
         publisher: @metadata[:publisher],
-        status: Document.statuses[:initial]
+        status: Document.statuses[:initial],
+        app_id: @app.id
 
       ProcessDocumentJob.
         set(wait: 5.seconds).
