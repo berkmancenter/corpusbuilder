@@ -2,19 +2,9 @@ module Documents
   class Compile < Action::Base
     attr_accessor :image_ocr_result, :document, :image_id
 
-    def validate
-      if @document.nil?
-        fail "Document required"
-      end
-
-      if @image_id.nil?
-        fail "Image id required"
-      end
-
-      if @image_ocr_result.nil?
-        fail "OCR results required"
-      end
-    end
+    validates_presence_of :document
+    validates_presence_of :image_id
+    validates_presence_of :image_ocr_result
 
     def execute
       image_ocr_result.elements.each do |element|

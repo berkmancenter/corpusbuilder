@@ -2,11 +2,9 @@ module Documents
   class Create < Action::Base
     attr_accessor :images, :metadata, :app
 
-    def validate
-      if @app.nil?
-        fail "Can't create document without pointing at an app that should own it"
-      end
-    end
+    validates_presence_of :app
+    validates_presence_of :images
+    validates_presence_of :metadata
 
     def execute
       document = Document.create! title: @metadata[:title],

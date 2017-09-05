@@ -2,6 +2,8 @@ module Action
 
   # A thin service object abstraction
   class Base
+    include ActiveModel::Validations
+
     def self.run!(params = {})
       action = run(params)
       if action.valid?
@@ -23,7 +25,6 @@ module Action
       end
 
       begin
-        instance.validate
         if instance.valid?
           instance.instance_variable_set "@_result", instance.execute
         end
@@ -38,14 +39,6 @@ module Action
       instance.methods.select { |m| m.to_s[/^[^!=]*=$/] }.present?
     end
 
-    def valid?
-      @_errors.empty?
-    end
-
-    def errors
-      @_errors
-    end
-
     def result
       @_result
     end
@@ -55,22 +48,14 @@ module Action
     end
 
     def add_error(exception)
-      @_errors << exception
+      errors.add :self, exception.message
     end
 
     def execute
       throw :unimplemented
     end
 
-    def validate
-      # no-op by default - to be overriden in child classes
-    end
-
     private
-
-    def initialize
-      @_errors = []
-    end
 
     class ActionError < StandardError
     end
