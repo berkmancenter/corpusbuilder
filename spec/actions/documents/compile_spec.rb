@@ -7,17 +7,17 @@ describe Documents::Compile do
     [
       Parser::Element.new(name: "surface", area: Area.new(lrx: 100, lry: 10, ulx: 0, uly: 0)),
       Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 10, ulx: 0, uly: 0)),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 10, lry: 10, ulx: 0, uly: 0), value: 'h'),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 20, lry: 10, ulx: 10, uly: 0), value: 'e'),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 30, lry: 10, ulx: 20, uly: 0), value: 'l'),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 40, lry: 10, ulx: 30, uly: 0), value: 'l'),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 50, lry: 10, ulx: 40, uly: 0), value: 'o'),
+      Parser::Element.new(name: "grapheme", certainty: 0.1, area: Area.new(lrx: 10, lry: 10, ulx: 0, uly: 0), value: 'h'),
+      Parser::Element.new(name: "grapheme", certainty: 0.2, area: Area.new(lrx: 20, lry: 10, ulx: 10, uly: 0), value: 'e'),
+      Parser::Element.new(name: "grapheme", certainty: 0.3, area: Area.new(lrx: 30, lry: 10, ulx: 20, uly: 0), value: 'l'),
+      Parser::Element.new(name: "grapheme", certainty: 0.4, area: Area.new(lrx: 40, lry: 10, ulx: 30, uly: 0), value: 'l'),
+      Parser::Element.new(name: "grapheme", certainty: 0.5, area: Area.new(lrx: 50, lry: 10, ulx: 40, uly: 0), value: 'o'),
       Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 20, ulx: 0, uly: 10)),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 10, lry: 20, ulx: 0, uly: 10), value: 'w'),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 20, lry: 20, ulx: 10, uly: 10), value: 'o'),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 30, lry: 20, ulx: 20, uly: 10), value: 'r'),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 40, lry: 20, ulx: 30, uly: 10), value: 'l'),
-      Parser::Element.new(name: "grapheme", area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: 'd')
+      Parser::Element.new(name: "grapheme", certainty: 0.6, area: Area.new(lrx: 10, lry: 20, ulx: 0, uly: 10), value: 'w'),
+      Parser::Element.new(name: "grapheme", certainty: 0.7, area: Area.new(lrx: 20, lry: 20, ulx: 10, uly: 10), value: 'o'),
+      Parser::Element.new(name: "grapheme", certainty: 0.8, area: Area.new(lrx: 30, lry: 20, ulx: 20, uly: 10), value: 'r'),
+      Parser::Element.new(name: "grapheme", certainty: 0.9, area: Area.new(lrx: 40, lry: 20, ulx: 30, uly: 10), value: 'l'),
+      Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: 'd')
     ].lazy
   end
 
@@ -66,6 +66,12 @@ describe Documents::Compile do
     end
   end
 
+  let(:graphemes) do
+    Grapheme.joins(:zone).where(zones: { surface_id: surfaces.first.id }).sort_by do |grapheme|
+      [ grapheme.area.lry, grapheme.area.lrx ]
+    end
+  end
+
   let(:proper_call) do
     Documents::Compile.run proper_params
   end
@@ -104,6 +110,18 @@ describe Documents::Compile do
     expect(zones.count).to eq(2)
     expect(zones.first.area).to eq(Area.new(lrx: 60, lry: 10, ulx: 0, uly: 0))
     expect(zones.last.area).to eq(Area.new(lrx: 60, lry: 20, ulx: 0, uly: 10))
+  end
+
+  it "properly creates graphemes" do
+    proper_call
+
+    expect(graphemes.count).to eq(10)
+    expect(graphemes[4].value).to eq('o')
+    expect(graphemes[4].certainty).to eq(0.5)
+    expect(graphemes[4].zone_id).to eq(zones.first.id)
+    expect(graphemes[9].value).to eq('d')
+    expect(graphemes[9].certainty).to eq(0.99)
+    expect(graphemes[9].zone_id).to eq(zones.last.id)
   end
 end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170901132912) do
+ActiveRecord::Schema.define(version: 20170905080141) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -70,6 +70,7 @@ ActiveRecord::Schema.define(version: 20170901132912) do
     t.string "value", limit: 1, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "certainty", precision: 5, scale: 4, default: "0.0"
   end
 
   create_table "graphemes_revisions", id: false, force: :cascade do |t|
@@ -123,11 +124,10 @@ ActiveRecord::Schema.define(version: 20170901132912) do
   end
 
   create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "document_id"
-    t.box "area"
+    t.uuid "surface_id", null: false
+    t.box "area", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "surface_id", null: false
   end
 
 end

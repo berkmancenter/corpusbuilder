@@ -23,8 +23,10 @@ module Documents
           @_surface = @document.surfaces.create! area: element.area,
             image_id: @image_id, number: image.order
         when "zone"
-          @_surface.zones.create! area: element.area
+          @_zone = @_surface.zones.create! area: element.area
         when "grapheme"
+          @_zone.graphemes.create! area: element.area,
+            value: element.value, certainty: element.certainty
         else
           fail "Invalid OCR element name: #{element.name}"
         end
