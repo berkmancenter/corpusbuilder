@@ -265,19 +265,12 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         expect(pipeline.data["images"][1]["/api/v1/pages/#{batch_id}/file_2.png"]).to eq(image_2.id)
       end
 
-      it "sends metadata along with the images to /api/v1/batch/:batch_id/pages?auxiliary=1" do
+      # changing the following to **not** sending if that's not needed
+      # since we already have all metadata
+      it "doesn't send metadata along with the images to /api/v1/batch/:batch_id/pages?auxiliary=1" do
         pipeline.start
 
-        expect(send_metadata_request).to have_been_requested.once
-      end
-
-      it "turns document and pipeline into error state if the metadata send is not successful" do
-        send_bad_metadata_request
-
-        pipeline.start
-
-        expect(pipeline.reload.status).to eq("error")
-        expect(pipeline.document.reload.status).to eq("error")
+        expect(send_metadata_request).not_to have_been_requested.once
       end
 
       it "turns document and pipeline into error state if the image send is not successful" do
@@ -304,7 +297,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         expect(create_nlbin_request).to have_been_requested.once
         expect(create_tesseract_segmentation_request).to have_been_requested.once
         expect(create_kraken_ocr_request).to have_been_requested.once
-        expect(create_output_metadata_request).to have_been_requested.once
+        expect(create_output_metadata_request).not_to have_been_requested.once
       end
     end
   end

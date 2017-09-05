@@ -18,7 +18,7 @@ class Pipeline::Nidaba < Pipeline
   def start
     assert_status :initial
 
-    if create_batch && send_images && send_metadata && create_tasks
+    if create_batch && send_images && create_tasks
       processing!
     else
       error!
@@ -105,6 +105,8 @@ class Pipeline::Nidaba < Pipeline
   end
 
   def tasks
+    # improve: incorporate other ocr backends
+    # for different languages
     [
       task(:img, :any_to_png),
       task(:binarize, :nlbin, {
@@ -118,8 +120,7 @@ class Pipeline::Nidaba < Pipeline
         zoom: 0.5
       }),
       task(:segmentation, :tesseract),
-      task(:ocr, :kraken),
-      task(:output, :metadata)
+      task(:ocr, :kraken)
     ]
   end
 
