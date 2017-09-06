@@ -5,6 +5,10 @@ class App < ApplicationRecord
 
   validates :name, presence: true
 
+  def encrypted_secret
+    BCrypt::Password.create secret
+  end
+
   private
 
   def generate_secret

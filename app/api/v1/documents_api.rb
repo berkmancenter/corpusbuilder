@@ -19,11 +19,15 @@ class V1::DocumentsAPI < Grape::API
       end
     end
     post do
+      authorize!
+
       action! Documents::Create, app: @current_app
     end
 
     desc "Returns document status"
     get ':id/status', requirements: { id: uuid_pattern } do
+      authorize!
+
       document = Document.only_status.find(params[:id])
 
       with_authorized_document document do

@@ -2,10 +2,13 @@ require 'rails_helper'
 require 'airborne'
 
 describe V1::DocumentsAPI, type: :request do
+  include AuthenticationSpecHelper
+
   let(:headers) do
     {
       "Accept" => "application/vnd.corpus-builder-v1+json",
-      "X-App-Id" => client_app.id
+      "X-App-Id" => client_app.id,
+      "X-Token" => client_app.encrypted_secret
     }
   end
 
@@ -14,13 +17,33 @@ describe V1::DocumentsAPI, type: :request do
   end
 
   context "POST /api/documents" do
+    it_behaves_like "application authenticated route"
+
+    let(:no_app_request) do
+      post url, params: data_minimal_correct, headers: headers.without('X-App-Id')
+    end
+
+    let(:no_token_request) do
+      post url, params: data_minimal_correct, headers: headers.without('X-Token')
+    end
+
+    let(:invalid_token_request) do
+      post url, params: data_minimal_correct, headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+    end
+
+    let(:valid_request) do
+      post url, params: data_minimal_correct, headers: headers
+    end
+
     let(:url) { "/api/documents" }
+
     let(:data_empty_metadata) do
       {
         images: [ { id: 1 }, { id: 2 } ],
         metadata: { }
       }
     end
+
     let(:data_minimal_correct) do
       {
         images: [ { id: 1 }, { id: 2 } ],
@@ -57,6 +80,24 @@ describe V1::DocumentsAPI, type: :request do
   end
 
   context "GET /api/documents/:id/status" do
+    it_behaves_like "application authenticated route"
+
+    let(:no_app_request) do
+      get url(initial_document.id), headers: headers.without('X-App-Id')
+    end
+
+    let(:no_token_request) do
+      get url(initial_document.id), headers: headers.without('X-Token')
+    end
+
+    let(:invalid_token_request) do
+      get url(initial_document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+    end
+
+    let(:valid_request) do
+      get url(initial_document.id), headers: headers
+    end
+
     def url(id)
       "/api/documents/#{id}/status"
     end
@@ -71,7 +112,7 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:app2_headers) do
-      headers.merge('X-App-Id' => client_app2.id)
+      headers.merge('X-App-Id' => client_app2.id, 'X-Token' => client_app2.encrypted_secret)
     end
 
     let(:wrong_app_request) do

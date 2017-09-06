@@ -6,18 +6,28 @@ module V1Base
     prefix :api
     version 'v1', using: :header, vendor: 'corpus-builder'
 
-    before do
-      @current_app = App.find headers['X-App-Id']
-      authorize!
-    end
-
     helpers do
       def status_fail
         status 400
       end
 
       def authorize!
-        # todo: implement the check against app's secret
+        app_id = headers['X-App-Id']
+        if app_id.present?
+          @current_app = App.where(id: app_id).first
+
+          token = headers['X-Token']
+          if token.present?
+            if BCrypt::Password.new(token) == @current_app.secret
+            else
+              error!('Invalid X-Token header', 403)
+            end
+          else
+            error!('Missing X-Token header', 403)
+          end
+        else
+          error!('Missing X-App-ID header', 403)
+        end
       end
 
       def with_authorized_document(document, &block)
