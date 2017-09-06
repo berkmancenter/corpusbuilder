@@ -38,14 +38,6 @@ module V1Base
         end
       end
 
-      def with_authorized_document(document, &block)
-        if document.app_id == @current_app.id
-          block.call
-        else
-          status 403
-        end
-      end
-
       def action! action, additional_params = {}
         action = action.run params.merge(additional_params)
         if action.valid?

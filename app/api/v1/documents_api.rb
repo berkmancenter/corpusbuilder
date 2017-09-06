@@ -2,7 +2,10 @@ class V1::DocumentsAPI < Grape::API
   include V1Base
 
   resources :documents do
-    desc "Starts up the process of the document creation. The resulting document initially is in the \"not ready\" state and awaits the data from the OCR pipeline."
+    desc %Q{Starts up the process of the document creation.
+            The resulting document initially is in the
+            \"not ready\" state and awaits the data from the
+            OCR pipeline}
     params do
       requires :images, type: Array do
         requires :id, type: String
@@ -24,15 +27,33 @@ class V1::DocumentsAPI < Grape::API
       action! Documents::Create, app: @current_app
     end
 
-    desc "Returns document status"
-    get ':id/status', requirements: { id: uuid_pattern } do
-      authorize!
+    namespace ':id', requirements: { id: uuid_pattern } do
+      before do
+        authorize!
 
-      document = Document.only_status.find(params[:id])
+        @document = Document.find(params[:id])
 
-      with_authorized_document document do
-        present document, with: Document::Status
+        if @current_app.id != @document.app_id
+          error!('You don\'t own the document', 403)
+        end
+      end
+
+      desc "Returns document status"
+      get 'status' do
+        present @document, with: Document::Status
+      end
+
+      desc %Q{Returns surfaces, zones and graphemes in a tree format.
+             The returning tree can be cut to specific surfaces, zones and/or areas.
+             It also allows to specify for which version of the document
+             the data should come from. The version can be either a branch name
+             or a revision id (uuid).}
+      get ':revision/tree' do
+        if @document.branches.where(name: params[:revision]).empty?
+          error!('Revision doesn\'t exist', 422)
+        end
       end
     end
+
   end
 end

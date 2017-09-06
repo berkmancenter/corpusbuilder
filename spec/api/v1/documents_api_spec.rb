@@ -164,12 +164,54 @@ describe V1::DocumentsAPI, type: :request do
     end
   end
 
-  context "GET /api/documents/:id/:version/tree" do
-    # This route is meant to return surfaces, zones and graphemes in a tree
-    # format. The returning tree can be cut to specific surfaces, zones and/or
-    # areas. It also allows to specify for which version of the document the data
-    # should come from. The version can be either a branch name, or a revision
-    # id (uuid).
+  context "GET /api/documents/:id/:revision/tree" do
+    it_behaves_like "application authenticated route"
 
+    let(:no_app_request) do
+      get url(document.id), headers: headers.without('X-App-Id')
+    end
+
+    let(:no_token_request) do
+      get url(document.id), headers: headers.without('X-Token')
+    end
+
+    let(:invalid_token_request) do
+      get url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+    end
+
+    let(:valid_request) do
+      get url(document.id), headers: headers
+    end
+
+    let(:document) do
+      create :document, status: Document.statuses[:ready], app_id: client_app.id
+    end
+
+    let(:head_revision) do
+      create :revision, document_id: document.id
+    end
+
+    let(:master_branch) do
+      create :branch, name: 'master', revision_id: head_revision.id
+    end
+
+    def url(id, revision = nil)
+      revision ||= master_branch.name
+
+      "/api/documents/#{id}/#{revision}/tree"
+    end
+
+    context "when revision doesn't exist" do
+      let(:bad_branch_request) do
+        get url(document.id, 'idontexist'), headers: headers
+      end
+
+      it "returns status 422 with proper message" do
+        bad_branch_request
+
+        expect(response.status).to eq(422)
+        expect(JSON.parse(response.body)).to eq({ 'error' => 'Revision doesn\'t exist' })
+      end
+    end
   end
 end
