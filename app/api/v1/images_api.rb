@@ -8,7 +8,9 @@ class V1::ImagesAPI < Grape::API
       optional :name, type: String
     end
     post do
-      action! Images::Create
+      authorize!
+
+      present action!(Images::Create), with: Image::Short
     end
   end
 

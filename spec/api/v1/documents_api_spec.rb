@@ -163,4 +163,13 @@ describe V1::DocumentsAPI, type: :request do
       expect(wrong_app_request.status).to eq(403)
     end
   end
+
+  context "GET /api/documents/:id/:version/tree" do
+    # This route is meant to return surfaces, zones and graphemes in a tree
+    # format. The returning tree can be cut to specific surfaces, zones and/or
+    # areas. It also allows to specify for which version of the document the data
+    # should come from. The version can be either a branch name, or a revision
+    # id (uuid).
+
+  end
 end

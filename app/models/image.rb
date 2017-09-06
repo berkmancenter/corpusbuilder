@@ -4,4 +4,9 @@ class Image < ApplicationRecord
   belongs_to :document, required: false
 
   validates :image_scan, presence: true
+
+  class Short < Grape::Entity
+    expose :id
+    expose :name
+  end
 end

@@ -6,6 +6,14 @@ module V1Base
     prefix :api
     version 'v1', using: :header, vendor: 'corpus-builder'
 
+    rescue_from Grape::Exceptions::ValidationErrors do |e|
+      error!(e, 400)
+    end
+
+    rescue_from :all do
+      error!("Oops! Something went wrong", 500)
+    end
+
     helpers do
       def status_fail
         status 400
@@ -38,7 +46,7 @@ module V1Base
         end
       end
 
-      def action! action, additional_params
+      def action! action, additional_params = {}
         action = action.run params.merge(additional_params)
         if action.valid?
           action.result
@@ -46,6 +54,9 @@ module V1Base
           status_fail
           action.errors
         end
+      rescue Exception => e
+        Rails.logger.error "Error inside action: #{e.message}\nBacktrace:\n#{e.backtrace.join('\n')}"
+        error!('Oops! Something went wrong', 500)
       end
     end
   end
