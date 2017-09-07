@@ -1,6 +1,8 @@
 module V1Base
   extend ActiveSupport::Concern
 
+  UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+
   included do
     format :json
     prefix :api
@@ -10,13 +12,18 @@ module V1Base
       error!(e, 400)
     end
 
-    rescue_from :all do
+    rescue_from :all do |e|
+      Rails.logger.error "Error inside action: #{e.message}\nBacktrace:\n#{e.backtrace.join('\n')}"
       error!("Oops! Something went wrong", 500)
     end
 
     helpers do
       def status_fail
         status 400
+      end
+
+      def uuid_pattern
+        UUID_PATTERN
       end
 
       def authorize!
@@ -55,7 +62,7 @@ module V1Base
 
   class_methods do
     def uuid_pattern
-      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+      UUID_PATTERN
     end
   end
 end

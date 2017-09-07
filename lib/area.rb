@@ -31,6 +31,13 @@ class Area
     "<area lrx=#{@lrx} lry=#{@lry} ulx=#{@ulx} uly=#{@uly} />"
   end
 
+  class Tree < Grape::Entity
+    expose :lrx
+    expose :lry
+    expose :ulx
+    expose :uly
+  end
+
   class Serializer
     def self.load(value)
       return nil if value.nil?

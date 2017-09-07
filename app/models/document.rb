@@ -25,4 +25,9 @@ class Document < ApplicationRecord
   class Status < Grape::Entity
     expose :status
   end
+
+  class Tree < Grape::Entity
+    expose :id
+    expose :surfaces, with: Surface::Tree
+  end
 end

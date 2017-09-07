@@ -49,9 +49,17 @@ class V1::DocumentsAPI < Grape::API
              the data should come from. The version can be either a branch name
              or a revision id (uuid).}
       get ':revision/tree' do
-        if @document.branches.where(name: params[:revision]).empty?
-          error!('Revision doesn\'t exist', 422)
+        if uuid_pattern.match?(params[:revision])
+          if @document.revisions.where(id: params[:revision]).empty?
+            error!('Revision doesn\'t exist', 422)
+          end
+        else
+          if @document.branches.where(name: params[:revision]).empty?
+            error!('Branch doesn\'t exist', 422)
+          end
         end
+
+        present @document, with: Document::Tree
       end
     end
 

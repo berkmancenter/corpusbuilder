@@ -37,6 +37,14 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:url) { "/api/documents" }
 
+    let(:head_revision) do
+      create :revision, document_id: document.id
+    end
+
+    let(:master_branch) do
+      create :branch, revision_id: head_revision.id
+    end
+
     let(:data_empty_metadata) do
       {
         images: [ { id: 1 }, { id: 2 } ],
@@ -180,11 +188,49 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:valid_request) do
+      surfaces
+
       get url(document.id), headers: headers
+    end
+
+    let(:valid_request_result) do
+      valid_request
+
+      JSON.parse(response.body)
     end
 
     let(:document) do
       create :document, status: Document.statuses[:ready], app_id: client_app.id
+    end
+
+    let(:standard_area) do
+      Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20)
+    end
+
+    let(:image1) do
+      create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+        name: "file_1.png",
+        order: 1
+    end
+
+    let(:image2) do
+      create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+        name: "file_2.png",
+        order: 2
+    end
+
+    let(:image3) do
+      create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+        name: "file_3.png",
+        order: 3
+    end
+
+    let(:surfaces) do
+      [
+        create(:surface, document_id: document.id, area: standard_area, number: 1, image_id: image1.id),
+        create(:surface, document_id: document.id, area: standard_area, number: 2, image_id: image2.id),
+        create(:surface, document_id: document.id, area: standard_area, number: 3, image_id: image3.id)
+      ]
     end
 
     let(:head_revision) do
@@ -206,11 +252,82 @@ describe V1::DocumentsAPI, type: :request do
         get url(document.id, 'idontexist'), headers: headers
       end
 
-      it "returns status 422 with proper message" do
+      let(:bad_revision_request) do
+        get url(document.id, document.id), headers: headers
+      end
+
+      it "returns status 422 with proper message when given bad branch name" do
         bad_branch_request
 
         expect(response.status).to eq(422)
+        expect(JSON.parse(response.body)).to eq({ 'error' => 'Branch doesn\'t exist' })
+      end
+
+      it "returns status 422 with proper message when given bad revision id" do
+        bad_revision_request
+
+        expect(response.status).to eq(422)
         expect(JSON.parse(response.body)).to eq({ 'error' => 'Revision doesn\'t exist' })
+      end
+    end
+
+    context "when given existing branch name" do
+      let(:good_branch_request) do
+        get url(document.id, master_branch.name), headers: headers
+      end
+
+      it "responds with HTTP 200" do
+        good_branch_request
+
+        expect(response.status).to eq(200)
+      end
+    end
+
+    context "when given existing revision id" do
+      let(:good_revision_request) do
+        get url(document.id, head_revision.id), headers: headers
+      end
+
+      it "responds with HTTP 200" do
+        good_revision_request
+
+        expect(response.status).to eq(200)
+      end
+    end
+
+    context "when no surface or area is given" do
+      it "contains the id of the document" do
+        expect(valid_request_result).to have_key("id")
+        expect(valid_request_result["id"]).to eq(document.id)
+      end
+
+      it "returns all surfaces" do
+        expect(valid_request_result).to have_key("surfaces")
+        expect(valid_request_result["surfaces"].count).to eq(surfaces.count)
+      end
+
+      it "returns proper surfaces with their numbers" do
+        expect(valid_request_result["surfaces"].map { |s| s["number"] }).to eq(surfaces.map(&:number))
+      end
+
+      it "returns proper surfaces with their areas" do
+        expect(valid_request_result["surfaces"].first).to have_key("area")
+        expect(valid_request_result["surfaces"].first["area"]).to have_key("ulx")
+        expect(valid_request_result["surfaces"].first["area"]).to have_key("uly")
+        expect(valid_request_result["surfaces"].first["area"]).to have_key("lrx")
+        expect(valid_request_result["surfaces"].first["area"]).to have_key("lry")
+        expect(valid_request_result["surfaces"].first["area"]["ulx"]).to eq(0)
+        expect(valid_request_result["surfaces"].first["area"]["uly"]).to eq(0)
+        expect(valid_request_result["surfaces"].first["area"]["lrx"]).to eq(100)
+        expect(valid_request_result["surfaces"].first["area"]["lry"]).to eq(20)
+      end
+
+      it "returns proper surfaces with their graphemes" do
+        expect(valid_request_result["surfaces"].first).to have_key("graphemes")
+      end
+
+      it "returns surfaces with only number, area and graphemes" do
+        expect(valid_request_result["surfaces"].first.keys.sort).to eq(["area", "graphemes", "number"])
       end
     end
   end
