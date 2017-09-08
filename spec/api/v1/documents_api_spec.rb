@@ -226,6 +226,21 @@ describe V1::DocumentsAPI, type: :request do
       get url(document.id, 'master'), headers: headers, params: _params
     end
 
+    let(:area_no_surface_request) do
+      master_branch
+
+      _params = {
+        area: {
+          ulx: 20,
+          uly: 0,
+          lrx: 60,
+          lry: 20
+        }
+      }
+
+      get url(document.id, 'master'), headers: headers, params: _params
+    end
+
     let(:valid_request_result) do
       valid_request
 
@@ -440,6 +455,15 @@ describe V1::DocumentsAPI, type: :request do
     context "when a surface and an area is given" do
       it "returns only the graphemes attached to a given surface and within a given area" do
         expect(surface_snippet_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("or")
+      end
+    end
+
+    context "when an area is given but no surface" do
+      it "returns 422 with the proper error message" do
+        area_no_surface_request
+
+        expect(response.status).to eq(422)
+        expect(JSON.parse(response.body)).to eq({ "error" => "Cannot specify an area without a surface number" })
       end
     end
   end

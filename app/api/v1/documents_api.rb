@@ -50,11 +50,13 @@ class V1::DocumentsAPI < Grape::API
              or a revision id (uuid).}
       params do
         optional :surface_number, type: Integer
-        optional :area, type: Hash do
-          requires :ulx, type: Integer
-          requires :uly, type: Integer
-          requires :lrx, type: Integer
-          requires :lry, type: Integer
+        given :surface_number do
+          optional :area, type: Hash do
+            requires :ulx, type: Integer
+            requires :uly, type: Integer
+            requires :lrx, type: Integer
+            requires :lry, type: Integer
+          end
         end
       end
       get ':revision/tree' do
@@ -76,6 +78,10 @@ class V1::DocumentsAPI < Grape::API
 
         if params.key? :surface_number
           data_options[:surface_number] = params[:surface_number]
+        else
+          if params.key? :area
+            error!("Cannot specify an area without a surface number", 422)
+          end
         end
 
         if params.key? :area
