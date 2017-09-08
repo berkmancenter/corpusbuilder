@@ -28,6 +28,8 @@ class Document < ApplicationRecord
 
   class Tree < Grape::Entity
     expose :id
-    expose :surfaces, with: Surface::Tree
+    expose :surfaces do |document, options|
+      Surface::Tree.represent document.surfaces, options
+    end
   end
 end

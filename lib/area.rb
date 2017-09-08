@@ -28,7 +28,8 @@ class Area
   end
 
   def to_s
-    "<area lrx=#{@lrx} lry=#{@lry} ulx=#{@ulx} uly=#{@uly} />"
+    Serializer.dump(self)
+    #"<area lrx=#{@lrx} lry=#{@lry} ulx=#{@ulx} uly=#{@uly} />"
   end
 
   class Tree < Grape::Entity

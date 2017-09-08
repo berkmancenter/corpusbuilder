@@ -188,7 +188,10 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:valid_request) do
+      master_branch
+      development_branch
       surfaces
+      graphemes
 
       get url(document.id), headers: headers
     end
@@ -233,12 +236,46 @@ describe V1::DocumentsAPI, type: :request do
       ]
     end
 
+    let(:graphemes) do
+      master_graphemes + development_graphemes
+    end
+
+    let(:first_line) do
+      create :zone, surface_id: surfaces.first.id, area: Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20)
+    end
+
+    let(:master_graphemes) do
+      [
+        head_revision.graphemes << create(:grapheme, value: 'o', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20)),
+        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20)),
+        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20)),
+        head_revision.graphemes << create(:grapheme, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20)),
+        head_revision.graphemes << create(:grapheme, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20))
+      ]
+    end
+
+    let(:development_graphemes) do
+      [
+        second_revision.graphemes << create(:grapheme, value: 'ó', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20)),
+        second_revision.graphemes << create(:grapheme, value: 'ł', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20)),
+        second_revision.graphemes << Grapheme.where("area <@ ?", Area.new(ulx: 0, uly: 0, lrx: 60, lry: 20).to_s)
+      ]
+    end
+
     let(:head_revision) do
       create :revision, document_id: document.id
     end
 
+    let(:second_revision) do
+      create :revision, document_id: document.id, parent_id: head_revision.id
+    end
+
     let(:master_branch) do
       create :branch, name: 'master', revision_id: head_revision.id
+    end
+
+    let(:development_branch) do
+      create :branch, name: 'development', revision_id: second_revision.id
     end
 
     def url(id, revision = nil)
@@ -324,6 +361,7 @@ describe V1::DocumentsAPI, type: :request do
 
       it "returns proper surfaces with their graphemes" do
         expect(valid_request_result["surfaces"].first).to have_key("graphemes")
+        expect(valid_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("hello")
       end
 
       it "returns surfaces with only number, area and graphemes" do

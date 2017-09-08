@@ -53,13 +53,17 @@ class V1::DocumentsAPI < Grape::API
           if @document.revisions.where(id: params[:revision]).empty?
             error!('Revision doesn\'t exist', 422)
           end
+
+          options[:revision_id] = params[:revision]
         else
           if @document.branches.where(name: params[:revision]).empty?
             error!('Branch doesn\'t exist', 422)
           end
+
+          options[:branch_name] = params[:revision]
         end
 
-        present @document, with: Document::Tree
+        present @document, { with: Document::Tree }.merge(options)
       end
     end
 

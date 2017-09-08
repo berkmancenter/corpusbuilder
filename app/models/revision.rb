@@ -1,5 +1,5 @@
 class Revision < ApplicationRecord
-  belongs_to :parent, class_name: Revision, required: false
+  belongs_to :parent, class_name: 'Revision', required: false
   belongs_to :document
 
   has_many :branches
