@@ -467,4 +467,33 @@ describe V1::DocumentsAPI, type: :request do
       end
     end
   end
+
+  context "GET /api/documents/:id/branches" do
+    it_behaves_like "application authenticated route"
+
+    let(:no_app_request) do
+      get url(document.id), headers: headers.without('X-App-Id')
+    end
+
+    let(:no_token_request) do
+      get url(document.id), headers: headers.without('X-Token')
+    end
+
+    let(:invalid_token_request) do
+      get url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+    end
+
+    let(:valid_request) do
+      get url(document.id), headers: headers
+    end
+
+    def url(id)
+      "/api/documents/#{id}/branches"
+    end
+
+    let(:document) do
+      create :document, status: Document.statuses[:ready], app_id: client_app.id
+    end
+
+  end
 end

@@ -93,6 +93,11 @@ class V1::DocumentsAPI < Grape::API
 
         present @document, { with: Document::Tree }.merge(data_options)
       end
+
+      desc 'Lists branches for the document'
+      get 'branches' do
+
+      end
     end
 
   end
