@@ -29,7 +29,12 @@ class Document < ApplicationRecord
   class Tree < Grape::Entity
     expose :id
     expose :surfaces do |document, options|
-      Surface::Tree.represent document.surfaces, options
+      _surfaces = if options.key? :surface_number
+        document.surfaces.where(number: options[:surface_number])
+      else
+        document.surfaces
+      end
+      Surface::Tree.represent _surfaces, options
     end
   end
 end

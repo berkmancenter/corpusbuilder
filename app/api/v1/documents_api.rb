@@ -48,22 +48,44 @@ class V1::DocumentsAPI < Grape::API
              It also allows to specify for which version of the document
              the data should come from. The version can be either a branch name
              or a revision id (uuid).}
+      params do
+        optional :surface_number, type: Integer
+        optional :area, type: Hash do
+          requires :ulx, type: Integer
+          requires :uly, type: Integer
+          requires :lrx, type: Integer
+          requires :lry, type: Integer
+        end
+      end
       get ':revision/tree' do
+        data_options = {}
+
         if uuid_pattern.match?(params[:revision])
           if @document.revisions.where(id: params[:revision]).empty?
             error!('Revision doesn\'t exist', 422)
           end
 
-          options[:revision_id] = params[:revision]
+          data_options[:revision_id] = params[:revision]
         else
           if @document.branches.where(name: params[:revision]).empty?
             error!('Branch doesn\'t exist', 422)
           end
 
-          options[:branch_name] = params[:revision]
+          data_options[:branch_name] = params[:revision]
         end
 
-        present @document, { with: Document::Tree }.merge(options)
+        if params.key? :surface_number
+          data_options[:surface_number] = params[:surface_number]
+        end
+
+        if params.key? :area
+          data_options[:area] = Area.new ulx: params[:area][:ulx],
+            uly: params[:area][:uly],
+            lrx: params[:area][:lrx],
+            lry: params[:area][:lry]
+        end
+
+        present @document, { with: Document::Tree }.merge(data_options)
       end
     end
 

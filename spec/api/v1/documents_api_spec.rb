@@ -196,8 +196,50 @@ describe V1::DocumentsAPI, type: :request do
       get url(document.id), headers: headers
     end
 
+    let(:only_surface_request) do
+      master_branch
+      development_branch
+      surfaces
+      graphemes
+      surface_2_graphemes
+
+      get url(document.id, 'master'), headers: headers, params: { surface_number: 2 }
+    end
+
+    let(:surface_snippet_request) do
+      master_branch
+      development_branch
+      surfaces
+      graphemes
+      surface_2_graphemes
+
+      _params = {
+        surface_number: 2,
+        area: {
+          ulx: 20,
+          uly: 0,
+          lrx: 60,
+          lry: 20
+        }
+      }
+
+      get url(document.id, 'master'), headers: headers, params: _params
+    end
+
     let(:valid_request_result) do
       valid_request
+
+      JSON.parse(response.body)
+    end
+
+    let(:only_surface_request_result) do
+      only_surface_request
+
+      JSON.parse(response.body)
+    end
+
+    let(:surface_snippet_request_result) do
+      surface_snippet_request
 
       JSON.parse(response.body)
     end
@@ -242,6 +284,20 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:first_line) do
       create :zone, surface_id: surfaces.first.id, area: Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20)
+    end
+
+    let(:surface_2_line) do
+      create :zone, surface_id: surfaces.take(2).last.id, area: Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20)
+    end
+
+    let(:surface_2_graphemes) do
+      [
+        head_revision.graphemes << create(:grapheme, value: 'd', zone_id: surface_2_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
+        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: surface_2_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
+        head_revision.graphemes << create(:grapheme, value: 'r', zone_id: surface_2_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
+        head_revision.graphemes << create(:grapheme, value: 'o', zone_id: surface_2_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
+        head_revision.graphemes << create(:grapheme, value: 'w', zone_id: surface_2_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
+      ]
     end
 
     let(:master_graphemes) do
@@ -359,14 +415,31 @@ describe V1::DocumentsAPI, type: :request do
         expect(valid_request_result["surfaces"].first["area"]["lry"]).to eq(20)
       end
 
-      it "returns proper surfaces with their graphemes" do
+      it "returns proper surfaces with their graphemes", :focus => true do
         expect(valid_request_result["surfaces"].first).to have_key("graphemes")
+        expect(valid_request_result["surfaces"].first["graphemes"].count).to eq(5)
         expect(valid_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("hello")
         expect(valid_request_result["surfaces"].first["graphemes"].map { |g| g["certainty"] }).to eq(["0.1", "0.2", "0.3", "0.4", "0.5"])
       end
 
       it "returns surfaces with only number, area and graphemes" do
         expect(valid_request_result["surfaces"].first.keys.sort).to eq(["area", "graphemes", "number"])
+      end
+    end
+
+    context "when only a surface is given" do
+      it "returns only the data for the surface in question" do
+        expect(only_surface_request_result["surfaces"].count).to eq(1)
+      end
+
+      it "returns only the graphemes attached to a given surface" do
+        expect(only_surface_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("world")
+      end
+    end
+
+    context "when a surface and an area is given" do
+      it "returns only the graphemes attached to a given surface and within a given area" do
+        expect(surface_snippet_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("or")
       end
     end
   end

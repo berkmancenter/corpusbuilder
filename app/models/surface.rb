@@ -20,6 +20,11 @@ class Surface < ApplicationRecord
       else
         surface.graphemes
       end
+
+      if options.key? :area
+        _graphemes = _graphemes.where("graphemes.area <@ ?", options[:area].to_s)
+      end
+
       Grapheme::Tree.represent _graphemes, options
     end
   end
