@@ -342,11 +342,15 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:master_branch) do
-      create :branch, name: 'master', revision_id: head_revision.id
+      create :branch, name: 'master', revision_id: head_revision.id, editor_id: editor.id
     end
 
     let(:development_branch) do
-      create :branch, name: 'development', revision_id: second_revision.id
+      create :branch, name: 'development', revision_id: second_revision.id, editor_id: editor.id
+    end
+
+    let(:editor) do
+      create :editor
     end
 
     def url(id, revision = nil)
@@ -487,6 +491,46 @@ describe V1::DocumentsAPI, type: :request do
       get url(document.id), headers: headers
     end
 
+    let(:valid_with_data_request) do
+      master_branch && development_branch && topic1_branch
+
+      valid_request
+    end
+
+    let(:with_data_response) do
+      valid_with_data_request
+
+      JSON.parse(response.body)
+    end
+
+    let(:editor1) do
+      create :editor, email: "editor1@university.com"
+    end
+
+    let(:editor2) do
+      create :editor, email: "editor2@university.com"
+    end
+
+    let(:editor3) do
+      create :editor, email: "editor3@university.com"
+    end
+
+    let(:master_branch) do
+      branch(:master, editor1)
+    end
+
+    let(:development_branch) do
+      branch(:development, editor2)
+    end
+
+    let(:topic1_branch) do
+      branch(:topic1, editor3)
+    end
+
+    def branch(name, editor)
+      create :branch, name: name, editor_id: editor.id, revision_id: create(:revision, document_id: document.id).id
+    end
+
     def url(id)
       "/api/documents/#{id}/branches"
     end
@@ -495,5 +539,13 @@ describe V1::DocumentsAPI, type: :request do
       create :document, status: Document.statuses[:ready], app_id: client_app.id
     end
 
+    it "lists all branches with their name, revision_id and editor id who is an owner" do
+      expect(with_data_response).to have_key("branches")
+      expect(with_data_response["branches"].map { |b| b["name"] }).to eq([master_branch.name, development_branch.name, topic1_branch.name])
+      expect(with_data_response["branches"].map { |b| b["editor"]["email"] }).to eq([editor1.email, editor2.email, editor3.email])
+      expect(with_data_response["branches"].map { |b| b["editor"]["id"] }).to eq([editor1.id, editor2.id, editor3.id])
+      expect(with_data_response["branches"].first["revision_id"]).to be_present
+      expect(with_data_response["branches"].map { |b| b["revision_id"] }.sort).to eq(Revision.all.map(&:id).sort)
+    end
   end
 end

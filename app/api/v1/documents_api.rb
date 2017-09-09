@@ -96,7 +96,7 @@ class V1::DocumentsAPI < Grape::API
 
       desc 'Lists branches for the document'
       get 'branches' do
-
+        present @document.branches, with: Branch::Simple
       end
     end
 
