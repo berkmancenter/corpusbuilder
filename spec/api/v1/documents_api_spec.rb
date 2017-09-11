@@ -89,6 +89,7 @@ describe V1::DocumentsAPI, type: :request do
 
   context "GET /api/documents/:id/status" do
     it_behaves_like "application authenticated route"
+    it_behaves_like "authorization on document checking route"
 
     let(:no_app_request) do
       get url(initial_document.id), headers: headers.without('X-App-Id')
@@ -125,7 +126,6 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:wrong_app_request) do
       get url(initial_document.id), headers: app2_headers
-      response
     end
 
     let(:initial_document) do
@@ -166,14 +166,11 @@ describe V1::DocumentsAPI, type: :request do
       expect(error_document_response).to eq({ "status" => "error" })
       expect(ready_document_response).to eq({ "status" => "ready" })
     end
-
-    it "returns 403 forbidden when the current app isn't owning the document" do
-      expect(wrong_app_request.status).to eq(403)
-    end
   end
 
   context "GET /api/documents/:id/:revision/tree" do
     it_behaves_like "application authenticated route"
+    it_behaves_like "revision accepting route"
 
     let(:no_app_request) do
       get url(document.id), headers: headers.without('X-App-Id')
@@ -359,53 +356,23 @@ describe V1::DocumentsAPI, type: :request do
       "/api/documents/#{id}/#{revision}/tree"
     end
 
-    context "when revision doesn't exist" do
-      let(:bad_branch_request) do
-        get url(document.id, 'idontexist'), headers: headers
-      end
-
-      let(:bad_revision_request) do
-        get url(document.id, document.id), headers: headers
-      end
-
-      it "returns status 422 with proper message when given bad branch name" do
-        bad_branch_request
-
-        expect(response.status).to eq(422)
-        expect(JSON.parse(response.body)).to eq({ 'error' => 'Branch doesn\'t exist' })
-      end
-
-      it "returns status 422 with proper message when given bad revision id" do
-        bad_revision_request
-
-        expect(response.status).to eq(422)
-        expect(JSON.parse(response.body)).to eq({ 'error' => 'Revision doesn\'t exist' })
-      end
+    let(:bad_branch_request) do
+      get url(document.id, 'idontexist'), headers: headers
     end
 
-    context "when given existing branch name" do
-      let(:good_branch_request) do
-        get url(document.id, master_branch.name), headers: headers
-      end
-
-      it "responds with HTTP 200" do
-        good_branch_request
-
-        expect(response.status).to eq(200)
-      end
+    let(:bad_revision_request) do
+      get url(document.id, document.id), headers: headers
     end
 
-    context "when given existing revision id" do
-      let(:good_revision_request) do
-        get url(document.id, head_revision.id), headers: headers
-      end
-
-      it "responds with HTTP 200" do
-        good_revision_request
-
-        expect(response.status).to eq(200)
-      end
+    let(:good_branch_request) do
+      get url(document.id, master_branch.name), headers: headers
     end
+
+    let(:good_revision_request) do
+      get url(document.id, head_revision.id), headers: headers
+    end
+
+    let(:success_status) { 200 }
 
     context "when no surface or area is given" do
       it "contains the id of the document" do
@@ -547,5 +514,87 @@ describe V1::DocumentsAPI, type: :request do
       expect(with_data_response["branches"].first["revision_id"]).to be_present
       expect(with_data_response["branches"].map { |b| b["revision_id"] }.sort).to eq(Revision.all.map(&:id).sort)
     end
+  end
+
+  context "POST /api/documents/:id/branches" do
+    it_behaves_like "application authenticated route"
+    it_behaves_like "revision accepting route"
+    it_behaves_like "authorization on document checking route"
+
+    let(:no_app_request) do
+      post url(document.id), headers: headers.without('X-App-Id'), params: minimal_valid_params
+    end
+
+    let(:no_token_request) do
+      post url(document.id), headers: headers.without('X-Token'), params: minimal_valid_params
+    end
+
+    let(:invalid_token_request) do
+      post url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --')), params: minimal_valid_params
+    end
+
+    let(:valid_request) do
+      good_branch_request
+    end
+
+    let(:wrong_app) do
+      create :app
+    end
+
+    let(:wrong_app_request) do
+      post url(document.id),
+        headers: headers.merge('X-App-Id' => wrong_app.id, 'X-Token' => wrong_app.encrypted_secret),
+        params: minimal_valid_params.merge(revision: master_branch.name)
+    end
+
+    let(:good_revision_request) do
+      post url(document.id),
+        headers: headers,
+        params: minimal_valid_params.merge(revision: master_branch.revision_id)
+    end
+
+    let(:good_branch_request) do
+      post url(document.id),
+        headers: headers,
+        params: minimal_valid_params.merge(revision: master_branch.name)
+    end
+
+    let(:bad_branch_request) do
+      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: 'idontexist')
+    end
+
+    let(:bad_revision_request) do
+      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: document.id)
+    end
+
+    let(:master_branch) do
+      create :branch, name: 'master',
+        revision_id: create(:revision, document_id: document.id ).id,
+        editor_id: editor.id
+    end
+
+    let(:minimal_valid_params) do
+      {
+        parent_revision: master_branch.name,
+        editor_id: editor.id
+      }
+    end
+
+    let(:success_status) { 201 }
+
+    let(:editor) do
+      create :editor
+    end
+
+    let(:document) do
+      create :document,
+        status: Document.statuses[:ready],
+        app_id: client_app.id
+    end
+
+    def url(id)
+      "/api/documents/#{id}/branches"
+    end
+
   end
 end

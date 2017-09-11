@@ -1,6 +1,25 @@
 class V1::DocumentsAPI < Grape::API
   include V1Base
 
+  helpers do
+    def infer_revision!
+      @revision_options = {}
+      if uuid_pattern.match?(params[:revision])
+        if @document.revisions.where(id: params[:revision]).empty?
+          error!('Revision doesn\'t exist', 422)
+        end
+
+        @revision_options[:revision_id] = params[:revision]
+      else
+        if @document.branches.where(name: params[:revision]).empty?
+          error!('Branch doesn\'t exist', 422)
+        end
+
+        @revision_options[:branch_name] = params[:revision]
+      end
+    end
+  end
+
   resources :documents do
     desc %Q{Starts up the process of the document creation.
             The resulting document initially is in the
@@ -60,21 +79,9 @@ class V1::DocumentsAPI < Grape::API
         end
       end
       get ':revision/tree' do
-        data_options = {}
+        infer_revision!
 
-        if uuid_pattern.match?(params[:revision])
-          if @document.revisions.where(id: params[:revision]).empty?
-            error!('Revision doesn\'t exist', 422)
-          end
-
-          data_options[:revision_id] = params[:revision]
-        else
-          if @document.branches.where(name: params[:revision]).empty?
-            error!('Branch doesn\'t exist', 422)
-          end
-
-          data_options[:branch_name] = params[:revision]
-        end
+        data_options = {}.merge @revision_options
 
         if params.key? :surface_number
           data_options[:surface_number] = params[:surface_number]
@@ -97,6 +104,14 @@ class V1::DocumentsAPI < Grape::API
       desc 'Lists branches for the document'
       get 'branches' do
         present @document.branches, with: Branch::Simple
+      end
+
+      desc 'Branches off of a given revision'
+      params do
+        requires :revision, type: String
+      end
+      post 'branches' do
+        infer_revision!
       end
     end
 
