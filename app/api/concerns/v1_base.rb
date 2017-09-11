@@ -53,8 +53,8 @@ module V1Base
         end
       end
 
-      def action! action, additional_params = {}
-        action = action.run params.merge(additional_params)
+      def action! action, additional_params = nil
+        action = action.run(additional_params || params)
         if action.valid?
           action.result
         else

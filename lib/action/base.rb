@@ -29,6 +29,7 @@ module Action
           instance.instance_variable_set "@_result", instance.execute
         end
       rescue
+        Rails.logger.error "Error: #{$!.message}"
         instance.add_error($!)
       end
 

@@ -43,7 +43,7 @@ class V1::DocumentsAPI < Grape::API
     post do
       authorize!
 
-      action! Documents::Create, app: @current_app
+      action! Documents::Create, params.merge(app: @current_app)
     end
 
     namespace ':id', requirements: { id: uuid_pattern } do
@@ -113,6 +113,11 @@ class V1::DocumentsAPI < Grape::API
       end
       post 'branches' do
         infer_revision!
+
+        parent_revision_id = @revision_options.fetch(:revision_id, nil) ||
+          @document.branches.where(name: @revision_options[:branch_name]).select(:revision_id).first.revision_id
+
+        action! Branches::Create, parent_revision_id: parent_revision_id
       end
     end
 

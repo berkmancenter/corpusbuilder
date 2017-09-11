@@ -580,16 +580,24 @@ describe V1::DocumentsAPI, type: :request do
         editor_id: editor.id
     end
 
+    let(:master_child_branch) do
+      Branch.joins(:revision).where(revisions: { parent_id: master_branch.revision_id }).first
+    end
+
     let(:minimal_valid_params) do
       {
         parent_revision: master_branch.name,
-        editor_id: editor.id
+        editor_id: another_editor.id
       }
     end
 
     let(:success_status) { 201 }
 
     let(:editor) do
+      create :editor
+    end
+
+    let(:another_editor) do
       create :editor
     end
 
@@ -603,6 +611,10 @@ describe V1::DocumentsAPI, type: :request do
       "/api/documents/#{id}/branches"
     end
 
+    it "creates a new branch with editor set to a given editor id" do
+      valid_request
 
+      expect(master_child_branch.editor_id).to eq(another_editor.id)
+    end
   end
 end
