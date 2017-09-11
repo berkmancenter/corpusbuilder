@@ -520,6 +520,7 @@ describe V1::DocumentsAPI, type: :request do
     it_behaves_like "application authenticated route"
     it_behaves_like "revision accepting route"
     it_behaves_like "authorization on document checking route"
+    it_behaves_like "editor requiring route"
 
     let(:no_app_request) do
       post url(document.id), headers: headers.without('X-App-Id'), params: minimal_valid_params
@@ -567,6 +568,12 @@ describe V1::DocumentsAPI, type: :request do
       post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: document.id)
     end
 
+    let(:no_editor_request) do
+      post url(document.id),
+        headers: headers,
+        params: minimal_valid_params.merge(revision: master_branch.name).without(:editor_id)
+    end
+
     let(:master_branch) do
       create :branch, name: 'master',
         revision_id: create(:revision, document_id: document.id ).id,
@@ -595,6 +602,7 @@ describe V1::DocumentsAPI, type: :request do
     def url(id)
       "/api/documents/#{id}/branches"
     end
+
 
   end
 end

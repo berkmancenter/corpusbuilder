@@ -109,6 +109,7 @@ class V1::DocumentsAPI < Grape::API
       desc 'Branches off of a given revision'
       params do
         requires :revision, type: String
+        requires :editor_id, type: String
       end
       post 'branches' do
         infer_revision!

@@ -9,7 +9,15 @@ module V1Base
     version 'v1', using: :header, vendor: 'corpus-builder'
 
     rescue_from Grape::Exceptions::ValidationErrors do |e|
-      error!(e, 400)
+      reply = e.errors.inject({}) do |sum, err|
+        err.first.each do |field|
+          sum[field] ||= []
+          sum[field] += err.last.map(&:to_s)
+        end
+        sum
+      end
+
+      error!(reply, 400)
     end
 
     rescue_from :all do |e|

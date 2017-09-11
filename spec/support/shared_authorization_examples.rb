@@ -5,3 +5,6 @@ RSpec.shared_examples "authorization on document checking route" do
     expect(response.status).to eq(403)
   end
 end
+
+RSpec.shared_examples "authorization on branch owner route" do
+end
