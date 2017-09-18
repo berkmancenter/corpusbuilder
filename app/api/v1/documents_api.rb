@@ -110,6 +110,7 @@ class V1::DocumentsAPI < Grape::API
       params do
         requires :revision, type: String
         requires :editor_id, type: String
+        requires :name, type: String
       end
       post 'branches' do
         infer_revision!
@@ -117,7 +118,9 @@ class V1::DocumentsAPI < Grape::API
         parent_revision_id = @revision_options.fetch(:revision_id, nil) ||
           @document.branches.where(name: @revision_options[:branch_name]).select(:revision_id).first.revision_id
 
-        action! Branches::Create, parent_revision_id: parent_revision_id
+        action! Branches::Create, parent_revision_id: parent_revision_id,
+          editor_id: params[:editor_id],
+          name: params[:name]
       end
     end
 

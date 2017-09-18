@@ -55,7 +55,7 @@ module V1Base
 
       def action! action, additional_params = nil
         action = action.run(additional_params || params)
-        if action.valid?
+        if action.errors.empty? && action.valid?
           action.result
         else
           status_fail

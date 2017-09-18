@@ -401,7 +401,7 @@ describe V1::DocumentsAPI, type: :request do
         expect(valid_request_result["surfaces"].first["area"]["lry"]).to eq(20)
       end
 
-      it "returns proper surfaces with their graphemes", :focus => true do
+      it "returns proper surfaces with their graphemes" do
         expect(valid_request_result["surfaces"].first).to have_key("graphemes")
         expect(valid_request_result["surfaces"].first["graphemes"].count).to eq(5)
         expect(valid_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("hello")
@@ -587,7 +587,8 @@ describe V1::DocumentsAPI, type: :request do
     let(:minimal_valid_params) do
       {
         parent_revision: master_branch.name,
-        editor_id: another_editor.id
+        editor_id: another_editor.id,
+        name: 'development'
       }
     end
 

@@ -27,3 +27,4 @@ tags
 /bin/start
 /bin/stop
 config/database.yml
+/spec/support/uploads

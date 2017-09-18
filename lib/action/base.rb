@@ -49,7 +49,7 @@ module Action
     end
 
     def add_error(exception)
-      errors.add :self, exception.message
+      errors.add :base, exception.message
     end
 
     def execute
