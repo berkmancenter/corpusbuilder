@@ -580,6 +580,12 @@ describe V1::DocumentsAPI, type: :request do
         editor_id: editor.id
     end
 
+    let(:topic_branch) do
+      create :branch, name: 'topic',
+        revision_id: create(:revision, document_id: document.id ).id,
+        editor_id: editor.id
+    end
+
     let(:master_child_branch) do
       Branch.joins(:revision).where(revisions: { parent_id: master_branch.revision_id }).first
     end
@@ -588,7 +594,7 @@ describe V1::DocumentsAPI, type: :request do
       {
         parent_revision: master_branch.name,
         editor_id: another_editor.id,
-        name: 'development'
+        name: 'topic'
       }
     end
 
@@ -616,6 +622,14 @@ describe V1::DocumentsAPI, type: :request do
       valid_request
 
       expect(master_child_branch.editor_id).to eq(another_editor.id)
+    end
+
+    it "refuses to create a duplicated branch name within the document" do
+      topic_branch
+      valid_request
+
+      expect(response.status).to eq(400)
+      expect(Branch.where(name: 'topic').count).to eq(1)
     end
   end
 end
