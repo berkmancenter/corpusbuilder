@@ -445,10 +445,57 @@ describe V1::DocumentsAPI, type: :request do
 
     context "PUT" do
       it_behaves_like "authorization on document checking route"
+      it_behaves_like "revision accepting route"
 
       let(:wrong_app) do
         create :app
       end
+
+      let(:bad_branch_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+
+        put url(document.id, 'idontexist'),
+          headers: headers,
+          params: minimal_valid_params
+      end
+
+      let(:bad_revision_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+
+        put url(document.id, Grapheme.first.id),
+          headers: headers,
+          params: minimal_valid_params
+      end
+
+      let(:good_branch_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+
+        put url(document.id, master_branch.name),
+          headers: headers,
+          params: minimal_valid_params
+      end
+
+      let(:good_revision_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+
+        put url(document.id, master_branch.revision_id),
+          headers: headers,
+          params: minimal_valid_params
+      end
+
+      let(:success_status) { 200 }
 
       let(:wrong_app_request) do
         put url(document.id),
@@ -458,6 +505,9 @@ describe V1::DocumentsAPI, type: :request do
 
       let(:minimal_valid_params) do
         {
+          graphemes: [
+            { value: 'u', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 }
+          ]
         }
       end
 
@@ -543,8 +593,72 @@ describe V1::DocumentsAPI, type: :request do
       end
 
       context "providing new graphemes" do
-        it "creates new graphemes"
-        it "points new graphemes at a given revision only"
+        let(:given_graphemes) do
+          [
+            {
+              area: area_to_params(grapheme1.area),
+              surface_number: 1,
+              value: '1'
+            },
+            {
+              area: area_to_params(grapheme2.area),
+              surface_number: 1,
+              value: '2'
+            },
+            {
+              area: area_to_params(grapheme3.area),
+              surface_number: 1,
+              value: '3'
+            }
+          ]
+        end
+
+        let(:minimal_valid_params) do
+          {
+            graphemes: given_graphemes
+          }
+        end
+
+        let(:valid_request) do
+          master_branch
+          development_branch
+          surfaces
+          graphemes
+
+          put url(document.id),
+            headers: headers,
+            params: minimal_valid_params
+        end
+
+        it "creates new graphemes" do
+          valid_request
+
+          created_ones = given_graphemes.inject(Grapheme.where(id: '-1')) do |sum, spec|
+            sum = sum.or(Grapheme.where(area: Area.new(ulx: spec[:area][:ulx],
+                                                       uly: spec[:area][:uly],
+                                                       lrx: spec[:area][:lrx],
+                                                       lry: spec[:area][:lry]),
+                                        value: spec[:value]))
+            sum
+          end
+
+          expect(created_ones.count).to eq(given_graphemes.count)
+        end
+
+        it "points new graphemes at a given revision only" do
+          valid_request
+
+          created_ones = given_graphemes.inject(Grapheme.where(id: '-1')) do |sum, spec|
+            sum = sum.or(Grapheme.where(area: Area.new(ulx: spec[:area][:ulx],
+                                                       uly: spec[:area][:uly],
+                                                       lrx: spec[:area][:lrx],
+                                                       lry: spec[:area][:lry]),
+                                        value: spec[:value]))
+            sum
+          end
+
+          expect(created_ones.map { |g| g.revision_ids }.flatten.uniq.count).to eq(1)
+        end
       end
     end
   end
