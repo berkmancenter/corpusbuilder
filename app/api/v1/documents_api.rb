@@ -101,6 +101,29 @@ class V1::DocumentsAPI < Grape::API
         present @document, { with: Document::Tree }.merge(data_options)
       end
 
+      desc 'Adds corrections on a given revision'
+      params do
+        requires :graphemes, type: Array do
+          optional :id, type: String
+          requires :value, type: String
+          optional :surface_number, type: Integer
+          optional :area, type: Hash do
+            requires :ulx, type: String
+            requires :uly, type: String
+            requires :lrx, type: String
+            requires :lry, type: String
+          end
+        end
+      end
+      put ':revision/tree' do
+        infer_revision!
+
+        action! Documents::Correct, @revision_options.merge(
+          document: @document,
+          graphemes: params[:graphemes]
+        )
+      end
+
       desc 'Lists branches for the document'
       get 'branches' do
         present @document.branches, with: Branch::Simple

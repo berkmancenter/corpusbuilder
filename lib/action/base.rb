@@ -6,10 +6,10 @@ module Action
 
     def self.run!(params = {})
       action = run(params)
-      if action.valid?
+      if action.errors.empty?
         action
       else
-        raise action.errors.first
+        raise ActionError, action.errors.first.last
       end
     end
 
@@ -29,7 +29,7 @@ module Action
           instance.instance_variable_set "@_result", instance.execute
         end
       rescue
-        Rails.logger.error "Error: #{$!.message}"
+        Rails.logger.error "Error: #{$!.message}\n#{$!.backtrace}"
         instance.add_error($!)
       end
 
@@ -45,7 +45,7 @@ module Action
     end
 
     def fail(description)
-      raise ActionError.new(), description
+      raise ActionError, description
     end
 
     def add_error(exception)

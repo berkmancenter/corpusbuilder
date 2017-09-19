@@ -168,94 +168,7 @@ describe V1::DocumentsAPI, type: :request do
     end
   end
 
-  context "GET /api/documents/:id/:revision/tree" do
-    it_behaves_like "application authenticated route"
-    it_behaves_like "revision accepting route"
-
-    let(:no_app_request) do
-      get url(document.id), headers: headers.without('X-App-Id')
-    end
-
-    let(:no_token_request) do
-      get url(document.id), headers: headers.without('X-Token')
-    end
-
-    let(:invalid_token_request) do
-      get url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
-    end
-
-    let(:valid_request) do
-      master_branch
-      development_branch
-      surfaces
-      graphemes
-
-      get url(document.id), headers: headers
-    end
-
-    let(:only_surface_request) do
-      master_branch
-      development_branch
-      surfaces
-      graphemes
-      surface_2_graphemes
-
-      get url(document.id, 'master'), headers: headers, params: { surface_number: 2 }
-    end
-
-    let(:surface_snippet_request) do
-      master_branch
-      development_branch
-      surfaces
-      graphemes
-      surface_2_graphemes
-
-      _params = {
-        surface_number: 2,
-        area: {
-          ulx: 20,
-          uly: 0,
-          lrx: 60,
-          lry: 20
-        }
-      }
-
-      get url(document.id, 'master'), headers: headers, params: _params
-    end
-
-    let(:area_no_surface_request) do
-      master_branch
-
-      _params = {
-        area: {
-          ulx: 20,
-          uly: 0,
-          lrx: 60,
-          lry: 20
-        }
-      }
-
-      get url(document.id, 'master'), headers: headers, params: _params
-    end
-
-    let(:valid_request_result) do
-      valid_request
-
-      JSON.parse(response.body)
-    end
-
-    let(:only_surface_request_result) do
-      only_surface_request
-
-      JSON.parse(response.body)
-    end
-
-    let(:surface_snippet_request_result) do
-      surface_snippet_request
-
-      JSON.parse(response.body)
-    end
-
+  context "/api/documents/:id/:revision/tree" do
     let(:document) do
       create :document, status: Document.statuses[:ready], app_id: client_app.id
     end
@@ -309,7 +222,7 @@ describe V1::DocumentsAPI, type: :request do
         head_revision.graphemes << create(:grapheme, value: 'r', zone_id: surface_2_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
         head_revision.graphemes << create(:grapheme, value: 'o', zone_id: surface_2_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
         head_revision.graphemes << create(:grapheme, value: 'w', zone_id: surface_2_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
-      ]
+      ].flatten
     end
 
     let(:master_graphemes) do
@@ -319,7 +232,7 @@ describe V1::DocumentsAPI, type: :request do
         head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
         head_revision.graphemes << create(:grapheme, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
         head_revision.graphemes << create(:grapheme, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
-      ]
+      ].flatten
     end
 
     let(:development_graphemes) do
@@ -327,7 +240,7 @@ describe V1::DocumentsAPI, type: :request do
         second_revision.graphemes << create(:grapheme, value: 'ó', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.6),
         second_revision.graphemes << create(:grapheme, value: 'ł', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.7),
         second_revision.graphemes << Grapheme.where("area <@ ?", Area.new(ulx: 0, uly: 0, lrx: 60, lry: 20).to_s)
-      ]
+      ].flatten
     end
 
     let(:head_revision) do
@@ -350,91 +263,288 @@ describe V1::DocumentsAPI, type: :request do
       create :editor
     end
 
-    def url(id, revision = nil)
-      revision ||= master_branch.name
+    context "GET" do
+      it_behaves_like "application authenticated route"
+      it_behaves_like "revision accepting route"
 
-      "/api/documents/#{id}/#{revision}/tree"
+      let(:no_app_request) do
+        get url(document.id), headers: headers.without('X-App-Id')
+      end
+
+      let(:no_token_request) do
+        get url(document.id), headers: headers.without('X-Token')
+      end
+
+      let(:invalid_token_request) do
+        get url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+      end
+
+      let(:valid_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+
+        get url(document.id), headers: headers
+      end
+
+      let(:only_surface_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+        surface_2_graphemes
+
+        get url(document.id, 'master'), headers: headers, params: { surface_number: 2 }
+      end
+
+      let(:surface_snippet_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+        surface_2_graphemes
+
+        _params = {
+          surface_number: 2,
+          area: {
+            ulx: 20,
+            uly: 0,
+            lrx: 60,
+            lry: 20
+          }
+        }
+
+        get url(document.id, 'master'), headers: headers, params: _params
+      end
+
+      let(:area_no_surface_request) do
+        master_branch
+
+        _params = {
+          area: {
+            ulx: 20,
+            uly: 0,
+            lrx: 60,
+            lry: 20
+          }
+        }
+
+        get url(document.id, 'master'), headers: headers, params: _params
+      end
+
+      let(:valid_request_result) do
+        valid_request
+
+        JSON.parse(response.body)
+      end
+
+      let(:only_surface_request_result) do
+        only_surface_request
+
+        JSON.parse(response.body)
+      end
+
+      let(:surface_snippet_request_result) do
+        surface_snippet_request
+
+        JSON.parse(response.body)
+      end
+
+
+      def url(id, revision = nil)
+        revision ||= master_branch.name
+
+        "/api/documents/#{id}/#{revision}/tree"
+      end
+
+      let(:bad_branch_request) do
+        get url(document.id, 'idontexist'), headers: headers
+      end
+
+      let(:bad_revision_request) do
+        get url(document.id, document.id), headers: headers
+      end
+
+      let(:good_branch_request) do
+        get url(document.id, master_branch.name), headers: headers
+      end
+
+      let(:good_revision_request) do
+        get url(document.id, head_revision.id), headers: headers
+      end
+
+      let(:success_status) { 200 }
+
+      context "when no surface or area is given" do
+        it "contains the id of the document" do
+          expect(valid_request_result).to have_key("id")
+          expect(valid_request_result["id"]).to eq(document.id)
+        end
+
+        it "returns all surfaces" do
+          expect(valid_request_result).to have_key("surfaces")
+          expect(valid_request_result["surfaces"].count).to eq(surfaces.count)
+        end
+
+        it "returns proper surfaces with their numbers" do
+          expect(valid_request_result["surfaces"].map { |s| s["number"] }).to eq(surfaces.map(&:number))
+        end
+
+        it "returns proper surfaces with their areas" do
+          expect(valid_request_result["surfaces"].first).to have_key("area")
+          expect(valid_request_result["surfaces"].first["area"]).to have_key("ulx")
+          expect(valid_request_result["surfaces"].first["area"]).to have_key("uly")
+          expect(valid_request_result["surfaces"].first["area"]).to have_key("lrx")
+          expect(valid_request_result["surfaces"].first["area"]).to have_key("lry")
+          expect(valid_request_result["surfaces"].first["area"]["ulx"]).to eq(0)
+          expect(valid_request_result["surfaces"].first["area"]["uly"]).to eq(0)
+          expect(valid_request_result["surfaces"].first["area"]["lrx"]).to eq(100)
+          expect(valid_request_result["surfaces"].first["area"]["lry"]).to eq(20)
+        end
+
+
+        it "returns proper surfaces with their graphemes" do
+          expect(valid_request_result["surfaces"].first).to have_key("graphemes")
+          expect(valid_request_result["surfaces"].first["graphemes"].count).to eq(5)
+          expect(valid_request_result["surfaces"].first["graphemes"].first).to have_key("id")
+          expect(valid_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("hello")
+          expect(valid_request_result["surfaces"].first["graphemes"].map { |g| g["certainty"] }).to eq(["0.1", "0.2", "0.3", "0.4", "0.5"])
+        end
+
+        it "returns surfaces with only number, area and graphemes" do
+          expect(valid_request_result["surfaces"].first.keys.sort).to eq(["area", "graphemes", "number"])
+        end
+      end
+
+      context "when only a surface is given" do
+        it "returns only the data for the surface in question" do
+          expect(only_surface_request_result["surfaces"].count).to eq(1)
+        end
+
+        it "returns only the graphemes attached to a given surface" do
+          expect(only_surface_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("world")
+        end
+      end
+
+      context "when a surface and an area is given" do
+        it "returns only the graphemes attached to a given surface and within a given area" do
+          expect(surface_snippet_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("or")
+        end
+      end
+
+      context "when an area is given but no surface" do
+        it "returns 422 with the proper error message" do
+          area_no_surface_request
+
+          expect(response.status).to eq(422)
+          expect(JSON.parse(response.body)).to eq({ "error" => "Cannot specify an area without a surface number" })
+        end
+      end
     end
 
-    let(:bad_branch_request) do
-      get url(document.id, 'idontexist'), headers: headers
-    end
+    context "PUT" do
+      it_behaves_like "authorization on document checking route"
 
-    let(:bad_revision_request) do
-      get url(document.id, document.id), headers: headers
-    end
-
-    let(:good_branch_request) do
-      get url(document.id, master_branch.name), headers: headers
-    end
-
-    let(:good_revision_request) do
-      get url(document.id, head_revision.id), headers: headers
-    end
-
-    let(:success_status) { 200 }
-
-    context "when no surface or area is given" do
-      it "contains the id of the document" do
-        expect(valid_request_result).to have_key("id")
-        expect(valid_request_result["id"]).to eq(document.id)
+      let(:wrong_app) do
+        create :app
       end
 
-      it "returns all surfaces" do
-        expect(valid_request_result).to have_key("surfaces")
-        expect(valid_request_result["surfaces"].count).to eq(surfaces.count)
+      let(:wrong_app_request) do
+        put url(document.id),
+          headers: headers.merge('X-App-Id' => wrong_app.id, 'X-Token' => wrong_app.encrypted_secret),
+          params: minimal_valid_params
       end
 
-      it "returns proper surfaces with their numbers" do
-        expect(valid_request_result["surfaces"].map { |s| s["number"] }).to eq(surfaces.map(&:number))
+      let(:minimal_valid_params) do
+        {
+        }
       end
 
-      it "returns proper surfaces with their areas" do
-        expect(valid_request_result["surfaces"].first).to have_key("area")
-        expect(valid_request_result["surfaces"].first["area"]).to have_key("ulx")
-        expect(valid_request_result["surfaces"].first["area"]).to have_key("uly")
-        expect(valid_request_result["surfaces"].first["area"]).to have_key("lrx")
-        expect(valid_request_result["surfaces"].first["area"]).to have_key("lry")
-        expect(valid_request_result["surfaces"].first["area"]["ulx"]).to eq(0)
-        expect(valid_request_result["surfaces"].first["area"]["uly"]).to eq(0)
-        expect(valid_request_result["surfaces"].first["area"]["lrx"]).to eq(100)
-        expect(valid_request_result["surfaces"].first["area"]["lry"]).to eq(20)
+      def url(id, revision = 'master')
+        "/api/documents/#{id}/#{revision}/tree"
       end
 
-      it "returns proper surfaces with their graphemes" do
-        expect(valid_request_result["surfaces"].first).to have_key("graphemes")
-        expect(valid_request_result["surfaces"].first["graphemes"].count).to eq(5)
-        expect(valid_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("hello")
-        expect(valid_request_result["surfaces"].first["graphemes"].map { |g| g["certainty"] }).to eq(["0.1", "0.2", "0.3", "0.4", "0.5"])
+      def area_to_params(area)
+        {
+          ulx: area.ulx,
+          uly: area.uly,
+          lrx: area.lrx,
+          lry: area.lry
+        }
       end
 
-      it "returns surfaces with only number, area and graphemes" do
-        expect(valid_request_result["surfaces"].first.keys.sort).to eq(["area", "graphemes", "number"])
+      let(:grapheme1) { master_graphemes.first }
+      let(:grapheme2) { master_graphemes.drop(1).first }
+      let(:grapheme3) { master_graphemes.drop(2).first }
+
+      context "pointing at existing graphemes" do
+        let(:given_graphemes) do
+          [
+            {
+              id: grapheme1.id,
+              area: area_to_params(grapheme1.area),
+              surface_number: 1,
+              value: '1'
+            },
+            {
+              id: grapheme2.id,
+              area: area_to_params(grapheme2.area),
+              surface_number: 1,
+              value: '2'
+            },
+            {
+              id: grapheme3.id,
+              area: area_to_params(grapheme3.area),
+              surface_number: 1,
+              value: '3'
+            }
+          ]
+        end
+
+        let(:minimal_valid_params) do
+          {
+            graphemes: given_graphemes
+          }
+        end
+
+        let(:valid_request) do
+          master_branch
+          development_branch
+          surfaces
+          graphemes
+
+          put url(document.id),
+            headers: headers,
+            params: minimal_valid_params
+        end
+
+        it "creates new graphemes" do
+          valid_request
+
+          created_ones = given_graphemes.inject(Grapheme.where(id: '-1')) do |sum, spec|
+            sum = sum.or(Grapheme.where(area: Area.new(ulx: spec[:area][:ulx],
+                                                       uly: spec[:area][:uly],
+                                                       lrx: spec[:area][:lrx],
+                                                       lry: spec[:area][:lry]),
+                                        value: spec[:value]).
+                                  where.not(id: spec[:id]))
+            sum
+          end
+
+          expect(created_ones.count).to eq(given_graphemes.count)
+        end
+
+        it "breakes connection between given graphemes and the revision" do
+          valid_request
+
+          expect(master_branch.graphemes.where(id: given_graphemes.map { |g| g[:id] }).count).to eq(0)
+        end
       end
-    end
 
-    context "when only a surface is given" do
-      it "returns only the data for the surface in question" do
-        expect(only_surface_request_result["surfaces"].count).to eq(1)
-      end
-
-      it "returns only the graphemes attached to a given surface" do
-        expect(only_surface_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("world")
-      end
-    end
-
-    context "when a surface and an area is given" do
-      it "returns only the graphemes attached to a given surface and within a given area" do
-        expect(surface_snippet_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("or")
-      end
-    end
-
-    context "when an area is given but no surface" do
-      it "returns 422 with the proper error message" do
-        area_no_surface_request
-
-        expect(response.status).to eq(422)
-        expect(JSON.parse(response.body)).to eq({ "error" => "Cannot specify an area without a surface number" })
+      context "providing new graphemes" do
+        it "creates new graphemes"
+        it "points new graphemes at a given revision only"
       end
     end
   end
@@ -632,4 +742,5 @@ describe V1::DocumentsAPI, type: :request do
       expect(Branch.where(name: 'topic').count).to eq(1)
     end
   end
+
 end
