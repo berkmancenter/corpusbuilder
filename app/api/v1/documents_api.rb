@@ -18,6 +18,26 @@ class V1::DocumentsAPI < Grape::API
         @revision_options[:branch_name] = params[:revision]
       end
     end
+
+    def revision_from_params(params_name = :revision, options = { required: true })
+      if uuid_pattern.match?(params[params_name])
+        revision = @document.revisions.where(id: params[params_name]).first
+
+        if !revision.present? && options[:required]
+          error!('Revision doesn\'t exist', 422)
+        else
+          return revision
+        end
+      else
+        branch = @document.branches.where(name: params[params_name]).first
+
+        if !branch.present? && options[:required]
+          error!('Branch doesn\'t exist', 422)
+        end
+
+        return branch.try(:revision)
+      end
+    end
   end
 
   resources :documents do
@@ -101,12 +121,24 @@ class V1::DocumentsAPI < Grape::API
         present @document, { with: Document::Tree }.merge(data_options)
       end
 
+      desc 'Returns a diff of changes for a revision with respect to other revision'
+      params do
+        optional :other_revision, type: String
+      end
+      get ':revision/diff' do
+        revision1 = revision_from_params :revision
+        revision2 = revision_from_params :other_revision, required: false
+
+        Grapheme.diff(revision1, revision2 || revision1.parent)
+      end
+
       desc 'Adds corrections on a given revision'
       params do
         requires :graphemes, type: Array do
           optional :id, type: String
-          requires :value, type: String
+          optional :value, type: String
           optional :surface_number, type: Integer
+          optional :delete, type: Boolean
           optional :area, type: Hash do
             requires :ulx, type: String
             requires :uly, type: String

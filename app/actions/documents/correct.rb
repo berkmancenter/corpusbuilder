@@ -4,14 +4,19 @@ module Documents
 
     def execute
       @graphemes.each do |spec|
-        Graphemes::Create.run! revision: revision,
-          area: Area.new(ulx: spec[:area][:ulx],
-                         uly: spec[:area][:uly],
-                         lrx: spec[:area][:lrx],
-                         lry: spec[:area][:lry]),
-          value: spec[:value],
-          surface_number: spec[:surface_number]
-
+        if spec.fetch(:delete, false)
+          Graphemes::Remove.run! revision: revision,
+            grapheme_id: spec[:id]
+        else
+          Graphemes::Create.run! revision: revision,
+            area: Area.new(ulx: spec[:area][:ulx],
+                          uly: spec[:area][:uly],
+                          lrx: spec[:area][:lrx],
+                          lry: spec[:area][:lry]),
+            value: spec[:value],
+            old_id: spec[:id],
+            surface_number: spec[:surface_number]
+        end
       end
 
       revision.grapheme_ids = revision.grapheme_ids - existing_ids

@@ -23,6 +23,7 @@ gem 'que'
 gem 'rest-client'
 gem 'nokogiri'
 gem 'scenic'
+gem 'active_record_union'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
@@ -30,6 +31,8 @@ group :development, :test do
   gem 'airborne'
   gem 'factory_girl_rails', '~> 4.0'
   gem 'webmock'
+  gem 'hirb'
+  gem 'wirble'
 end
 
 group :development do

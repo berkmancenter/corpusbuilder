@@ -22,5 +22,12 @@ module CorpusBuilder
     if Rails.env.development?
       config.web_console.whitelisted_ips = '172.19.0.1'
     end
+
+    def load_console(app = self)
+      super
+      project_specific_irbrc = File.join(Rails.root, ".irbrc")
+      puts "Loading project specific .irbrc ..."
+      load(project_specific_irbrc) if File.exists?(project_specific_irbrc)
+    end
   end
 end

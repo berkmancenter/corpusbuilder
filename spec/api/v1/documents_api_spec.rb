@@ -12,6 +12,28 @@ describe V1::DocumentsAPI, type: :request do
     }
   end
 
+  let(:image1) do
+    create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+      name: "file_1.png",
+      order: 1
+  end
+
+  let(:image2) do
+    create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+      name: "file_2.png",
+      order: 2
+  end
+
+  let(:image3) do
+    create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+      name: "file_3.png",
+      order: 3
+  end
+
+  let(:standard_area) do
+    Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20)
+  end
+
   let(:client_app) do
     create :app
   end
@@ -171,28 +193,6 @@ describe V1::DocumentsAPI, type: :request do
   context "/api/documents/:id/:revision/tree" do
     let(:document) do
       create :document, status: Document.statuses[:ready], app_id: client_app.id
-    end
-
-    let(:standard_area) do
-      Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20)
-    end
-
-    let(:image1) do
-      create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
-        name: "file_1.png",
-        order: 1
-    end
-
-    let(:image2) do
-      create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
-        name: "file_2.png",
-        order: 2
-    end
-
-    let(:image3) do
-      create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
-        name: "file_3.png",
-        order: 3
     end
 
     let(:surfaces) do
@@ -592,6 +592,46 @@ describe V1::DocumentsAPI, type: :request do
         end
       end
 
+      context "removing graphemes" do
+        let(:given_graphemes) do
+          [
+            {
+              id: grapheme1.id,
+              delete: true
+            }
+          ]
+        end
+
+        let(:minimal_valid_params) do
+          {
+            graphemes: given_graphemes
+          }
+        end
+
+        let(:valid_request) do
+          master_branch
+          development_branch
+          surfaces
+          graphemes
+
+          put url(document.id),
+            headers: headers,
+            params: minimal_valid_params
+        end
+
+        it "removes given graphemes connections from the revision" do
+          valid_request
+
+          expect(master_branch.graphemes.where(id: grapheme1.id)).to be_empty
+        end
+
+        it "keeps the graphemes in the database" do
+          valid_request
+
+          expect(Grapheme.where(id: grapheme1.id)).to be_present
+        end
+      end
+
       context "providing new graphemes" do
         let(:given_graphemes) do
           [
@@ -660,6 +700,141 @@ describe V1::DocumentsAPI, type: :request do
           expect(created_ones.map { |g| g.revision_ids }.flatten.uniq.count).to eq(1)
         end
       end
+    end
+  end
+
+  context "GET /api/documents/:id/:revision/diff" do
+    it_behaves_like "application authenticated route"
+    it_behaves_like "revision accepting route"
+
+    let(:editor) do
+      create :editor
+    end
+
+    let(:head_revision) do
+      master_branch.revision
+    end
+
+    let(:surfaces) do
+      [
+        create(:surface, document_id: document.id, area: standard_area, number: 1, image_id: image1.id)
+      ]
+    end
+
+    let(:first_line) do
+      create :zone, surface_id: surfaces.first.id, area: Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20)
+    end
+
+    let(:master_graphemes) do
+      [
+        head_revision.graphemes << create(:grapheme, value: 'o', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
+        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
+        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
+        head_revision.graphemes << create(:grapheme, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
+        head_revision.graphemes << create(:grapheme, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
+      ].flatten
+    end
+
+    let(:grapheme1) { master_graphemes.first }
+    let(:grapheme2) { master_graphemes.drop(1).first }
+    let(:grapheme3) { master_graphemes.drop(2).first }
+
+    let(:success_status) { 200 }
+
+    let(:master_branch) do
+      create :branch, name: 'master',
+        revision_id: create(:revision, document_id: document.id ).id,
+        editor_id: editor.id
+    end
+
+    let(:development_branch) do
+      create :branch, name: 'development',
+        revision_id: create(:revision, document_id: document.id, parent_id: master_branch.revision_id).id,
+        editor_id: editor.id
+    end
+
+    let(:document) do
+      create :document, status: Document.statuses[:ready], app_id: client_app.id
+    end
+
+    let(:no_app_request) do
+      get url(document.id), headers: headers.without('X-App-Id')
+    end
+
+    let(:no_token_request) do
+      get url(document.id), headers: headers.without('X-Token')
+    end
+
+    let(:invalid_token_request) do
+      get url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+    end
+
+    let(:good_revision_request) do
+      get url(document.id, master_branch.revision_id), headers: headers
+    end
+
+    let(:good_branch_request) do
+      get url(document.id, master_branch.name), headers: headers
+    end
+
+    let(:bad_branch_request) do
+      get url(document.id, 'idontexist'), headers: headers
+    end
+
+    let(:bad_revision_request) do
+      get url(document.id, document.id), headers: headers
+    end
+
+    let(:additions) do
+      [
+        { value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
+        { value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 }
+      ]
+    end
+
+    let(:changes) do
+      [
+        { id: grapheme1.id, value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
+        { id: grapheme2.id, value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } }
+      ]
+    end
+
+    let(:removals) do
+      [
+        { id: grapheme3.id, delete: true }
+      ]
+    end
+
+    def make_changes
+      Documents::Correct.run! document: document,
+        branch_name: 'development',
+        graphemes: (additions + changes + removals)
+    end
+
+    let(:valid_request) do
+      master_branch
+      development_branch
+      make_changes
+
+      get url(document.id, 'development'), headers: headers
+    end
+
+    let(:valid_response) do
+      valid_request
+
+      JSON.parse response.body
+    end
+
+    def url(id, revision = 'master')
+      "/api/documents/#{id}/#{revision}/diff"
+    end
+
+    it "returns all new graphemes with the status of addition" do
+      expect(valid_response.select { |g| g["status"] == "right" }.count).to eq(2)
+    end
+
+    it "returns old graphemes with the status of deletion" do
+      expect(valid_response.select { |g| g["status"] == "left" }.count).to eq(3)
     end
   end
 
