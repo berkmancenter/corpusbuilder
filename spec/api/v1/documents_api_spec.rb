@@ -825,8 +825,36 @@ describe V1::DocumentsAPI, type: :request do
       get url(document.id, 'development'), headers: headers
     end
 
+    let(:valid_master_request) do
+      master_branch
+      development_branch
+      corrections
+
+      get url(document.id, 'master'), headers: headers
+    end
+
+    let(:valid_root_request) do
+      master_branch
+      development_branch
+      corrections
+
+      get url(document.id, master_branch.revision.id), headers: headers
+    end
+
     let(:valid_response) do
       valid_request
+
+      JSON.parse response.body
+    end
+
+    let(:valid_master_response) do
+      valid_master_request
+
+      JSON.parse response.body
+    end
+
+    let(:valid_root_response) do
+      valid_root_request
 
       JSON.parse response.body
     end
@@ -841,6 +869,16 @@ describe V1::DocumentsAPI, type: :request do
 
     it "returns old graphemes with the inclusion of deletion" do
       expect(valid_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
+    end
+
+    it "returns all graphemes when master branch specified" do
+      expect(valid_master_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
+      expect(valid_master_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
+    end
+
+    it "returns all graphemes whgen root revision specified" do
+      expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
+      expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
     end
   end
 

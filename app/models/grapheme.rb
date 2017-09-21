@@ -15,10 +15,14 @@ class Grapheme < ApplicationRecord
               select("graphemes.*, '#{side}' as inclusion")
     }
 
-    side_query.call('left').
-      union_all(
-        side_query.call('right')
-      )
+    if revision1.present?
+      side_query.call('left').
+        union_all(
+          side_query.call('right')
+        )
+    else
+      revision2.graphemes.select("graphemes.*, 'right' as inclusion")
+    end
   end
 
   class Tree < Grape::Entity
