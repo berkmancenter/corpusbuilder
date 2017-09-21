@@ -133,6 +133,19 @@ class V1::DocumentsAPI < Grape::API
         present Grapheme.diff(revision2, revision1), with: Grapheme::Diff
       end
 
+      desc 'Merged changes from other branch or revision'
+      params do
+        optional :other_revision, type: String
+      end
+      put ':revision/merge' do
+        infer_revision!
+        #revision1 = revision_from_params :revision
+        # revision2 = revision_from_params(:other_revision, required: false) ||
+        #  revision1.parent
+
+        :ok
+      end
+
       desc 'Adds corrections on a given revision'
       params do
         requires :graphemes, type: Array do

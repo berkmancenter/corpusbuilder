@@ -703,10 +703,7 @@ describe V1::DocumentsAPI, type: :request do
     end
   end
 
-  context "GET /api/documents/:id/:revision/diff" do
-    it_behaves_like "application authenticated route"
-    it_behaves_like "revision accepting route"
-
+  context "diffing and merging" do
     let(:editor) do
       create :editor
     end
@@ -758,35 +755,39 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:no_app_request) do
-      get url(document.id), headers: headers.without('X-App-Id')
+      method.call url(document.id), headers: headers.without('X-App-Id')
     end
 
     let(:no_token_request) do
-      get url(document.id), headers: headers.without('X-Token')
+      method.call url(document.id), headers: headers.without('X-Token')
     end
 
     let(:invalid_token_request) do
-      get url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+      method.call url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
     end
 
     let(:good_revision_request) do
       master_branch
       development_branch
-      get url(document.id, development_branch.revision_id), headers: headers
+      method.call url(document.id, development_branch.revision_id), headers: headers
     end
 
     let(:good_branch_request) do
       master_branch
       development_branch
-      get url(document.id, development_branch.name), headers: headers
+      method.call url(document.id, development_branch.name), headers: headers
     end
 
     let(:bad_branch_request) do
-      get url(document.id, 'idontexist'), headers: headers
+      method.call url(document.id, 'idontexist'), headers: headers
     end
 
     let(:bad_revision_request) do
-      get url(document.id, document.id), headers: headers
+      method.call url(document.id, document.id), headers: headers
+    end
+
+    let(:method) do
+      Proc.new { |*args| get(*args) }
     end
 
     let(:additions) do
@@ -822,7 +823,7 @@ describe V1::DocumentsAPI, type: :request do
       development_branch
       corrections
 
-      get url(document.id, 'development'), headers: headers
+      method.call url(document.id, 'development'), headers: headers
     end
 
     let(:valid_master_request) do
@@ -830,7 +831,7 @@ describe V1::DocumentsAPI, type: :request do
       development_branch
       corrections
 
-      get url(document.id, 'master'), headers: headers
+      method.call url(document.id, 'master'), headers: headers
     end
 
     let(:valid_root_request) do
@@ -838,7 +839,7 @@ describe V1::DocumentsAPI, type: :request do
       development_branch
       corrections
 
-      get url(document.id, master_branch.revision.id), headers: headers
+      method.call url(document.id, master_branch.revision.id), headers: headers
     end
 
     let(:valid_response) do
@@ -859,32 +860,51 @@ describe V1::DocumentsAPI, type: :request do
       JSON.parse response.body
     end
 
-    def url(id, revision = 'master')
-      "/api/documents/#{id}/#{revision}/diff"
+    context "PUT /api/documents/:id/:revision/merge" do
+      it_behaves_like "application authenticated route"
+      it_behaves_like "revision accepting route"
+
+      def url(id, revision = 'master')
+        "/api/documents/#{id}/#{revision}/merge"
+      end
+
+      let(:method) do
+        Proc.new { |*args| put(*args) }
+      end
+
     end
 
-    it "returns all new graphemes with the status of addition" do
-      expect(valid_response.select { |g| g["inclusion"] == "right" }.count).to eq(4)
-    end
+    context "GET /api/documents/:id/:revision/diff" do
+      it_behaves_like "application authenticated route"
+      it_behaves_like "revision accepting route"
 
-    it "returns old graphemes with the inclusion of deletion" do
-      expect(valid_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
-    end
+      def url(id, revision = 'master')
+        "/api/documents/#{id}/#{revision}/diff"
+      end
 
-    it "returns all graphemes when master branch specified" do
-      expect(valid_master_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
-      expect(valid_master_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
-    end
+      it "returns all new graphemes with the status of addition" do
+        expect(valid_response.select { |g| g["inclusion"] == "right" }.count).to eq(4)
+      end
 
-    it "returns all graphemes whgen root revision specified" do
-      expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
-      expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
-    end
+      it "returns old graphemes with the inclusion of deletion" do
+        expect(valid_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
+      end
 
-    it "returns just the right amount of attributes" do
-      expect(valid_response.first.keys.sort).to eq([
-        "id", "value", "area", "inclusion", "zone_id"
-      ].sort)
+      it "returns all graphemes when master branch specified" do
+        expect(valid_master_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
+        expect(valid_master_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
+      end
+
+      it "returns all graphemes whgen root revision specified" do
+        expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
+        expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
+      end
+
+      it "returns just the right amount of attributes" do
+        expect(valid_response.first.keys.sort).to eq([
+          "id", "value", "area", "inclusion", "zone_id"
+        ].sort)
+      end
     end
   end
 
