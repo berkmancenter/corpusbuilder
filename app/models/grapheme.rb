@@ -12,7 +12,7 @@ class Grapheme < ApplicationRecord
 
       Grapheme.where(id: rev1.graphemes).
               where.not(id: rev2.graphemes).
-              select("graphemes.*, '#{side}' as inclusion")
+              select("graphemes.*, '#{side}' :: varchar as inclusion")
     }
 
     if revision1.present?
@@ -21,7 +21,7 @@ class Grapheme < ApplicationRecord
           side_query.call('right')
         )
     else
-      revision2.graphemes.select("graphemes.*, 'right' as inclusion")
+      revision2.graphemes.select("graphemes.*, 'right' :: varchar as inclusion")
     end
   end
 
@@ -30,5 +30,13 @@ class Grapheme < ApplicationRecord
     expose :value
     expose :id
     expose :certainty
+  end
+
+  class Diff < Grape::Entity
+    expose :area, with: Area::Tree
+    expose :value
+    expose :id
+    expose :inclusion
+    expose :zone_id
   end
 end

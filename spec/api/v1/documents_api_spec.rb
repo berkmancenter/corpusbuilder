@@ -880,6 +880,12 @@ describe V1::DocumentsAPI, type: :request do
       expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
       expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
     end
+
+    it "returns just the right amount of attributes" do
+      expect(valid_response.first.keys.sort).to eq([
+        "id", "value", "area", "inclusion", "zone_id"
+      ].sort)
+    end
   end
 
   context "GET /api/documents/:id/branches" do
