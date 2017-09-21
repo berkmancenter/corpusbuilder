@@ -2,6 +2,11 @@ module Graphemes
   class Create < Action::Base
     attr_accessor :revision, :area, :value, :surface_number, :old_id
 
+    validates :revision, presence: true
+    validates :value, presence: true
+    validates :area, presence: true
+    validate :surface_id_inferred
+
     def execute
       @revision.graphemes << Grapheme.create!(area: @area, value: @value, zone_id: zone_id)
     end
@@ -43,6 +48,12 @@ module Graphemes
         where(graphemes: { id: @old_id }).
         pluck("surfaces.id").
         first
+    end
+
+    def surface_id_inferred
+      if surface_id.empty?
+        errors.add(:base, "Needs either surface_number or grapheme id")
+      end
     end
   end
 end

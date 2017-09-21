@@ -135,15 +135,13 @@ class V1::DocumentsAPI < Grape::API
 
       desc 'Merged changes from other branch or revision'
       params do
-        optional :other_revision, type: String
+        requires :other_branch, type: String
       end
-      put ':revision/merge' do
-        infer_revision!
-        #revision1 = revision_from_params :revision
-        # revision2 = revision_from_params(:other_revision, required: false) ||
-        #  revision1.parent
+      put ':branch/merge' do
+        current_branch = @document.branches.where(name: params[:branch]).first
+        other_branch = @document.branches.where(name: params[:other_branch]).first
 
-        :ok
+        action! Branches::Merge, branch: current_branch, other_branch: other_branch
       end
 
       desc 'Adds corrections on a given revision'

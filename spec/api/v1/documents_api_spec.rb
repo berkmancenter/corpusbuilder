@@ -862,7 +862,6 @@ describe V1::DocumentsAPI, type: :request do
 
     context "PUT /api/documents/:id/:revision/merge" do
       it_behaves_like "application authenticated route"
-      it_behaves_like "revision accepting route"
 
       def url(id, revision = 'master')
         "/api/documents/#{id}/#{revision}/merge"
@@ -870,6 +869,77 @@ describe V1::DocumentsAPI, type: :request do
 
       let(:method) do
         Proc.new { |*args| put(*args) }
+      end
+
+      let(:topic_branch) do
+        create :branch, name: 'topic',
+          editor_id: editor.id,
+          revision_id: create(:revision, document_id: document.id).id
+      end
+
+      let(:current_revision) do
+        master_branch.revision
+      end
+
+      let(:other_revision) do
+        topic_branch.revision
+      end
+
+      let(:valid_request) do
+        master_branch
+        development_branch
+        topic_branch
+
+        method.call url(document.id, 'master'),
+          params: { other_branch: 'topic' },
+          headers: headers
+      end
+
+      context "when applying changes added on top of the given revision" do
+        let(:corrections) do
+          topic_branch.revision.graphemes << master_graphemes.uniq
+
+          Documents::Correct.run! document: document,
+            revision_id: topic_branch.revision_id,
+            graphemes: [
+              {
+                id: master_graphemes.first.id,
+                value: 'a'
+              },
+              {
+                id: master_graphemes[1].id,
+                delete: true
+              },
+              {
+                id: master_graphemes[4].id,
+                delete: true
+              },
+              {
+                value: 'b',
+                surface_number: 1,
+                area: {
+                  ulx: 60,
+                  uly: 0,
+                  lrx: 70, lry: 10
+                }
+              }
+            ]
+        end
+
+        it "makes current revision point at exactly the same graphemes" do
+          corrections
+          valid_request
+
+          expect(current_revision.reload.grapheme_ids).to eq(other_revision.reload.grapheme_ids)
+        end
+      end
+
+      context "when applying changes with current revision changed but without conflicts" do
+        it "makes current revision point at the revisions from other and the ones added other way"
+      end
+
+      context "when applying changes with current revision changed with conflicts" do
+        it "returns HTTP 409 CONFLICT along with the message about the need to resolve the merge conflicts"
       end
 
     end

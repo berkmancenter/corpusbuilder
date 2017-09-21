@@ -9,7 +9,7 @@ module Action
       if action.errors.empty?
         action
       else
-        raise ActionError, action.errors.first.last
+        raise ActionError, action.errors.first
       end
     end
 
