@@ -129,7 +129,7 @@ class V1::DocumentsAPI < Grape::API
         revision1 = revision_from_params :revision
         revision2 = revision_from_params :other_revision, required: false
 
-        Grapheme.diff(revision1, revision2 || revision1.parent)
+        Grapheme.diff(revision2 || revision1.parent, revision1)
       end
 
       desc 'Adds corrections on a given revision'

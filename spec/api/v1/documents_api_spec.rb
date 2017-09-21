@@ -770,11 +770,15 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:good_revision_request) do
-      get url(document.id, master_branch.revision_id), headers: headers
+      master_branch
+      development_branch
+      get url(document.id, development_branch.revision_id), headers: headers
     end
 
     let(:good_branch_request) do
-      get url(document.id, master_branch.name), headers: headers
+      master_branch
+      development_branch
+      get url(document.id, development_branch.name), headers: headers
     end
 
     let(:bad_branch_request) do
@@ -805,7 +809,9 @@ describe V1::DocumentsAPI, type: :request do
       ]
     end
 
-    def make_changes
+    let(:corrections) do
+      development_branch.revision.graphemes << master_graphemes.flatten.uniq
+
       Documents::Correct.run! document: document,
         branch_name: 'development',
         graphemes: (additions + changes + removals)
@@ -814,7 +820,7 @@ describe V1::DocumentsAPI, type: :request do
     let(:valid_request) do
       master_branch
       development_branch
-      make_changes
+      corrections
 
       get url(document.id, 'development'), headers: headers
     end
@@ -830,11 +836,11 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "returns all new graphemes with the status of addition" do
-      expect(valid_response.select { |g| g["status"] == "right" }.count).to eq(2)
+      expect(valid_response.select { |g| g["inclusion"] == "right" }.count).to eq(4)
     end
 
-    it "returns old graphemes with the status of deletion" do
-      expect(valid_response.select { |g| g["status"] == "left" }.count).to eq(3)
+    it "returns old graphemes with the inclusion of deletion" do
+      expect(valid_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
     end
   end
 
