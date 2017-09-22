@@ -5,9 +5,12 @@ module Branches
     validate :unique_name
 
     def execute
-      Branch.create! revision_id: next_revision.id,
+      branch = Branch.create! revision_id: next_revision.id,
         name: @name,
         editor_id: @editor_id
+      Revisions::Create.run!(document_id: document_id,
+                             parent_id: next_revision.id)
+      branch
     end
 
     private
