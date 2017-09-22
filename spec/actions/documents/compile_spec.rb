@@ -116,6 +116,7 @@ describe Documents::Compile do
     proper_call
 
     expect(graphemes.count).to eq(10)
+    expect(graphemes.map(&:status).uniq).to eq(["regular"])
     expect(graphemes[4].value).to eq('o')
     expect(graphemes[4].certainty).to eq(0.5)
     expect(graphemes[4].zone_id).to eq(zones.first.id)

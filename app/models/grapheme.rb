@@ -2,6 +2,8 @@ class Grapheme < ApplicationRecord
   belongs_to :zone
   has_and_belongs_to_many :revisions
 
+  enum status: [ :regular, :conflict ]
+
   serialize :area, Area::Serializer
 
   default_scope { order("(graphemes.area[0])[1] asc, (graphemes.area[0])[0] asc") }

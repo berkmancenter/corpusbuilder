@@ -59,6 +59,7 @@ class V1::DocumentsAPI < Grape::API
         optional :notes, type: String
         optional :publisher, type: String
       end
+      requires :editor_email, type: String
     end
     post do
       authorize!
@@ -187,7 +188,8 @@ class V1::DocumentsAPI < Grape::API
 
         action! Branches::Create, parent_revision_id: parent_revision_id,
           editor_id: params[:editor_id],
-          name: params[:name]
+          name: params[:name],
+          document_id: params[:id]
       end
     end
 

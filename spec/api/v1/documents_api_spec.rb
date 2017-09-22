@@ -57,6 +57,10 @@ describe V1::DocumentsAPI, type: :request do
       post url, params: data_minimal_correct, headers: headers
     end
 
+    let(:editor) do
+      create :editor
+    end
+
     let(:url) { "/api/documents" }
 
     let(:head_revision) do
@@ -77,7 +81,8 @@ describe V1::DocumentsAPI, type: :request do
     let(:data_minimal_correct) do
       {
         images: [ { id: 1 }, { id: 2 } ],
-        metadata: { title: "Fancy Book" }.to_json
+        metadata: { title: "Fancy Book" }.to_json,
+        editor_email: editor.email
       }
     end
 
@@ -106,6 +111,15 @@ describe V1::DocumentsAPI, type: :request do
       document = Document.find new_id
 
       expect(document.status).to eq("initial")
+    end
+
+    it "creates a master branch making gioven editor an owner", focus: true do
+      post url, params: data_minimal_correct, headers: headers
+
+      new_id = JSON.parse(response.body)["id"]
+      document = Document.find new_id
+
+      expect(document.branches.joins(:editor).where(editors: { email: editor.email })).to be_present
     end
   end
 
@@ -935,7 +949,75 @@ describe V1::DocumentsAPI, type: :request do
       end
 
       context "when applying changes with current revision changed but without conflicts" do
-        it "makes current revision point at the revisions from other and the ones added other way"
+        let(:corrections) do
+          development_branch.revision.graphemes << master_graphemes.uniq
+          topic_branch.revision.graphemes << master_graphemes.uniq
+
+          Documents::Correct.run! document: document,
+            revision_id: topic_branch.revision_id,
+            graphemes: [
+              {
+                id: master_graphemes.first.id,
+                value: '1'
+              },
+              {
+                id: master_graphemes[1].id,
+                delete: true
+              },
+              {
+                id: master_graphemes[4].id,
+                delete: true
+              },
+              {
+                value: '2',
+                surface_number: 1,
+                area: {
+                  ulx: 60,
+                  uly: 0,
+                  lrx: 70, lry: 10
+                }
+              }
+            ]
+
+          Documents::Correct.run! document: document,
+            revision_id: development_branch.revision_id,
+            graphemes: [
+              {
+                id: master_graphemes[2].id,
+                value: '3'
+              },
+              {
+                id: master_graphemes[3].id,
+                delete: true
+              },
+              {
+                value: '4',
+                surface_number: 1,
+                area: {
+                  ulx: 70,
+                  uly: 0,
+                  lrx: 80, lry: 10
+                }
+              }
+            ]
+        end
+
+        let(:first_merge) do
+          Branches::Merge.run! branch: master_branch,
+            other_branch: development_branch
+        end
+
+        it "makes current revision point at the revisions from other and the ones added other way" do
+          corrections
+          first_merge
+          valid_request
+
+          current_revision.reload
+
+          ['1', '2', '3', '4'].each do |addition|
+            expect(current_revision.graphemes.pluck(:value)).to include(addition)
+          end
+        end
       end
 
       context "when applying changes with current revision changed with conflicts" do

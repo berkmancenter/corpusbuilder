@@ -1,10 +1,11 @@
 module Documents
   class Create < Action::Base
-    attr_accessor :images, :metadata, :app
+    attr_accessor :images, :metadata, :app, :editor_email
 
-    validates_presence_of :app
-    validates_presence_of :images
-    validates_presence_of :metadata
+    validates :app, presence: true
+    validates :images, presence: true
+    validates :metadata, presence: true
+    validates :editor_email, presence: true
 
     def execute
       document = Document.create! title: @metadata[:title],
@@ -18,11 +19,22 @@ module Documents
         status: Document.statuses[:initial],
         app_id: @app.id
 
+      Branches::Create.run! parent_revision_id: nil,
+        editor_id: editor.id,
+        name: 'master',
+        document_id: document.id
+
       ProcessDocumentJob.
         set(wait: 5.seconds).
         perform_later(document)
 
       document
+    end
+
+    private
+
+    def editor
+      Editor.where(email: editor_email).first
     end
   end
 end

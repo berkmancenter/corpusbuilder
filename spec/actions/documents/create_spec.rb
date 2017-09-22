@@ -7,13 +7,18 @@ describe Documents::Create do
     create :app
   end
 
+  let(:editor) do
+    create :editor
+  end
+
   let(:proper_params) do
     {
       images: [ { id: 2 }, { id: 2 } ],
       metadata: {
         title: "A good read"
       },
-      app: client_app
+      app: client_app,
+      editor_email: editor.email
     }
   end
 
