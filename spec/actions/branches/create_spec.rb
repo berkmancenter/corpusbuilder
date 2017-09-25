@@ -22,6 +22,6 @@ describe Branches::Create do
   it "creates the working revision too" do
     creation
 
-    expect(Revision.where(parent_id: branch.revision_id)).to be_present
+    expect(Revision.working.where(parent_id: branch.revision_id)).to be_present
   end
 end

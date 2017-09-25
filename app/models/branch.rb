@@ -6,6 +6,10 @@ class Branch < ApplicationRecord
 
   has_many :graphemes, through: :revision
 
+  def working
+    Revision.working.where(parent_id: self.revision_id).first
+  end
+
   class Simple < Grape::Entity
     root 'branches', 'branch'
 

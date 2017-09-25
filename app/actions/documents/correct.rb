@@ -2,6 +2,8 @@ module Documents
   class Correct < Action::Base
     attr_accessor :document, :graphemes, :revision_id, :branch_name
 
+    validate :revision_is_in_working_state
+
     def execute
       @graphemes.each do |spec|
         if spec.fetch(:delete, false)
@@ -44,9 +46,21 @@ module Documents
       @_revision ||= if @revision_id.present?
         Revision.find(@revision_id)
       else
-        Revision.where(
-          id: @document.branches.where(name: @branch_name).select("branches.revision_id")
+        Revision.working.where(
+          parent_id: @document.branches.where(name: @branch_name).select("branches.revision_id")
         ).first
+      end
+    end
+
+    def revision_is_in_working_state
+      if !revision.working?
+        if revision_id.present?
+          errors.add(:revision_id, "must point at an uncommitted revision")
+        end
+
+        if branch_name.present?
+          error.add(:branch_name, "points at a branch with inconsistent state, having a working revision not set to a working state")
+        end
       end
     end
   end

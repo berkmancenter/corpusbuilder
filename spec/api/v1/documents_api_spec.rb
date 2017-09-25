@@ -64,11 +64,19 @@ describe V1::DocumentsAPI, type: :request do
     let(:url) { "/api/documents" }
 
     let(:head_revision) do
-      create :revision, document_id: document.id
+      master_branch.revision
+    end
+
+    let(:working_revision) do
+      master_branch.working
     end
 
     let(:master_branch) do
-      create :branch, revision_id: head_revision.id
+      Branches::Create.run!(
+        document_id: document.id,
+        editor_id: editor.id,
+        name: 'master'
+      ).result
     end
 
     let(:data_empty_metadata) do
@@ -113,7 +121,7 @@ describe V1::DocumentsAPI, type: :request do
       expect(document.status).to eq("initial")
     end
 
-    it "creates a master branch making gioven editor an owner", focus: true do
+    it "creates a master branch making gioven editor an owner" do
       post url, params: data_minimal_correct, headers: headers
 
       new_id = JSON.parse(response.body)["id"]
@@ -231,21 +239,21 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:surface_2_graphemes) do
       [
-        head_revision.graphemes << create(:grapheme, value: 'd', zone_id: surface_2_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
-        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: surface_2_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
-        head_revision.graphemes << create(:grapheme, value: 'r', zone_id: surface_2_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
-        head_revision.graphemes << create(:grapheme, value: 'o', zone_id: surface_2_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
-        head_revision.graphemes << create(:grapheme, value: 'w', zone_id: surface_2_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
+        working_revision.graphemes << create(:grapheme, value: 'd', zone_id: surface_2_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
+        working_revision.graphemes << create(:grapheme, value: 'l', zone_id: surface_2_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
+        working_revision.graphemes << create(:grapheme, value: 'r', zone_id: surface_2_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
+        working_revision.graphemes << create(:grapheme, value: 'o', zone_id: surface_2_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
+        working_revision.graphemes << create(:grapheme, value: 'w', zone_id: surface_2_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
       ].flatten
     end
 
     let(:master_graphemes) do
       [
-        head_revision.graphemes << create(:grapheme, value: 'o', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
-        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
-        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
-        head_revision.graphemes << create(:grapheme, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
-        head_revision.graphemes << create(:grapheme, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
+        working_revision.graphemes << create(:grapheme, value: 'o', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
+        working_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
+        working_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
+        working_revision.graphemes << create(:grapheme, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
+        working_revision.graphemes << create(:grapheme, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
       ].flatten
     end
 
@@ -258,7 +266,11 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:head_revision) do
-      create :revision, document_id: document.id
+      master_branch.revision
+    end
+
+    let(:working_revision) do
+      master_branch.working
     end
 
     let(:second_revision) do
@@ -266,7 +278,9 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:master_branch) do
-      create :branch, name: 'master', revision_id: head_revision.id, editor_id: editor.id
+      Branches::Create.run!(name: 'master',
+        document_id: document.id,
+        editor_id: editor.id).result
     end
 
     let(:development_branch) do
@@ -504,7 +518,7 @@ describe V1::DocumentsAPI, type: :request do
         surfaces
         graphemes
 
-        put url(document.id, master_branch.revision_id),
+        put url(document.id, master_branch.working.id),
           headers: headers,
           params: minimal_valid_params
       end
@@ -597,12 +611,13 @@ describe V1::DocumentsAPI, type: :request do
           end
 
           expect(created_ones.count).to eq(given_graphemes.count)
+          expect(master_branch.working.graphemes.where(id: created_ones.map(&:id)).count).to eq(created_ones.count)
         end
 
         it "breakes connection between given graphemes and the revision" do
           valid_request
 
-          expect(master_branch.graphemes.where(id: given_graphemes.map { |g| g[:id] }).count).to eq(0)
+          expect(master_branch.working.graphemes.where(id: given_graphemes.map { |g| g[:id] }).count).to eq(0)
         end
       end
 
@@ -753,15 +768,20 @@ describe V1::DocumentsAPI, type: :request do
     let(:success_status) { 200 }
 
     let(:master_branch) do
-      create :branch, name: 'master',
-        revision_id: create(:revision, document_id: document.id ).id,
+      Branches::Create.run!(
+        name: 'master',
+        document_id: document.id,
         editor_id: editor.id
+      ).result
     end
 
     let(:development_branch) do
-      create :branch, name: 'development',
-        revision_id: create(:revision, document_id: document.id, parent_id: master_branch.revision_id).id,
+      Branches::Create.run!(
+        name: 'development',
+        document_id: document.id,
+        parent_revision_id: master_branch.revision_id,
         editor_id: editor.id
+      ).result
     end
 
     let(:document) do
@@ -826,10 +846,13 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:corrections) do
       development_branch.revision.graphemes << master_graphemes.flatten.uniq
+      development_branch.working.graphemes << master_graphemes.flatten.uniq
 
       Documents::Correct.run! document: document,
         branch_name: 'development',
         graphemes: (additions + changes + removals)
+
+      Branches::Commit.run! branch: development_branch
     end
 
     let(:valid_request) do
@@ -886,9 +909,12 @@ describe V1::DocumentsAPI, type: :request do
       end
 
       let(:topic_branch) do
-        create :branch, name: 'topic',
+        Branches::Create.run!(
+          document_id: document.id,
+          name: 'topic',
           editor_id: editor.id,
-          revision_id: create(:revision, document_id: document.id).id
+          parent_revision_id: development_branch.revision_id
+        ).result
       end
 
       let(:current_revision) do
@@ -912,9 +938,10 @@ describe V1::DocumentsAPI, type: :request do
       context "when applying changes added on top of the given revision" do
         let(:corrections) do
           topic_branch.revision.graphemes << master_graphemes.uniq
+          topic_branch.working.graphemes << master_graphemes.uniq
 
           Documents::Correct.run! document: document,
-            revision_id: topic_branch.revision_id,
+            revision_id: topic_branch.working.id,
             graphemes: [
               {
                 id: master_graphemes.first.id,
@@ -952,9 +979,10 @@ describe V1::DocumentsAPI, type: :request do
         let(:corrections) do
           development_branch.revision.graphemes << master_graphemes.uniq
           topic_branch.revision.graphemes << master_graphemes.uniq
+          topic_branch.working.graphemes << master_graphemes.uniq
 
           Documents::Correct.run! document: document,
-            revision_id: topic_branch.revision_id,
+            revision_id: topic_branch.working.id,
             graphemes: [
               {
                 id: master_graphemes.first.id,
@@ -979,8 +1007,10 @@ describe V1::DocumentsAPI, type: :request do
               }
             ]
 
+          Branches::Commit.run! branch: topic_branch
+
           Documents::Correct.run! document: document,
-            revision_id: development_branch.revision_id,
+            revision_id: development_branch.working.id,
             graphemes: [
               {
                 id: master_graphemes[2].id,
@@ -1000,6 +1030,8 @@ describe V1::DocumentsAPI, type: :request do
                 }
               }
             ]
+
+          Branches::Commit.run! branch: development_branch
         end
 
         let(:first_merge) do
@@ -1012,10 +1044,10 @@ describe V1::DocumentsAPI, type: :request do
           first_merge
           valid_request
 
-          current_revision.reload
+          master_branch.reload
 
           ['1', '2', '3', '4'].each do |addition|
-            expect(current_revision.graphemes.pluck(:value)).to include(addition)
+            expect(master_branch.revision.graphemes.pluck(:value)).to include(addition)
           end
         end
       end

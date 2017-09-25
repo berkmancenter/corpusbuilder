@@ -27,6 +27,7 @@ RSpec.shared_examples "revision accepting route" do
     it "responds with HTTP 200 or 201" do
       good_revision_request
 
+      byebug if response.status == 400
       expect(response.status).to eq(success_status)
     end
   end

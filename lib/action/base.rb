@@ -4,18 +4,7 @@ module Action
   class Base
     include ActiveModel::Validations
 
-    def self.run!(params = {})
-      action = run(params)
-      if action.errors.empty?
-        action
-      else
-        raise ActionError, action.errors.first
-      end
-    end
-
-    def self.run(params = {})
-      instance = new
-
+    def self.run!(params = {}, instance = new)
       if params.nil? && has_setters?(instance)
         raise ArgumentError, "Expected parameters passed to action #{name}"
       end
@@ -24,10 +13,20 @@ module Action
         instance.send "#{name}=", value
       end
 
+      if instance.valid?
+        instance.instance_variable_set "@_result", instance.execute
+      else
+        raise ActionError, { action: instance.class, messages: instance.errors.full_messages, params: params }
+      end
+
+      instance
+    end
+
+    def self.run(params = {})
+      instance = new
+
       begin
-        if instance.valid?
-          instance.instance_variable_set "@_result", instance.execute
-        end
+        run!(params, instance)
       rescue
         Rails.logger.error "Error: #{$!.message}\n#{$!.backtrace}"
         instance.add_error($!)
@@ -53,7 +52,7 @@ module Action
     end
 
     def execute
-      throw :unimplemented
+      raise ActionError, { action: self.class, messages: [ "no execute method implemented!" ] }
     end
 
     private
