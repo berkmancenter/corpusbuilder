@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170925092607) do
+ActiveRecord::Schema.define(version: 20170926125916) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -74,6 +74,7 @@ ActiveRecord::Schema.define(version: 20170925092607) do
     t.datetime "updated_at", null: false
     t.decimal "certainty", precision: 5, scale: 4, default: "0.0"
     t.integer "status", default: 0
+    t.uuid "parent_ids", default: [], array: true
     t.index ["area"], name: "index_graphemes_on_area", using: :gist
     t.index ["zone_id"], name: "index_graphemes_on_zone_id"
   end

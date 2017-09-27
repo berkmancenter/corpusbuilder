@@ -8,13 +8,32 @@ module Graphemes
     validate :surface_id_inferred
 
     def execute
-      @revision.graphemes << Grapheme.create!(area: @area, value: @value, zone_id: zone_id)
+      @revision.graphemes << Grapheme.create!(
+        area: @area,
+        value: @value,
+        zone_id: zone_id,
+        parent_ids: parent_ids
+      )
     end
 
     private
 
     def zone_id
       @_zone_id ||= (existing_zone_id || new_zone_id)
+    end
+
+    def parent_ids
+      @_parent_ids ||= if parent.present?
+        parent.parent_ids + [ old_id ]
+      else
+        []
+      end
+    end
+
+    def parent
+      return nil if old_id.nil?
+
+      @_parent ||= Grapheme.find(old_id)
     end
 
     def existing_zone_id

@@ -11,13 +11,24 @@ module Branches
       branch = Branch.create! revision_id: next_revision.id,
         name: @name,
         editor_id: @editor_id
-      Revisions::Create.run!(document_id: document_id,
-                             parent_id: next_revision.id,
-                             status: Revision.statuses[:working])
+
+      if revision.present?
+        next_revision.graphemes << revision.graphemes
+        next_working.graphemes << revision.graphemes
+      else
+        next_revision && next_working
+      end
+
       branch
     end
 
     private
+
+    def next_working
+      @_next_working ||= Revisions::Create.run!(document_id: document_id,
+                             parent_id: next_revision.id,
+                             status: Revision.statuses[:working]).result
+    end
 
     def next_revision
       @_next_revision ||= Revisions::Create.run!(document_id: document_id,

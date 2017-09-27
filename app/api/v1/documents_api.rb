@@ -131,7 +131,11 @@ class V1::DocumentsAPI < Grape::API
         revision2 = revision_from_params(:other_revision, required: false) ||
           revision1.parent
 
-        present Grapheme.diff(revision2, revision1), with: Grapheme::Diff
+        present Graphemes::QueryDiff.run!(
+            revision_left: revision2,
+            revision_right: revision1
+          ).result,
+          with: Grapheme::Diff
       end
 
       desc 'Merged changes from other branch or revision'

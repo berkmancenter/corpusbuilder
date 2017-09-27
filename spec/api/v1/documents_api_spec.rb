@@ -597,10 +597,8 @@ describe V1::DocumentsAPI, type: :request do
             params: minimal_valid_params
         end
 
-        it "creates new graphemes" do
-          valid_request
-
-          created_ones = given_graphemes.inject(Grapheme.where(id: '-1')) do |sum, spec|
+        let(:created_ones) do
+          given_graphemes.inject(Grapheme.where(id: '-1')) do |sum, spec|
             sum = sum.or(Grapheme.where(area: Area.new(ulx: spec[:area][:ulx],
                                                        uly: spec[:area][:uly],
                                                        lrx: spec[:area][:lrx],
@@ -609,6 +607,10 @@ describe V1::DocumentsAPI, type: :request do
                                   where.not(id: spec[:id]))
             sum
           end
+        end
+
+        it "creates new graphemes" do
+          valid_request
 
           expect(created_ones.count).to eq(given_graphemes.count)
           expect(master_branch.working.graphemes.where(id: created_ones.map(&:id)).count).to eq(created_ones.count)
@@ -618,6 +620,16 @@ describe V1::DocumentsAPI, type: :request do
           valid_request
 
           expect(master_branch.working.graphemes.where(id: given_graphemes.map { |g| g[:id] }).count).to eq(0)
+        end
+
+        it "adds the older version grapheme id to the new one parent ids column" do
+          valid_request
+
+          expect(created_ones.pluck(:parent_ids).flatten.sort).to eq([
+            grapheme1.id,
+            grapheme2.id,
+            grapheme3.id
+          ].sort)
         end
       end
 
