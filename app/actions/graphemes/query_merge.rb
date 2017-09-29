@@ -25,7 +25,7 @@ module Graphemes
     end
 
     def not_changed
-      ancestor.graphemes.unscoped.
+      root.graphemes.unscoped.
         where(id: left.graphemes.unscoped.select(:id)).
         where(id: right.graphemes.unscoped.select(:id))
     end
@@ -43,18 +43,20 @@ module Graphemes
     end
 
     def added_in_left
-      left.graphemes.unscoped.where.not(id: ancestor.graphemes.unscoped.select(:id))
+      left.graphemes.unscoped.where.not(id: root.graphemes.unscoped.select(:id))
     end
 
     def added_in_right
-      right.graphemes.unscoped.where.not(id: ancestor.graphemes.unscoped.select(:id))
+      right.graphemes.unscoped.where.not(id: root.graphemes.unscoped.select(:id))
     end
 
     private
 
-    def ancestor
-      # todo: correct the following:
-      branch_left.revision
+    def root
+      @_root ||= Revisions::QueryClosestRoot.run!(
+        revision1: left,
+        revision2: right
+      ).result
     end
 
     def left
