@@ -43,7 +43,12 @@ describe Graphemes::QueryMerge do
       end
     end
 
-    it "returns conflict items for changed on left and right sides"
+    it "returns conflict items for changed on left and right sides" do
+      conflict_items = result.select(&:conflict?)
+
+      expect((both_changed_conflicts.map(&:id) & conflict_items.map(&:id)).sort).to eq(both_changed_conflicts.map(&:id).sort)
+    end
+
     it "returns conflict items for changed on left and removed on right"
     it "returns conflict items for removed on left and changed on right"
   end
@@ -203,6 +208,7 @@ describe Graphemes::QueryMerge do
     let(:removed_left_clean) { [] }
     let(:removed_right_clean) { [ grapheme3 ] }
     let(:unchanged) { [ grapheme4, grapheme5, grapheme6, grapheme7 ] }
+    let(:both_changed_conflicts) { [] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -232,6 +238,7 @@ describe Graphemes::QueryMerge do
     let(:removed_left_clean) { [] }
     let(:removed_right_clean) { [ grapheme4 ] }
     let(:unchanged) { [ grapheme5, grapheme6, grapheme7 ] }
+    let(:both_changed_conflicts) { [] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -269,6 +276,7 @@ describe Graphemes::QueryMerge do
     let(:removed_left_clean) { [ grapheme6 ] }
     let(:removed_right_clean) { [ grapheme7 ] }
     let(:unchanged) { [ grapheme5 ] }
+    let(:both_changed_conflicts) { [] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -315,6 +323,7 @@ describe Graphemes::QueryMerge do
     let(:removed_left_clean) { [ grapheme4 ] }
     let(:removed_right_clean) { [ grapheme3 ] }
     let(:unchanged) { [ grapheme7 ] }
+    let(:both_changed_conflicts) { [ grapheme1, grapheme2 ] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
