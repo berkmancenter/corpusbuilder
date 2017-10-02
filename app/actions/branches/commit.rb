@@ -9,9 +9,11 @@ module Branches
       working.regular!
       new_regular = working
 
-      Revisions::Create.run! document_id: branch.revision.document_id,
+      new_working = Revisions::Create.run!(document_id: branch.revision.document_id,
         parent_id: working.id,
-        status: Revision.statuses[:working]
+        status: Revision.statuses[:working]).result
+
+      new_working.graphemes << new_regular.graphemes
 
       branch.update_attributes!(revision_id: new_regular.id)
 

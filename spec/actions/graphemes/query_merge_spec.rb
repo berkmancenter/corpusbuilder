@@ -112,6 +112,13 @@ describe Graphemes::QueryMerge do
         :grapheme,
         value: '!',
         zone_id: first_line.id,
+        area: Area.new(ulx: 120, uly: 0, lrx: 140, lry: 20),
+        certainty: 0.5
+      ),
+      create(
+        :grapheme,
+        value: '!',
+        zone_id: first_line.id,
         area: Area.new(ulx: 100, uly: 0, lrx: 120, lry: 20),
         certainty: 0.5
       ),
@@ -153,16 +160,13 @@ describe Graphemes::QueryMerge do
     ].flatten
   end
 
-  let(:unchanged) do
-    graphemes.last(2)
-  end
-
   let(:grapheme1) { graphemes.first }
   let(:grapheme2) { graphemes.drop(1).first }
   let(:grapheme3) { graphemes.drop(2).first }
   let(:grapheme4) { graphemes.drop(3).first }
   let(:grapheme5) { graphemes.drop(4).first }
   let(:grapheme6) { graphemes.drop(5).first }
+  let(:grapheme7) { graphemes.drop(6).first }
 
   let(:additions) do
     [
@@ -190,6 +194,7 @@ describe Graphemes::QueryMerge do
     let(:changed_left_clean) { [] }
     let(:changed_right_clean) { Grapheme.where(value: ['1', '2']) }
     let(:removed_left_clean) { [] }
+    let(:unchanged) { [ grapheme4, grapheme5, grapheme6, grapheme7 ] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -217,6 +222,7 @@ describe Graphemes::QueryMerge do
     let(:changed_left_clean) { [] }
     let(:changed_right_clean) { Grapheme.where(value: ['1', '2']) }
     let(:removed_left_clean) { [] }
+    let(:unchanged) { [ grapheme4, grapheme5, grapheme6, grapheme7 ] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -251,6 +257,7 @@ describe Graphemes::QueryMerge do
     let(:changed_left_clean) { Grapheme.where(value: '1') }
     let(:changed_right_clean) { Grapheme.where(value: ['1', '2']) }
     let(:removed_left_clean) { [ grapheme6 ] }
+    let(:unchanged) { [ grapheme5, grapheme7 ] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -294,11 +301,16 @@ describe Graphemes::QueryMerge do
     let(:changed_left_clean) { Grapheme.where(value: ['6']).to_a }
     let(:changed_right_clean) { Grapheme.where(value: ['6']) }
     let(:removed_left_clean) { [ grapheme4 ] }
+    let(:unchanged) { [ grapheme7 ] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
         master_branch.revision.graphemes << graphemes
         master_branch.working.graphemes << graphemes
+        development_branch.revision.graphemes << graphemes
+        development_branch.working.graphemes << graphemes
+        topic_branch.revision.graphemes << graphemes
+        topic_branch.working.graphemes << graphemes
 
         Documents::Correct.run! document: document,
           branch_name: topic_branch.name,
@@ -307,7 +319,6 @@ describe Graphemes::QueryMerge do
             { id: grapheme2.id, value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme6.id, value: '6', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme3.id, delete: true },
-            { id: grapheme4.id, delete: true },
             { value: '1', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
             { value: '2', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 }
           ]
@@ -327,12 +338,17 @@ describe Graphemes::QueryMerge do
           graphemes: [
             { id: grapheme1.id, value: 'u', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme2.id, delete: true },
+            { id: grapheme4.id, delete: true },
             { id: grapheme3.id, value: 'w', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
             { id: grapheme5.id, value: '5', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } }
           ]
 
         Branches::Commit.run! branch: development_branch
       end
+
+    # it "y" do
+    #   byebug
+    # end
     end
   end
 end

@@ -21,33 +21,33 @@ module Graphemes
     end
 
     def conflicts
-      Grapheme.where(value: '').unscoped
+      Grapheme.reorder(nil).where(value: '')
     end
 
     def not_changed
-      root.graphemes.unscoped.
-        where(id: left.graphemes.unscoped.select(:id)).
-        where(id: right.graphemes.unscoped.select(:id))
+      root.graphemes.reorder(nil).
+        where(id: left.graphemes.reorder(nil).select(:id)).
+        where(id: right.graphemes.reorder(nil).select(:id))
     end
 
     def changed_in_left_not_in_right
-      left.graphemes.unscoped.where(
-        "parent_ids && array[(?)]", right.graphemes.unscoped.select("array_agg(id)")
+      left.graphemes.reorder(nil).where(
+        "parent_ids && array[(?)]", right.graphemes.reorder(nil).select("array_agg(id)")
       )
     end
 
     def changed_in_right_not_in_left
-      right.graphemes.unscoped.where(
-        "parent_ids && array[(?)]", left.graphemes.unscoped.select("array_agg(id)")
+      right.graphemes.reorder(nil).where(
+        "parent_ids && array[(?)]", left.graphemes.reorder(nil).select("array_agg(id)")
       )
     end
 
     def added_in_left
-      left.graphemes.unscoped.where.not(id: root.graphemes.unscoped.select(:id))
+      left.graphemes.reorder(nil).where.not(id: root.graphemes.reorder(nil).select(:id))
     end
 
     def added_in_right
-      right.graphemes.unscoped.where.not(id: root.graphemes.unscoped.select(:id))
+      right.graphemes.reorder(nil).where.not(id: root.graphemes.reorder(nil).select(:id))
     end
 
     private
