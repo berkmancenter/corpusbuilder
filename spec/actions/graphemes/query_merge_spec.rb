@@ -55,7 +55,11 @@ describe Graphemes::QueryMerge do
       expect((changed_on_left_removed_on_right_conflicts.map(&:id) & conflict_items.map(&:id)).sort).to eq(changed_on_left_removed_on_right_conflicts.map(&:id).sort)
     end
 
-    it "returns conflict items for removed on left and changed on right"
+    it "returns conflict items for removed on left and changed on right" do
+      conflict_items = result.select(&:conflict?)
+
+      expect((changed_on_right_removed_on_left_conflicts.map(&:id) & conflict_items.map(&:id)).sort).to eq(changed_on_right_removed_on_left_conflicts.map(&:id).sort)
+    end
   end
 
   let(:result) do
@@ -215,6 +219,7 @@ describe Graphemes::QueryMerge do
     let(:unchanged) { [ grapheme4, grapheme5, grapheme6, grapheme7 ] }
     let(:both_changed_conflicts) { [] }
     let(:changed_on_left_removed_on_right_conflicts) { [] }
+    let(:changed_on_right_removed_on_left_conflicts) { [] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -246,6 +251,7 @@ describe Graphemes::QueryMerge do
     let(:unchanged) { [ grapheme5, grapheme6, grapheme7 ] }
     let(:both_changed_conflicts) { [] }
     let(:changed_on_left_removed_on_right_conflicts) { [] }
+    let(:changed_on_right_removed_on_left_conflicts) { [] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -285,6 +291,7 @@ describe Graphemes::QueryMerge do
     let(:unchanged) { [ grapheme5 ] }
     let(:both_changed_conflicts) { [] }
     let(:changed_on_left_removed_on_right_conflicts) { [ grapheme4 ] }
+    let(:changed_on_right_removed_on_left_conflicts) { [ grapheme3 ] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
@@ -311,6 +318,7 @@ describe Graphemes::QueryMerge do
           graphemes: [
             { id: grapheme1.id, value: '1', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
             { id: grapheme2.id, value: '2', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
+            { id: grapheme3.id, delete: true },
             { id: grapheme4.id, delete: true },
             { id: grapheme7.id, delete: true }
           ]
@@ -338,6 +346,7 @@ describe Graphemes::QueryMerge do
     let(:unchanged) { [ grapheme7 ] }
     let(:both_changed_conflicts) { [ grapheme1, grapheme2 ] }
     let(:changed_on_left_removed_on_right_conflicts) { [ grapheme5 ] }
+    let(:changed_on_right_removed_on_left_conflicts) { [ grapheme2 ] }
 
     it_behaves_like "a proper merge result" do
       before(:each) do
