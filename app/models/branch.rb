@@ -10,6 +10,10 @@ class Branch < ApplicationRecord
     Revision.working.where(parent_id: self.revision_id).first
   end
 
+  def conflict?
+    working.conflict?
+  end
+
   class Simple < Grape::Entity
     root 'branches', 'branch'
 

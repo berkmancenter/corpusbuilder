@@ -146,7 +146,11 @@ class V1::DocumentsAPI < Grape::API
         current_branch = @document.branches.where(name: params[:branch]).first
         other_branch = @document.branches.where(name: params[:other_branch]).first
 
-        action! Branches::Merge, branch: current_branch, other_branch: other_branch
+        updated_branch = action! Branches::Merge, branch: current_branch, other_branch: other_branch
+
+        if updated_branch.conflict?
+          error!('Merge Conflict!', 409)
+        end
       end
 
       desc 'Adds corrections on a given revision'

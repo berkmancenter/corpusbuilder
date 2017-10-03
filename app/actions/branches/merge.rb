@@ -3,11 +3,15 @@ module Branches
     attr_accessor :branch, :other_branch
 
     def execute
+      branch.working.grapheme_ids = merge_items.map(&:id)
+
       if no_conflicts?
-        branch.working.grapheme_ids = merge_items.map(&:id)
         Branches::Commit.run! branch: branch
       else
+        branch.working.conflict!
       end
+
+      branch
     end
 
     def no_conflicts?

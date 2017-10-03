@@ -1056,9 +1056,7 @@ describe V1::DocumentsAPI, type: :request do
           corrections
           first_merge
           master_branch.reload
-
           valid_request
-
           master_branch.reload
 
           ['1', '2', '3', '4'].each do |addition|
@@ -1068,7 +1066,57 @@ describe V1::DocumentsAPI, type: :request do
       end
 
       context "when applying changes with current revision changed with conflicts" do
-        it "returns HTTP 409 CONFLICT along with the message about the need to resolve the merge conflicts"
+        let(:corrections) do
+          development_branch.revision.graphemes << master_graphemes.uniq
+          development_branch.working.graphemes << master_graphemes.uniq
+          topic_branch.revision.graphemes << master_graphemes.uniq
+          topic_branch.working.graphemes << master_graphemes.uniq
+
+          Documents::Correct.run! document: document,
+            revision_id: topic_branch.working.id,
+            graphemes: [
+              {
+                id: master_graphemes.first.id,
+                value: '1'
+              },
+              {
+                id: master_graphemes[4].id,
+                value: '9'
+              }
+            ]
+
+          Branches::Commit.run! branch: topic_branch
+
+          Documents::Correct.run! document: document,
+            revision_id: development_branch.working.id,
+            graphemes: [
+              {
+                id: master_graphemes.first.id,
+                delete: true
+              },
+              {
+                id: master_graphemes[4].id,
+                value: '3'
+              }
+            ]
+
+          Branches::Commit.run! branch: development_branch
+        end
+
+        let(:first_merge) do
+          Branches::Merge.run! branch: master_branch,
+            other_branch: development_branch
+        end
+
+        it "returns HTTP 409 CONFLICT along with the message about the need to resolve the merge conflicts" do
+          corrections
+          first_merge
+          master_branch.reload
+          valid_request
+          master_branch.reload
+
+          expect(response.status).to eq(409)
+        end
       end
 
     end
