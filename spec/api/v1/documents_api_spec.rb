@@ -885,8 +885,8 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:valid_root_request) do
       master_branch
-      development_branch
-      corrections
+
+      master_branch.revision.graphemes << master_graphemes.flatten.uniq
 
       method.call url(document.id, master_branch.revision.id), headers: headers
     end
@@ -990,6 +990,7 @@ describe V1::DocumentsAPI, type: :request do
       context "when applying changes with current revision changed but without conflicts" do
         let(:corrections) do
           development_branch.revision.graphemes << master_graphemes.uniq
+          development_branch.working.graphemes << master_graphemes.uniq
           topic_branch.revision.graphemes << master_graphemes.uniq
           topic_branch.working.graphemes << master_graphemes.uniq
 
@@ -1051,15 +1052,17 @@ describe V1::DocumentsAPI, type: :request do
             other_branch: development_branch
         end
 
-        it "makes current revision point at the revisions from other and the ones added other way" do
+        it "makes current revision point at the revisions from other and the ones added other way", focus: true do
           corrections
           first_merge
+          master_branch.reload
+
           valid_request
 
           master_branch.reload
 
           ['1', '2', '3', '4'].each do |addition|
-            expect(master_branch.revision.graphemes.pluck(:value)).to include(addition)
+            expect(master_branch.revision.graphemes.to_a.uniq.map(&:value)).to include(addition)
           end
         end
       end
@@ -1086,12 +1089,7 @@ describe V1::DocumentsAPI, type: :request do
         expect(valid_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
       end
 
-      it "returns all graphemes when master branch specified" do
-        expect(valid_master_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
-        expect(valid_master_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
-      end
-
-      it "returns all graphemes whgen root revision specified" do
+      it "returns all graphemes when root revision specified" do
         expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
         expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
       end
