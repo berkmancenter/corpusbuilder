@@ -1117,6 +1117,27 @@ describe V1::DocumentsAPI, type: :request do
 
           expect(response.status).to eq(409)
         end
+
+        it "marks the working revision of the branch as being in conflict" do
+          corrections
+          first_merge
+          master_branch.reload
+          valid_request
+          master_branch.reload
+
+          expect(master_branch.working).to be_conflict
+        end
+
+        it "makes the working revision contain the conflict graphemes", focus: true do
+          corrections
+          first_merge
+          master_branch.reload
+          valid_request
+          master_branch.reload
+
+
+          expect(master_branch.working.graphemes.to_a.uniq.select(&:conflict?).count).to eq(2)
+        end
       end
 
     end

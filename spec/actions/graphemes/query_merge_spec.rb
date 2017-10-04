@@ -46,19 +46,34 @@ describe Graphemes::QueryMerge do
     it "returns conflict items for changed on left and right sides" do
       conflict_items = result.select(&:conflict?)
 
-      expect((both_changed_conflicts.map(&:id) & conflict_items.map(&:id)).sort).to eq(both_changed_conflicts.map(&:id).sort)
+      expect(
+         (
+           both_changed_conflicts.map(&:parent_ids).flatten &
+           conflict_items.map(&:parent_ids).flatten
+         ).sort
+      ).to eq(both_changed_conflicts.map(&:parent_ids).flatten.sort)
     end
 
     it "returns conflict items for changed on left and removed on right" do
       conflict_items = result.select(&:conflict?)
 
-      expect((changed_on_left_removed_on_right_conflicts.map(&:id) & conflict_items.map(&:id)).sort).to eq(changed_on_left_removed_on_right_conflicts.map(&:id).sort)
+      expect(
+        (
+          changed_on_left_removed_on_right_conflicts.map(&:parent_ids).flatten &
+          conflict_items.map(&:parent_ids).flatten
+        ).sort
+      ).to eq(changed_on_left_removed_on_right_conflicts.map(&:parent_ids).flatten.sort)
     end
 
     it "returns conflict items for removed on left and changed on right" do
       conflict_items = result.select(&:conflict?)
 
-      expect((changed_on_right_removed_on_left_conflicts.map(&:id) & conflict_items.map(&:id)).sort).to eq(changed_on_right_removed_on_left_conflicts.map(&:id).sort)
+      expect(
+        (
+          changed_on_right_removed_on_left_conflicts.map(&:parent_ids).flatten &
+          conflict_items.map(&:parent_ids).flatten
+        ).sort
+      ).to eq(changed_on_right_removed_on_left_conflicts.map(&:parent_ids).flatten.sort)
     end
   end
 
@@ -390,10 +405,6 @@ describe Graphemes::QueryMerge do
 
         Branches::Commit.run! branch: development_branch
       end
-
-    # it "y" do
-    #   byebug
-    # end
     end
   end
 end
