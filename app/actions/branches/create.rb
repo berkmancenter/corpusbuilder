@@ -13,8 +13,8 @@ module Branches
         editor_id: @editor_id
 
       if revision.present?
-        next_revision.graphemes << revision.graphemes
-        next_working.graphemes << revision.graphemes
+        Revisions::PointAtSameGraphemes.run!(source: revision, target: next_revision)
+        Revisions::PointAtSameGraphemes.run!(source: revision, target: next_working)
       else
         next_revision && next_working
       end

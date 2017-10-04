@@ -15,7 +15,7 @@ module Branches
         status: Revision.statuses[:working]
       ).result
 
-      new_working.graphemes << new_regular.graphemes
+      Revisions::PointAtSameGraphemes.run!(source: new_regular, target: new_working)
 
       branch.update_attributes!(revision_id: new_regular.id)
 
