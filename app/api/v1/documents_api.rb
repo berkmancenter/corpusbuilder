@@ -67,6 +67,16 @@ class V1::DocumentsAPI < Grape::API
       action! Documents::Create, params.merge(app: @current_app)
     end
 
+    desc "Returns a list of all documents within the app"
+    get do
+      authorize!
+
+      present Documents::QueryAll.run!(
+        app: @current_app,
+        status: Document.statuses[:ready]
+      ).result, with: Document::Simple
+    end
+
     namespace ':id', requirements: { id: uuid_pattern } do
       before do
         authorize!

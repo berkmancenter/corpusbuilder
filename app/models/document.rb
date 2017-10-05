@@ -8,6 +8,7 @@ class Document < ApplicationRecord
   has_many :branches, through: :revisions
   has_many :surfaces
   has_many :images
+  belongs_to :app
 
   def master
     branches.where(name: 'master').first
@@ -15,6 +16,13 @@ class Document < ApplicationRecord
 
   class Status < Grape::Entity
     expose :status
+  end
+
+  class Simple < Grape::Entity
+    expose :id
+    expose :title
+    expose :author
+    expose :date
   end
 
   class Tree < Grape::Entity

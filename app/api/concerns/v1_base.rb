@@ -21,8 +21,12 @@ module V1Base
     end
 
     rescue_from :all do |e|
-      Rails.logger.error "Error inside action: #{e.message}\nBacktrace:\n#{e.backtrace.join('\n')}"
-      error!("Oops! Something went wrong", 500)
+      if !e.is_a? Grape::Exceptions::Base
+        Rails.logger.error "Error inside action: #{e.message}\nBacktrace:\n#{e.backtrace.join('\n')}"
+        error!("Oops! Something went wrong", 500)
+      else
+        error!(e.message, e.status)
+      end
     end
 
     helpers do
