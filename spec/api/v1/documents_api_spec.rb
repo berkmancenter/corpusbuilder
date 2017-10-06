@@ -8,8 +8,13 @@ describe V1::DocumentsAPI, type: :request do
     {
       "Accept" => "application/vnd.corpus-builder-v1+json",
       "X-App-Id" => client_app.id,
+      "X-Editor-Id" => editor.id,
       "X-Token" => client_app.encrypted_secret
     }
+  end
+
+  let(:editor) do
+    create :editor
   end
 
   let(:image1) do
@@ -55,10 +60,6 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:valid_request) do
       post url, params: data_minimal_correct, headers: headers
-    end
-
-    let(:editor) do
-      create :editor
     end
 
     let(:url) { "/api/documents" }
@@ -1258,6 +1259,22 @@ describe V1::DocumentsAPI, type: :request do
       post url(document.id), headers: headers.without('X-App-Id'), params: minimal_valid_params
     end
 
+    let(:inexistant_editor_request) do
+      post url(document.id),
+        headers: headers.without('X-App-Id').merge('X-Editor-Id' => document.id),
+        params: minimal_valid_params
+    end
+
+    let(:no_editor_request) do
+      post url(document.id),
+        headers: headers.without('X-App-Id').without('X-Editor-Id'),
+        params: minimal_valid_params
+    end
+
+    let(:valid_editor_request) do
+      valid_request
+    end
+
     let(:no_token_request) do
       post url(document.id), headers: headers.without('X-Token'), params: minimal_valid_params
     end
@@ -1288,7 +1305,7 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:good_branch_request) do
       post url(document.id),
-        headers: headers,
+        headers: headers.merge('X-Editor-Id' => another_editor.id),
         params: minimal_valid_params.merge(revision: master_branch.name)
     end
 
@@ -1302,7 +1319,7 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:no_editor_request) do
       post url(document.id),
-        headers: headers,
+        headers: headers.without('X-Editor-Id'),
         params: minimal_valid_params.merge(revision: master_branch.name).without(:editor_id)
     end
 
@@ -1325,7 +1342,6 @@ describe V1::DocumentsAPI, type: :request do
     let(:minimal_valid_params) do
       {
         parent_revision: master_branch.name,
-        editor_id: another_editor.id,
         name: 'topic'
       }
     end

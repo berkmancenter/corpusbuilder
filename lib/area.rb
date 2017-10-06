@@ -51,8 +51,6 @@ class Area
     def self.dump(value)
       return nil if value.nil?
 
-      byebug if value.is_a? String
-
       if value.lry <= value.uly
         raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards"
       end

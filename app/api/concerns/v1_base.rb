@@ -57,6 +57,14 @@ module V1Base
         end
       end
 
+      def require_editor!
+        @editor_id = headers['X-Editor-Id']
+
+        if @editor_id.nil?
+          error!('Missing X-Editor-Id header', 403)
+        end
+      end
+
       def action! action, additional_params = nil
         action = action.run(additional_params || params)
         if action.errors.empty?

@@ -9,6 +9,6 @@ FactoryGirl.define do
   factory :document do
     title { generate(:document_title) }
     status Document.statuses[:initial]
-    app_id SecureRandom.uuid
+    association :app, factory: :app
   end
 end

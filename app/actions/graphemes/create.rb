@@ -37,7 +37,6 @@ module Graphemes
     end
 
     def existing_zone_id
-      byebug if surface_id.nil?
 
       Zone.where("area @> ?", @area.to_s).
            where(surface_id: surface_id).
