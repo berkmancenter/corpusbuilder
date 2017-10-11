@@ -5,5 +5,8 @@
   "components/Viewer/Viewer.css": "/packs/components/Viewer/Viewer.css",
   "components/Viewer/Viewer.js": "/packs/components/Viewer/Viewer.js",
   "components/Viewer/index.css": "/packs/components/Viewer/index.css",
-  "components/Viewer/index.js": "/packs/components/Viewer/index.js"
+  "components/Viewer/index.js": "/packs/components/Viewer/index.js",
+  "example_client.js": "/packs/example_client.js",
+  "stores/Documents.js": "/packs/stores/Documents.js",
+  "stores/State.js": "/packs/stores/State.js"
 }

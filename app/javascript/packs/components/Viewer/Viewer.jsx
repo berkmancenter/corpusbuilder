@@ -1,9 +1,25 @@
 import React from 'react';
+import { Provider, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
+
+import state from '../../stores/State'
+import { Documents } from '../../stores/Documents'
+
 import s from './Viewer.scss'
 
+const context = {
+    state: state,
+    store: {
+        documents: new Documents(state)
+    }
+};
+
+@observer
 export default class Viewer extends React.Component {
     constructor(props) {
+        props.state = context.state;
+        props.store = context.store;
+
         super(props);
 
         this.state = {
@@ -13,9 +29,13 @@ export default class Viewer extends React.Component {
 
     componentWillMount() {
         setTimeout(() => {
-            this.setState({
-                document: { name: "Good Read" }
-            });
+            this.props.store.documents.get("61389c62-b6a6-4339-b4c2-87fae4a6c0ab")
+              .then((doc) => {
+                this.setState({
+                    document: doc
+                });
+              }
+            );
         }, 3000);
     }
 
@@ -31,7 +51,9 @@ export default class Viewer extends React.Component {
 
         return (
             <div className="corpusbuilder-viewer">
-                { content }
+                <Provider {...context}>
+                    { content }
+                </Provider>
             </div>
         );
     }

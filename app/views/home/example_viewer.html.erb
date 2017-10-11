@@ -4,6 +4,14 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
-  CorpusBuilder.init(document.getElementById('viewer'), {});
+  let documentId = "61389c62-b6a6-4339-b4c2-87fae4a6c0ab";
+
+  CorpusBuilder.init(
+    document.getElementById('viewer'),
+    {
+      baseUrl: 'localhost.dev/',
+      documentId: documentId
+    }
+  );
 });
 </script>
