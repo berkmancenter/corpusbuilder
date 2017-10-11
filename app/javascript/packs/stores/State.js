@@ -1,11 +1,7 @@
-import { extendObservable } from 'mobx'
+import { observable } from 'mobx'
 
 class State {
-    constructor() {
-        extendObservable(this, {
-            documents: {  }
-        });
-    }
+    @observable documents = observable.map();
 }
 
 export default window.__CB_STATE = new State();

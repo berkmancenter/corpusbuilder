@@ -1,26 +1,26 @@
 import React from 'react';
+import * as qwest from 'qwest';
 import { Provider, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
 
 import state from '../../stores/State'
-import { Documents } from '../../stores/Documents'
+import Documents from '../../stores/Documents'
 
 import s from './Viewer.scss'
-
-const context = {
-    state: state,
-    store: {
-        documents: new Documents(state)
-    }
-};
 
 @observer
 export default class Viewer extends React.Component {
     constructor(props) {
-        props.state = context.state;
-        props.store = context.store;
-
         super(props);
+
+        this._context = {
+            state: state,
+            store: {
+                documents: new Documents(props.baseUrl, state)
+            }
+        };
+
+        qwest.base = props.baseUrl;
 
         this.state = {
             document: null
@@ -29,20 +29,16 @@ export default class Viewer extends React.Component {
 
     componentWillMount() {
         setTimeout(() => {
-            this.props.store.documents.get("61389c62-b6a6-4339-b4c2-87fae4a6c0ab")
-              .then((doc) => {
-                this.setState({
-                    document: doc
-                });
-              }
-            );
+            this._context.store.documents.get("61389c62-b6a6-4339-b4c2-87fae4a6c0ab");
         }, 3000);
     }
 
     render() {
         let content;
+        let context = this._context;
+        let doc = context.state.documents.get(this.props.documentId);
 
-        if(this.state.document !== undefined && this.state.document !== null) {
+        if(doc !== undefined && doc !== null) {
             content = <i>Document here!</i>;
         }
         else {
