@@ -16,6 +16,7 @@
 .byebug_history
 **.swp
 **.swo
+**.swn
 
 /node_modules/
 /postgres/
