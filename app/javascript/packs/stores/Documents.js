@@ -1,5 +1,5 @@
 import { action } from 'mobx';
-import * as qwest from 'qwest';
+import Request from '../lib/Request';
 
 export default class Documents {
     constructor(baseUrl, state) {
@@ -8,7 +8,7 @@ export default class Documents {
     }
 
     @action async get(documentId) {
-        let doc = await qwest.get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/master/tree`);
+        let doc = await Request.get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/master/tree`);
 
         this.state.documents.set(documentId, doc);
 

@@ -2,11 +2,16 @@
   "application.js": "/packs/application.js",
   "client.css": "/packs/client.css",
   "client.js": "/packs/client.js",
+  "components/DocumentPage/DocumentPage.css": "/packs/components/DocumentPage/DocumentPage.css",
+  "components/DocumentPage/DocumentPage.js": "/packs/components/DocumentPage/DocumentPage.js",
+  "components/DocumentPage/index.css": "/packs/components/DocumentPage/index.css",
+  "components/DocumentPage/index.js": "/packs/components/DocumentPage/index.js",
   "components/Viewer/Viewer.css": "/packs/components/Viewer/Viewer.css",
   "components/Viewer/Viewer.js": "/packs/components/Viewer/Viewer.js",
   "components/Viewer/index.css": "/packs/components/Viewer/index.css",
   "components/Viewer/index.js": "/packs/components/Viewer/index.js",
   "example_client.js": "/packs/example_client.js",
+  "lib/Request.js": "/packs/lib/Request.js",
   "stores/Documents.js": "/packs/stores/Documents.js",
   "stores/State.js": "/packs/stores/State.js"
 }

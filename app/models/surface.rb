@@ -12,6 +12,9 @@ class Surface < ApplicationRecord
   class Tree < Grape::Entity
     expose :number
     expose :area, with: Area::Tree
+    expose :image_url do |surface, options|
+      surface.image.image_scan.url
+    end
     expose :graphemes do |surface, options|
       _graphemes = if options.key? :revision_id
         surface.graphemes.joins(:revisions).where(revisions: { id: options[:revision_id] })

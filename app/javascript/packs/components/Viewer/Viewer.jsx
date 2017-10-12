@@ -6,6 +6,8 @@ import ContentLoader from 'react-content-loader'
 import state from '../../stores/State'
 import Documents from '../../stores/Documents'
 
+import { DocumentPage } from '../DocumentPage'
+
 import s from './Viewer.scss'
 
 @observer
@@ -23,23 +25,26 @@ export default class Viewer extends React.Component {
         qwest.base = props.baseUrl;
 
         this.state = {
-            document: null
+            document: null,
+            page: 1
         };
     }
 
     componentWillMount() {
-        setTimeout(() => {
-            this._context.store.documents.get("61389c62-b6a6-4339-b4c2-87fae4a6c0ab");
-        }, 3000);
+        this._context.store.documents.get(this.props.documentId);
     }
 
     render() {
         let content;
         let context = this._context;
         let doc = context.state.documents.get(this.props.documentId);
+        let page = this.state.page;
 
         if(doc !== undefined && doc !== null) {
-            content = <i>Document here!</i>;
+            content = <div>
+                <DocumentPage document={ doc } page={ page }>
+                </DocumentPage>
+              </div>
         }
         else {
             content = <ContentLoader type="facebook" />;
