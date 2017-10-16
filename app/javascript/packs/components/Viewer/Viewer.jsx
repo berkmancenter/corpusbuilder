@@ -31,12 +31,16 @@ export default class Viewer extends React.Component {
         this.state = {
             document: null,
             page: 1,
+            branchName: (props.branchName || 'master'),
             showInfo: false
         };
     }
 
     navigate(page) {
         this.setState({ page: page });
+    }
+
+    chooseBranch(branch) {
     }
 
     toggleCertainties() {
@@ -52,6 +56,7 @@ export default class Viewer extends React.Component {
 
     componentWillMount() {
         this._context.store.documents.get(this.props.documentId);
+        this._context.store.documents.getBranches(this.props.documentId);
     }
 
     render() {
@@ -60,6 +65,7 @@ export default class Viewer extends React.Component {
         let state = context.state;
         let doc = state.documents.get(this.props.documentId);
         let page = this.state.page;
+        let branchName = this.state.branchName;
 
         if(doc !== undefined && doc !== null) {
             let countPages = doc.surfaces.length;
@@ -72,7 +78,15 @@ export default class Viewer extends React.Component {
             let pageOptions = Array.from({ length: countPages }, (_, n) => {
                 return (
                     <li key={ `page-dropdown-${ n + 1 }` } onClick={ this.navigate.bind(this, n + 1) }>
-                        { n + 1 }
+                        { n + 1 === page ? `* ${ n + 1 }` : (n + 1) }
+                    </li>
+                );
+            });
+
+            let branchesOptions = (state.branches.get(this.props.documentId) || []).map((branch) => {
+                return (
+                    <li key={ `branch-${ branch.revision_id }` nonClick={ this.chooseBranch.bind(this, branch) } }>
+                        { branchName === branch.name ? `* ${branch.name}` : branch.name }
                     </li>
                 );
             });
@@ -106,6 +120,16 @@ export default class Viewer extends React.Component {
                   <button onClick={ this.toggleInfo.bind(this) }>
                     { 'ℹ' }
                   </button>
+                  <div className="side-options">
+                    <Dropdown>
+                      <DropdownTrigger>Branch: master</DropdownTrigger>
+                      <DropdownContent>
+                        <ul>
+                          { branchesOptions }
+                        </ul>
+                      </DropdownContent>
+                    </Dropdown>
+                  </div>
                 </div>
                 <DocumentPage document={ doc } page={ page }>
                 </DocumentPage>

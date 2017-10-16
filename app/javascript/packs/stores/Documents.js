@@ -22,4 +22,12 @@ export default class Documents {
 
         return data;
     }
+
+    @action async getBranches(documentId) {
+        let data = await Request.get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/branches`);
+
+        this.state.branches.set(documentId, data);
+
+        return data;
+    }
 }

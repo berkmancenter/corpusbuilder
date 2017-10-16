@@ -5,6 +5,9 @@ class State {
     documents = observable.map();
 
     @observable
+    branches = observable.map();
+
+    @observable
     documentInfos = observable.map();
 
     @observable
