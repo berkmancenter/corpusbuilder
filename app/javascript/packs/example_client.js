@@ -15,8 +15,8 @@ mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/master/tree`, (req, r
     let _graphemes = (base = 0) => {
         let __graphemes = [];
 
-        let lastX = 0;
-        let lastY = 0;
+        let lastX = 100;
+        let lastY = 50;
 
         for(let i = 0; i < 1800; i++) {
           let x = lastX + 7;
@@ -26,8 +26,8 @@ mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/master/tree`, (req, r
             x += 7;
           }
 
-          if(x + 10 > 600) {
-            x = 0;
+          if(x + 10 > 530) {
+            x = 100;
             y += 10;
           }
 

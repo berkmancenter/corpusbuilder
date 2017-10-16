@@ -14,14 +14,24 @@ export default class DocumentPage extends React.Component {
         };
     }
 
+    percentageToHsl(percentage, hue0, hue1) {
+        var hue = (percentage * (hue1 - hue0)) + hue0;
+        return 'hsla(' + hue + ', 100%, 50%, .5)';
+    }
+
     graphemeNodes(grapheme, previous) {
         let graphemeHeight = grapheme.area.lry - grapheme.area.uly;
 
         let graphemeStyles = {
           left: grapheme.area.ulx,
           top: grapheme.area.uly,
-          fontSize: graphemeHeight
+          fontSize: graphemeHeight,
+          transition: 'background-color 1s ease-in-out'
         };
+
+        if(this.props.state.showCertainties) {
+          graphemeStyles.backgroundColor = this.percentageToHsl(grapheme.certainty, 0, 120);
+        }
 
         let spaces = [];
 

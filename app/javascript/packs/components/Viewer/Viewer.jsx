@@ -34,6 +34,10 @@ export default class Viewer extends React.Component {
         this.setState({ page: page });
     }
 
+    toggleCertainties() {
+        this._context.state.showCertainties = !this._context.state.showCertainties;
+    }
+
     componentWillMount() {
         this._context.store.documents.get(this.props.documentId);
     }
@@ -41,7 +45,8 @@ export default class Viewer extends React.Component {
     render() {
         let content;
         let context = this._context;
-        let doc = context.state.documents.get(this.props.documentId);
+        let state = context.state;
+        let doc = state.documents.get(this.props.documentId);
         let page = this.state.page;
 
         if(doc !== undefined && doc !== null) {
@@ -49,17 +54,23 @@ export default class Viewer extends React.Component {
             content = (
               <div>
                 <div className="corpusbuilder-options">
+                  <span>
+                    Page { page } / { doc.surfaces.length }
+                  </span>
                   <button onClick={ this.navigate.bind(this, 1) } disabled={ page == 1 }>
-                    First Page
+                    { '|←' }
                   </button>
                   <button onClick={ this.navigate.bind(this, page - 1) } disabled={ page == 1 }>
-                    Previous Page
+                    { '←' }
                   </button>
                   <button onClick={ this.navigate.bind(this, page + 1) } disabled={ page == countPages }>
-                    Next Page
+                    { '→' }
                   </button>
                   <button onClick={ this.navigate.bind(this, countPages) } disabled={ page == countPages }>
-                    Last Page
+                    { '→|' }
+                  </button>
+                  <button onClick={ this.toggleCertainties.bind(this) }>
+                    { '▧' }
                   </button>
                 </div>
                 <DocumentPage document={ doc } page={ page }>
