@@ -6,4 +6,10 @@
     background-size: contain;
     position: relative;
   }
+
+  &-grapheme {
+    display: inline-block;
+    position: absolute;
+    color: transparent;
+  }
 }

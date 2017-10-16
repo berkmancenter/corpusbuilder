@@ -30,6 +30,10 @@ export default class Viewer extends React.Component {
         };
     }
 
+    navigate(page) {
+        this.setState({ page: page });
+    }
+
     componentWillMount() {
         this._context.store.documents.get(this.props.documentId);
     }
@@ -41,10 +45,27 @@ export default class Viewer extends React.Component {
         let page = this.state.page;
 
         if(doc !== undefined && doc !== null) {
-            content = <div>
+            let countPages = doc.surfaces.length;
+            content = (
+              <div>
+                <div className="corpusbuilder-options">
+                  <button onClick={ this.navigate.bind(this, 1) } disabled={ page == 1 }>
+                    First Page
+                  </button>
+                  <button onClick={ this.navigate.bind(this, page - 1) } disabled={ page == 1 }>
+                    Previous Page
+                  </button>
+                  <button onClick={ this.navigate.bind(this, page + 1) } disabled={ page == countPages }>
+                    Next Page
+                  </button>
+                  <button onClick={ this.navigate.bind(this, countPages) } disabled={ page == countPages }>
+                    Last Page
+                  </button>
+                </div>
                 <DocumentPage document={ doc } page={ page }>
                 </DocumentPage>
               </div>
+            );
         }
         else {
             content = <ContentLoader type="facebook" />;
