@@ -9,6 +9,20 @@ function logRequest(req) {
     console.log(`%c ${req._method} ${req._url}`, 'color: green; font-weight: bold');
 }
 
+mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}`, (req, res) => {
+    logRequest(req);
+    return res
+        .status(200)
+        .body(JSON.stringify(
+          {
+            id: documentId,
+            title: "The Invincible",
+            author: "Stanislaw Lem",
+            date: "1964"
+          }
+        ));
+});
+
 mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/master/tree`, (req, res) => {
     logRequest(req);
 
@@ -16,10 +30,10 @@ mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/master/tree`, (req, r
         let __graphemes = [];
 
         let lastX = 100;
-        let lastY = 50;
+        let lastY = 54;
 
         for(let i = 0; i < 1800; i++) {
-          let x = lastX + 7;
+          let x = lastX + 8;
           let y = lastY;
 
           if(Math.random() < 1/5) {
@@ -28,15 +42,15 @@ mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/master/tree`, (req, r
 
           if(x + 10 > 530) {
             x = 100;
-            y += 10;
+            y += 18;
           }
 
           lastX = x;
           lastY = y;
 
           let _area = {
-            ulx: x, lrx: (x+7),
-            uly: y, lry: y + 10
+            ulx: x, lrx: (x+9),
+            uly: y, lry: y + 15
           };
           __graphemes.push({
               id: i + base,

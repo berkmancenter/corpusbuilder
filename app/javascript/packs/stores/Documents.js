@@ -14,4 +14,12 @@ export default class Documents {
 
         return doc;
     }
+
+    @action async info(documentId) {
+        let data = await Request.get(`${this.baseUrl}/corpusbuilder/documents/${documentId}`);
+
+        this.state.documentInfos.set(documentId, data);
+
+        return data;
+    }
 }

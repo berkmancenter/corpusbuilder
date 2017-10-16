@@ -88,6 +88,11 @@ class V1::DocumentsAPI < Grape::API
         end
       end
 
+      desc "Returns document info"
+      get do
+        present @document, with: Document::Simple
+      end
+
       desc "Returns document status"
       get 'status' do
         present @document, with: Document::Status

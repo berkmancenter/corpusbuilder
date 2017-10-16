@@ -1,0 +1,20 @@
+.corpusbuilder {
+  &-document-info {
+    background-color: rgba(255, 255, 255, 0.95);
+    position: absolute;
+    top: 42px;
+    width: 100%;
+    bottom: 0px;
+    padding: 10px;
+
+    span.label {
+      font-weight: bold;
+      display: block;
+    }
+
+    span.value {
+      display: block;
+      margin-bottom: 10px;
+    }
+  }
+}

@@ -26,7 +26,7 @@ export default class DocumentPage extends React.Component {
           left: grapheme.area.ulx,
           top: grapheme.area.uly,
           fontSize: graphemeHeight,
-          transition: 'background-color 1s ease-in-out'
+          transition: 'background-color 0.25s linear'
         };
 
         if(this.props.state.showCertainties) {

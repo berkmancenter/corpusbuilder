@@ -7,6 +7,7 @@ import state from '../../stores/State'
 import Documents from '../../stores/Documents'
 
 import { DocumentPage } from '../DocumentPage'
+import { DocumentInfo } from '../DocumentInfo'
 
 import s from './Viewer.scss'
 
@@ -26,7 +27,8 @@ export default class Viewer extends React.Component {
 
         this.state = {
             document: null,
-            page: 1
+            page: 1,
+            showInfo: false
         };
     }
 
@@ -36,6 +38,13 @@ export default class Viewer extends React.Component {
 
     toggleCertainties() {
         this._context.state.showCertainties = !this._context.state.showCertainties;
+    }
+
+    toggleInfo() {
+        if(!this._context.state.documentInfos.has(this.props.documentId)) {
+            this._context.store.documents.info(this.props.documentId);
+        }
+        this._context.state.showInfo = !this._context.state.showInfo;
     }
 
     componentWillMount() {
@@ -51,6 +60,12 @@ export default class Viewer extends React.Component {
 
         if(doc !== undefined && doc !== null) {
             let countPages = doc.surfaces.length;
+            let infoPage;
+
+            if(state.showInfo) {
+              infoPage = <DocumentInfo document={ doc } />;
+            }
+
             content = (
               <div>
                 <div className="corpusbuilder-options">
@@ -72,9 +87,13 @@ export default class Viewer extends React.Component {
                   <button onClick={ this.toggleCertainties.bind(this) }>
                     { '▧' }
                   </button>
+                  <button onClick={ this.toggleInfo.bind(this) }>
+                    { 'ℹ' }
+                  </button>
                 </div>
                 <DocumentPage document={ doc } page={ page }>
                 </DocumentPage>
+                { infoPage }
               </div>
             );
         }
