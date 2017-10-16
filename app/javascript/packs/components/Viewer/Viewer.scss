@@ -33,5 +33,60 @@
     span {
       margin-right: 10px;
     }
+
+    .dropdown {
+      display: inline-block;
+      line-height: 30px;
+      padding-left: 10px;
+      padding-right: 10px;
+      background-color: white;
+      margin-right: 5px !important;
+      border: 1px solid #ddd;
+    }
+
+    .dropdown__trigger {
+      background-color: white;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .dropdown__trigger:after {
+      content: '▾';
+      font-size: 10px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .dropdown--active {
+      .dropdown__trigger:after {
+        content: '▴';
+      }
+
+      .dropdown__content {
+        display: block;
+        z-index: 999;
+        min-width: 100px;
+        background-color: #fff;
+        box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+        margin-left: -10px;
+
+        ul {
+          list-style-type: none;
+          padding: 0px;
+          margin: 0px;
+
+          li {
+            padding-left: 10px;
+            padding-right: 10px;
+            cursor: pointer;
+          }
+
+          li:hover {
+            background-color: #f0f0f0;
+          }
+        }
+      }
+    }
   }
 }

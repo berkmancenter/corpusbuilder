@@ -2,6 +2,8 @@ import React from 'react';
 import * as qwest from 'qwest';
 import { Provider, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
+import { default as Dropdown } from 'react-simple-dropdown'
+import { DropdownTrigger, DropdownContent } from 'react-simple-dropdown'
 
 import state from '../../stores/State'
 import Documents from '../../stores/Documents'
@@ -9,6 +11,7 @@ import Documents from '../../stores/Documents'
 import { DocumentPage } from '../DocumentPage'
 import { DocumentInfo } from '../DocumentInfo'
 
+import dropdownStyles from 'react-simple-dropdown/styles/Dropdown.css'
 import s from './Viewer.scss'
 
 @observer
@@ -66,18 +69,31 @@ export default class Viewer extends React.Component {
               infoPage = <DocumentInfo document={ doc } />;
             }
 
+            let pageOptions = Array.from({ length: countPages }, (_, n) => {
+                return (
+                    <li key={ `page-dropdown-${ n + 1 }` } onClick={ this.navigate.bind(this, n + 1) }>
+                        { n + 1 }
+                    </li>
+                );
+            });
+
             content = (
               <div>
                 <div className="corpusbuilder-options">
-                  <span>
-                    Page { page } / { doc.surfaces.length }
-                  </span>
                   <button onClick={ this.navigate.bind(this, 1) } disabled={ page == 1 }>
                     { '|←' }
                   </button>
                   <button onClick={ this.navigate.bind(this, page - 1) } disabled={ page == 1 }>
                     { '←' }
                   </button>
+                  <Dropdown>
+                    <DropdownTrigger>Page: { page } / { doc.surfaces.length }</DropdownTrigger>
+                    <DropdownContent>
+                      <ul>
+                        { pageOptions }
+                      </ul>
+                    </DropdownContent>
+                  </Dropdown>
                   <button onClick={ this.navigate.bind(this, page + 1) } disabled={ page == countPages }>
                     { '→' }
                   </button>
