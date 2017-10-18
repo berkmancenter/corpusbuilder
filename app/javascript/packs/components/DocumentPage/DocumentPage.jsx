@@ -19,16 +19,22 @@ export default class DocumentPage extends React.Component {
         return 'hsla(' + hue + ', 100%, 50%, .5)';
     }
 
-    graphemeNodes(grapheme, previous) {
+    graphemeNodes(grapheme, previous, ratio) {
         let graphemeHeight = grapheme.area.lry - grapheme.area.uly;
+        let graphemeWidth = grapheme.area.lrx - grapheme.area.ulx;
+
+        let boxHeight = graphemeHeight * ratio;
+        let boxWidth = graphemeWidth * ratio;
+        let boxLeft = grapheme.area.ulx * ratio;
+        let boxTop = grapheme.area.uly * ratio;
 
         let graphemeStyles = {
-          left: grapheme.area.ulx,
-          top: grapheme.area.uly,
-          fontSize: `${graphemeHeight}px`,
-          height: graphemeHeight,
-          width: ( grapheme.area.lrx - grapheme.area.ulx ),
-          transition: 'background-color 0.25s linear'
+          left: boxLeft,
+          top: boxTop,
+          fontSize: `${boxHeight}px`,
+          height: boxHeight,
+          width: boxWidth
+          //transition: 'background-color 0.25s linear'
         };
 
         if(this.props.state.showCertainties) {
@@ -40,14 +46,13 @@ export default class DocumentPage extends React.Component {
         if(previous !== undefined && previous !== null) {
             if(grapheme.area.uly == previous.area.uly) {
                 let distance = grapheme.area.ulx - previous.area.lrx;
-                let graphemeWidth = grapheme.area.lrx - grapheme.area.ulx;
 
                 if(distance > graphemeWidth * 0.5) {
                     for(let spaceIndex = 0; spaceIndex < distance / graphemeWidth; spaceIndex++) {
                         let spaceStyle = {
-                            left: previous.area.lrx + spaceIndex * graphemeWidth,
-                            top: grapheme.area.uly,
-                            fontSize: graphemeHeight
+                            left: (previous.area.ulx + boxWidth + spaceIndex) * ratio * boxWidth,
+                            top: (grapheme.area.uly * ratio),
+                            fontSize: boxHeight
                         };
                         let spaceKey = `${ grapheme.id }-after-space-${ spaceIndex }`;
                         spaces.push(
@@ -93,18 +98,21 @@ export default class DocumentPage extends React.Component {
         let surface = this.props.document.surfaces.find((surface) => {
             return surface.number == this.props.page;
         });
+        let surfaceWidth = surface.area.lrx - surface.area.ulx;
+        let surfaceHeight = surface.area.lry - surface.area.uly;
+        let ratio = this.props.width / surfaceWidth;
 
         let pageStyle = {
             backgroundImage: `url(${ surface.image_url })`,
-            width: (surface.area.lrx - surface.area.ulx),
-            height: (surface.area.lry - surface.area.uly)
+            width: this.props.width,
+            height: surfaceHeight * ratio
         };
 
         return (
           <div className="corpusbuilder-document-page" style={ pageStyle }>
               {
                 surface.graphemes.map((grapheme, index) => {
-                    return this.graphemeNodes(grapheme, surface.graphemes[ index - 1 ])
+                    return this.graphemeNodes(grapheme, surface.graphemes[ index - 1 ], ratio)
                 })
               }
           </div>

@@ -31,6 +31,7 @@ export default class Viewer extends React.Component {
         this.state = {
             document: null,
             page: 1,
+            width: props.width,
             branchName: (props.branchName || 'master'),
             showInfo: false
         };
@@ -65,6 +66,7 @@ export default class Viewer extends React.Component {
         let state = context.state;
         let doc = state.documents.get(this.props.documentId);
         let page = this.state.page;
+        let width = this.state.width;
         let branchName = this.state.branchName;
 
         if(doc !== undefined && doc !== null) {
@@ -131,7 +133,7 @@ export default class Viewer extends React.Component {
                     </Dropdown>
                   </div>
                 </div>
-                <DocumentPage document={ doc } page={ page }>
+                <DocumentPage document={ doc } page={ page } width={ width }>
                 </DocumentPage>
                 { infoPage }
               </div>

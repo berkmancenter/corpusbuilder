@@ -2,7 +2,7 @@ import mock from 'xhr-mock'
 import masterTreeJson from './master-tree-example.json'
 
 let baseUrl = 'localhost.dev';
-let documentId = "61389c62-b6a6-4339-b4c2-87fae4a6c0ab";
+let documentId = "43f158c6-fae8-4aef-b696-dd28024f6936";
 
 mock.setup();
 
