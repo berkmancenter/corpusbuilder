@@ -85,7 +85,7 @@ export default class Viewer extends React.Component {
 
             let branchesOptions = (state.branches.get(this.props.documentId) || []).map((branch) => {
                 return (
-                    <li key={ `branch-${ branch.revision_id }` nonClick={ this.chooseBranch.bind(this, branch) } }>
+                    <li key={ `branch-${ branch.revision_id }` } onClick={ this.chooseBranch.bind(this, branch) }>
                         { branchName === branch.name ? `* ${branch.name}` : branch.name }
                     </li>
                 );

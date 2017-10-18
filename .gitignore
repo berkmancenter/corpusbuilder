@@ -29,3 +29,4 @@ tags
 /bin/stop
 config/database.yml
 /spec/support/uploads
+.irb_history

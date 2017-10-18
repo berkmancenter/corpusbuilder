@@ -16,6 +16,7 @@
   "components/Viewer/index.js": "/packs/components/Viewer/index.js",
   "example_client.js": "/packs/example_client.js",
   "lib/Request.js": "/packs/lib/Request.js",
+  "master-tree-example.js": "/packs/master-tree-example.js",
   "stores/Documents.js": "/packs/stores/Documents.js",
   "stores/State.js": "/packs/stores/State.js"
 }

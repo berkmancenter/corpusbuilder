@@ -25,7 +25,9 @@ export default class DocumentPage extends React.Component {
         let graphemeStyles = {
           left: grapheme.area.ulx,
           top: grapheme.area.uly,
-          fontSize: graphemeHeight,
+          fontSize: `${graphemeHeight}px`,
+          height: graphemeHeight,
+          width: ( grapheme.area.lrx - grapheme.area.ulx ),
           transition: 'background-color 0.25s linear'
         };
 
