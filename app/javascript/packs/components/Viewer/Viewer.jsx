@@ -3,16 +3,15 @@ import * as qwest from 'qwest';
 import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
-import { default as Dropdown } from 'react-simple-dropdown'
-import { DropdownTrigger, DropdownContent } from 'react-simple-dropdown'
 
 import state from '../../stores/State'
 import Documents from '../../stores/Documents'
 
 import { DocumentPage } from '../DocumentPage'
 import { DocumentInfo } from '../DocumentInfo'
+import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
+import { DocumentOptions } from '../DocumentOptions'
 
-import dropdownStyles from 'react-simple-dropdown/styles/Dropdown.css'
 import s from './Viewer.scss'
 
 @observer
@@ -52,6 +51,9 @@ export default class Viewer extends React.Component {
         };
 
         qwest.base = props.baseUrl;
+
+        this.documentId = this.props.documentId;
+        this.currentBranch = this.props.branchName || 'master';
     }
 
     navigate(page) {
@@ -70,11 +72,6 @@ export default class Viewer extends React.Component {
         this.showInfo = !this.showInfo;
     }
 
-    componentWillMount() {
-        this.documentId = this.props.documentId;
-        this.currentBranch = this.props.branchName || 'master';
-    }
-
     render() {
         let context = this.data;
         let doc = this.tree;
@@ -83,88 +80,37 @@ export default class Viewer extends React.Component {
         let content;
 
         if(doc !== undefined && doc !== null && doc.surfaces.length > 0) {
-            let countPages = doc.surfaces.length;
-            let firstSurface = doc.surfaces[0];
-            let page = this.page || firstSurface.number;
+            let page = this.page || doc.surfaces[0].number;
             let infoPage;
 
             if(this.showInfo) {
               infoPage = <DocumentInfo document={ doc } />;
             }
 
-            let pageOptions = doc.surfaces.map(
-                (surface) => {
-                    return (
-                        <li key={ `page-dropdown-${ surface.id }` }
-                            onClick={ this.navigate.bind(this, surface.number) }
-                            >
-                            { surface.number === page ? `* ${ surface.number }` : surface.number }
-                        </li>
-                    );
-                }
-            );
-
-            let branchesOptions = this.branches.map(
-                (branch) => {
-                    return (
-                        <li key={ `branch-${ branch.revision_id }` }
-                            onClick={ this.chooseBranch.bind(this, branch) }
-                            >
-                            { this.currentBranch === branch.name ? `* ${branch.name}` : branch.name }
-                        </li>
-                    );
-                }
-            );
-
             content = (
               <div>
-                <div className="corpusbuilder-options">
-                  <button onClick={ this.navigate.bind(this, firstSurface.number) }
-                          disabled={ page == firstSurface.number }
-                          >
-                    { '|←' }
-                  </button>
-                  <button onClick={ this.navigate.bind(this, page - 1) }
-                          disabled={ page == firstSurface.number }
-                          >
-                    { '←' }
-                  </button>
-                  <Dropdown>
-                    <DropdownTrigger>Page: { page } / { doc.surfaces.length }</DropdownTrigger>
-                    <DropdownContent>
-                      <ul>
-                        { pageOptions }
-                      </ul>
-                    </DropdownContent>
-                  </Dropdown>
-                  <button onClick={ this.navigate.bind(this, page + 1) } disabled={ page == countPages }>
-                    { '→' }
-                  </button>
-                  <button onClick={ this.navigate.bind(this, countPages) } disabled={ page == countPages }>
-                    { '→|' }
-                  </button>
-                  <button onClick={ this.toggleCertainties.bind(this) }>
-                    { '▧' }
-                  </button>
-                  <button onClick={ this.toggleInfo.bind(this) }>
-                    { 'ℹ' }
-                  </button>
-                  <div className="side-options">
-                    <Dropdown>
-                      <DropdownTrigger>Branch: { this.currentBranch }</DropdownTrigger>
-                      <DropdownContent>
-                        <ul>
-                          { branchesOptions }
-                        </ul>
-                      </DropdownContent>
-                    </Dropdown>
-                  </div>
+                <div className="corpusbuilder-options top">
+                  <DocumentOptions document={ doc }
+                      branches={ this.branches }
+                      currentBranch={ this.currentBranch }
+                      onBranchSwitch={ this.chooseBranch.bind(this) }
+                      onToggleInfo={ this.toggleInfo.bind(this) }
+                      onToggleCertainties={ this.toggleCertainties.bind(this) }
+                      />
                 </div>
-                <DocumentPage document={ doc } page={ page } width={ width }
-                              showCertainties={ this.showCertainties }
-                              >
-                </DocumentPage>
-                { infoPage }
+                <div className="corpusbuilder-viewer-contents">
+                  <DocumentPage document={ doc } page={ page } width={ width }
+                                showCertainties={ this.showCertainties }
+                                >
+                  </DocumentPage>
+                  { infoPage }
+                </div>
+                <div className="corpusbuilder-options bottom">
+                  <DocumentPageSwitcher document={ doc }
+                      page={ page }
+                      onPageSwitch={ this.navigate.bind(this) }
+                      />
+                </div>
               </div>
             );
         }
