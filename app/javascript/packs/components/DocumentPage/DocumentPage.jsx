@@ -1,9 +1,8 @@
 import React from 'react'
-import { inject, observer } from 'mobx-react'
+import { observer } from 'mobx-react'
 import state from '../../stores/State'
 import s from './DocumentPage.scss'
 
-@inject('state')
 @observer
 export default class DocumentPage extends React.Component {
     constructor(props) {
@@ -34,10 +33,9 @@ export default class DocumentPage extends React.Component {
           fontSize: `${boxHeight}px`,
           height: boxHeight,
           width: boxWidth
-          //transition: 'background-color 0.25s linear'
         };
 
-        if(this.props.state.showCertainties) {
+        if(this.props.showCertainties) {
           graphemeStyles.backgroundColor = this.percentageToHsl(grapheme.certainty, 0, 120);
         }
 
@@ -48,9 +46,9 @@ export default class DocumentPage extends React.Component {
                 let distance = grapheme.area.ulx - previous.area.lrx;
 
                 if(distance > graphemeWidth * 0.5) {
-                    for(let spaceIndex = 0; spaceIndex < distance / graphemeWidth; spaceIndex++) {
+                    for(let spaceIndex = 0; spaceIndex * boxWidth < distance / graphemeWidth; spaceIndex++) {
                         let spaceStyle = {
-                            left: (previous.area.ulx + boxWidth + spaceIndex) * ratio * boxWidth,
+                            left: (previous.area.ulx + boxWidth * spaceIndex) * ratio,
                             top: (grapheme.area.uly * ratio),
                             fontSize: boxHeight
                         };

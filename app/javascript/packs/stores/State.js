@@ -2,19 +2,13 @@ import { observable } from 'mobx'
 
 class State {
     @observable
-    documents = observable.map();
+    trees = observable.map();
 
     @observable
     branches = observable.map();
 
     @observable
-    documentInfos = observable.map();
-
-    @observable
-    showCertainties = false;
-
-    @observable
-    showInfo = false;
+    infos = observable.map();
 }
 
 export default window.__CB_STATE = new State();

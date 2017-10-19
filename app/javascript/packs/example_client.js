@@ -1,5 +1,6 @@
 import mock from 'xhr-mock'
 import masterTreeJson from './master-tree-example.json'
+import topicTreeJson from './topic-tree-example.json'
 
 let baseUrl = 'localhost.dev';
 let documentId = "43f158c6-fae8-4aef-b696-dd28024f6936";
@@ -56,4 +57,12 @@ mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/master/tree`, (req, r
     return res
         .status(200)
         .body(JSON.stringify(masterTreeJson));
+});
+
+mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/some-topic-branch/tree`, (req, res) => {
+    logRequest(req);
+
+    return res
+        .status(200)
+        .body(JSON.stringify(topicTreeJson));
 });

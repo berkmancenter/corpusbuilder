@@ -4,6 +4,10 @@
     display: inline-block;
     position: relative;
     font-family: sans-serif;
+
+    svg {
+      margin: 20px;
+    }
   }
 
   &-options {

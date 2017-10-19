@@ -1,5 +1,6 @@
 import React from 'react';
 import * as qwest from 'qwest';
+import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
 import { default as Dropdown } from 'react-simple-dropdown'
@@ -16,90 +17,116 @@ import s from './Viewer.scss'
 
 @observer
 export default class Viewer extends React.Component {
+
+    @observable
+    currentBranch = null;
+
+    @observable
+    documentId = null;
+
+    @observable
+    page = null;
+
+    @observable
+    showInfo = false;
+
+    @observable
+    showCertainties = false;
+
+    @computed get tree() {
+        return this.data.documents.tree(
+          this.documentId,
+          this.currentBranch
+        );
+    }
+
+    @computed get branches() {
+        return this.data.documents.branches(this.documentId) || [];
+    }
+
     constructor(props) {
         super(props);
 
-        this._context = {
-            state: state,
-            store: {
-                documents: new Documents(props.baseUrl, state)
-            }
+        this.data = {
+            documents: new Documents(props.baseUrl, state)
         };
 
         qwest.base = props.baseUrl;
-
-        this.state = {
-            document: null,
-            page: 1,
-            width: props.width,
-            branchName: (props.branchName || 'master'),
-            showInfo: false
-        };
     }
 
     navigate(page) {
-        this.setState({ page: page });
+        this.page = page;
     }
 
     chooseBranch(branch) {
+        this.currentBranch = branch;
     }
 
     toggleCertainties() {
-        this._context.state.showCertainties = !this._context.state.showCertainties;
+        this.showCertainties = !this.showCertainties;
     }
 
     toggleInfo() {
-        if(!this._context.state.documentInfos.has(this.props.documentId)) {
-            this._context.store.documents.info(this.props.documentId);
-        }
-        this._context.state.showInfo = !this._context.state.showInfo;
+        this.showInfo = !this.showInfo;
     }
 
     componentWillMount() {
-        this._context.store.documents.get(this.props.documentId);
-        this._context.store.documents.getBranches(this.props.documentId);
+        this.documentId = this.props.documentId;
+        this.currentBranch = this.props.branchName || 'master';
     }
 
     render() {
+        let context = this.data;
+        let doc = this.tree;
+        let width = this.props.width;
+        let branchName = this.currentBranch;
         let content;
-        let context = this._context;
-        let state = context.state;
-        let doc = state.documents.get(this.props.documentId);
-        let page = this.state.page;
-        let width = this.state.width;
-        let branchName = this.state.branchName;
 
-        if(doc !== undefined && doc !== null) {
+        if(doc !== undefined && doc !== null && doc.surfaces.length > 0) {
             let countPages = doc.surfaces.length;
+            let firstSurface = doc.surfaces[0];
+            let page = this.page || firstSurface.number;
             let infoPage;
 
-            if(state.showInfo) {
+            if(this.showInfo) {
               infoPage = <DocumentInfo document={ doc } />;
             }
 
-            let pageOptions = Array.from({ length: countPages }, (_, n) => {
-                return (
-                    <li key={ `page-dropdown-${ n + 1 }` } onClick={ this.navigate.bind(this, n + 1) }>
-                        { n + 1 === page ? `* ${ n + 1 }` : (n + 1) }
-                    </li>
-                );
-            });
+            let pageOptions = doc.surfaces.map(
+                (surface) => {
+                    return (
+                        <li key={ `page-dropdown-${ surface.id }` }
+                            onClick={ this.navigate.bind(this, surface.number) }
+                            >
+                            { surface.number === page ? `* ${ surface.number }` : surface.number }
+                        </li>
+                    );
+                }
+            );
 
-            let branchesOptions = (state.branches.get(this.props.documentId) || []).map((branch) => {
-                return (
-                    <li key={ `branch-${ branch.revision_id }` } onClick={ this.chooseBranch.bind(this, branch) }>
-                        { branchName === branch.name ? `* ${branch.name}` : branch.name }
-                    </li>
-                );
-            });
+            let branchesOptions = this.branches.map(
+                (branch) => {
+                    return (
+                        <li key={ `branch-${ branch.revision_id }` }
+                            onClick={ this.chooseBranch.bind(this, branch) }
+                            >
+                            { this.currentBranch === branch.name ? `* ${branch.name}` : branch.name }
+                        </li>
+                    );
+                }
+            );
 
             content = (
               <div>
                 <div className="corpusbuilder-options">
-                  <button onClick={ this.navigate.bind(this, 1) } disabled={ page == 1 }>
+                  <button onClick={ this.navigate.bind(this, firstSurface.number) }
+                          disabled={ page == firstSurface.number }
+                          >
                     { '|←' }
                   </button>
-                  <button onClick={ this.navigate.bind(this, page - 1) } disabled={ page == 1 }>
+                  <button onClick={ this.navigate.bind(this, page - 1) }
+                          disabled={ page == firstSurface.number }
+                          >
                     { '←' }
                   </button>
                   <Dropdown>
@@ -124,7 +151,7 @@ export default class Viewer extends React.Component {
                   </button>
                   <div className="side-options">
                     <Dropdown>
-                      <DropdownTrigger>Branch: master</DropdownTrigger>
+                      <DropdownTrigger>Branch: { this.currentBranch }</DropdownTrigger>
                       <DropdownContent>
                         <ul>
                           { branchesOptions }
@@ -133,7 +160,9 @@ export default class Viewer extends React.Component {
                     </Dropdown>
                   </div>
                 </div>
-                <DocumentPage document={ doc } page={ page } width={ width }>
+                <DocumentPage document={ doc } page={ page } width={ width }
+                              showCertainties={ this.showCertainties }
+                              >
                 </DocumentPage>
                 { infoPage }
               </div>
@@ -143,8 +172,13 @@ export default class Viewer extends React.Component {
             content = <ContentLoader type="facebook" />;
         }
 
+        let viewerStyle = {
+            minWidth: `${this.props.width}px`,
+            minHeight: `${this.props.width}px`,
+        };
+
         return (
-            <div className="corpusbuilder-viewer">
+            <div className="corpusbuilder-viewer" style={ viewerStyle }>
                 <Provider {...context}>
                     { content }
                 </Provider>

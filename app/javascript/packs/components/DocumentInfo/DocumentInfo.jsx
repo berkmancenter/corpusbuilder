@@ -1,23 +1,31 @@
 import React from 'react'
+import { computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 import state from '../../stores/State'
 import s from './DocumentInfo.scss'
 
-@inject('state')
+@inject('documents')
 @observer
 export default class DocumentInfo extends React.Component {
+
+    @computed get info() {
+        return this.data.documents.info(this.props.document.id);
+    }
+
     constructor(props) {
         super(props);
 
-        this.state = {
-            document: props.document
+        this.data = {
+            documents: this.props.documents
         };
     }
 
     render() {
         let content;
-        let doc = this.state.document;
-        let info = this.props.state.documentInfos.get(doc.id);
+
+        let doc = this.props.document;
+        let info = this.info;
+
         let countGraphemes = doc.surfaces.reduce((sum, surface) => {
           return sum + surface.graphemes.length;
         }, 0);

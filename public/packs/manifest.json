@@ -18,5 +18,6 @@
   "lib/Request.js": "/packs/lib/Request.js",
   "master-tree-example.js": "/packs/master-tree-example.js",
   "stores/Documents.js": "/packs/stores/Documents.js",
-  "stores/State.js": "/packs/stores/State.js"
+  "stores/State.js": "/packs/stores/State.js",
+  "topic-tree-example.js": "/packs/topic-tree-example.js"
 }

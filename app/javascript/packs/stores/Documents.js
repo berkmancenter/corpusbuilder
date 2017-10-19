@@ -7,27 +7,51 @@ export default class Documents {
         this.baseUrl = baseUrl;
     }
 
-    @action async get(documentId) {
-        let doc = await Request.get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/master/tree`);
+    tree(documentId, branchName = 'master') {
+        if( !this.state.trees.has(branchName)) {
+            Request
+                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/${branchName}/tree`)
+                .then(
+                    action(
+                        ( tree ) => {
+                            this.state.trees.set(branchName, tree);
+                        }
+                    )
+                );
+        }
 
-        this.state.documents.set(documentId, doc);
-
-        return doc;
+        return this.state.trees.get(branchName);
     }
 
-    @action async info(documentId) {
-        let data = await Request.get(`${this.baseUrl}/corpusbuilder/documents/${documentId}`);
+    info(documentId) {
+        if( !this.state.infos.has(documentId)) {
+            Request
+                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}`)
+                .then(
+                    action(
+                        ( info ) => {
+                            this.state.infos.set( documentId, info );
+                        }
+                    )
+                );
+        }
 
-        this.state.documentInfos.set(documentId, data);
-
-        return data;
+        return this.state.infos.get(documentId);
     }
 
-    @action async getBranches(documentId) {
-        let data = await Request.get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/branches`);
+    branches(documentId) {
+        if( !this.state.branches.has(documentId)) {
+            Request
+                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/branches`)
+                .then(
+                    action(
+                        ( branches ) => {
+                            this.state.branches.set( documentId, branches );
+                        }
+                    )
+                );
+        }
 
-        this.state.branches.set(documentId, data);
-
-        return data;
+        return this.state.branches.get(documentId);
     }
 }
