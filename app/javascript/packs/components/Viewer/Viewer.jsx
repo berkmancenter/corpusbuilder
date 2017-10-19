@@ -59,7 +59,7 @@ export default class Viewer extends React.Component {
     }
 
     chooseBranch(branch) {
-        this.currentBranch = branch;
+        this.currentBranch = branch.name;
     }
 
     toggleCertainties() {
