@@ -37,6 +37,36 @@ mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/branches`, (req, res)
         ));
 });
 
+mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/master/revisions`, (req, res) => {
+    logRequest(req);
+    return res
+        .status(200)
+        .body(JSON.stringify(
+          [
+            {
+                id: '29315b8f-c6ec-496a-915e-3608ac6c374a',
+                updated_at: '2017-08-29T11:58:55.153Z'
+            },
+            {
+                id: '806f0602-49e0-46ab-87b7-1e52c5a11540',
+                updated_at: '2017-08-29T11:58:55.153Z'
+            },
+            {
+                id: '37426277-c123-4bd8-ac8d-5301be963111',
+                updated_at: '2017-08-29T11:58:55.153Z'
+            },
+            {
+                id: '8d053ff4-89ac-4403-bade-7ca22de31867',
+                updated_at: '2017-08-29T11:58:55.153Z'
+            },
+            {
+                id: '65e10407-393f-455a-8066-58b271a9e5c5',
+                updated_at: '2017-08-29T11:58:55.153Z'
+            }
+          ]
+        ));
+});
+
 mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}`, (req, res) => {
     logRequest(req);
     return res

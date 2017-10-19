@@ -9,6 +9,9 @@ class State {
 
     @observable
     infos = observable.map();
+
+    @observable
+    revisions = observable.map();
 }
 
 export default window.__CB_STATE = new State();

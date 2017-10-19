@@ -1,4 +1,4 @@
-import { action } from 'mobx';
+import { action, observable } from 'mobx';
 import Request from '../lib/Request';
 
 export default class Documents {
@@ -53,5 +53,28 @@ export default class Documents {
         }
 
         return this.state.branches.get(documentId);
+    }
+
+    revisions(documentId, branchName) {
+        let documentRevisions = this.state.revisions.get(documentId);
+
+        if( documentRevisions === undefined || documentRevisions === null) {
+            documentRevisions = observable.map();
+            this.state.revisions.set(documentId, documentRevisions);
+        }
+
+        if( !documentRevisions.has(branchName) ) {
+            Request
+                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/${branchName}/revisions`)
+                .then(
+                    action(
+                        ( revisions ) => {
+                            documentRevisions.set( branchName, revisions );
+                        }
+                    )
+                );
+        }
+
+        return documentRevisions.get(branchName)
     }
 }

@@ -9,6 +9,7 @@ import Documents from '../../stores/Documents'
 
 import { DocumentPage } from '../DocumentPage'
 import { DocumentInfo } from '../DocumentInfo'
+import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
 import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
 import { DocumentOptions } from '../DocumentOptions'
 
@@ -31,6 +32,9 @@ export default class Viewer extends React.Component {
 
     @observable
     showCertainties = false;
+
+    @observable
+    showRevisions = false;
 
     @computed get tree() {
         return this.data.documents.tree(
@@ -69,7 +73,13 @@ export default class Viewer extends React.Component {
     }
 
     toggleInfo() {
+        this.showRevisions = false;
         this.showInfo = !this.showInfo;
+    }
+
+    toggleRevisions() {
+        this.showInfo = false;
+        this.showRevisions = !this.showRevisions;
     }
 
     render() {
@@ -81,10 +91,14 @@ export default class Viewer extends React.Component {
 
         if(doc !== undefined && doc !== null && doc.surfaces.length > 0) {
             let page = this.page || doc.surfaces[0].number;
-            let infoPage;
+            let otherContent;
 
             if(this.showInfo) {
-              infoPage = <DocumentInfo document={ doc } />;
+              otherContent = <DocumentInfo document={ doc } />;
+            }
+
+            if(this.showRevisions) {
+              otherContent = <DocumentRevisionsBrowser document={ doc } branchName={ this.currentBranch } />;
             }
 
             content = (
@@ -96,6 +110,7 @@ export default class Viewer extends React.Component {
                       onBranchSwitch={ this.chooseBranch.bind(this) }
                       onToggleInfo={ this.toggleInfo.bind(this) }
                       onToggleCertainties={ this.toggleCertainties.bind(this) }
+                      onToggleRevisions={ this.toggleRevisions.bind(this) }
                       />
                 </div>
                 <div className="corpusbuilder-viewer-contents">
@@ -103,7 +118,7 @@ export default class Viewer extends React.Component {
                                 showCertainties={ this.showCertainties }
                                 >
                   </DocumentPage>
-                  { infoPage }
+                  { otherContent }
                 </div>
                 <div className="corpusbuilder-options bottom">
                   <DocumentPageSwitcher document={ doc }

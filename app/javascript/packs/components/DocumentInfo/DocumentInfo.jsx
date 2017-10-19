@@ -9,15 +9,7 @@ import s from './DocumentInfo.scss'
 export default class DocumentInfo extends React.Component {
 
     @computed get info() {
-        return this.data.documents.info(this.props.document.id);
-    }
-
-    constructor(props) {
-        super(props);
-
-        this.data = {
-            documents: this.props.documents
-        };
+        return this.props.documents.info(this.props.document.id);
     }
 
     render() {

@@ -30,7 +30,7 @@ export default class DocumentPageSwitcher extends React.Component {
           (surface) => {
               return (
                   <li key={ `page-dropdown-${ surface.id }` }
-                      onClick={ this.props.onPageSwitch.bind(surface.number) }
+                      onClick={ () => this.props.onPageSwitch.bind(surface.number) }
                       >
                       { surface.number === page ? `* ${ surface.number }` : surface.number }
                   </li>

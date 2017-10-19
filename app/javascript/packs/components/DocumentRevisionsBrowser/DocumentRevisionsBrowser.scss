@@ -1,0 +1,35 @@
+.corpusbuilder {
+  &-revisions-browser {
+    background-color: rgba(255, 255, 255, 0.95);
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    padding: 10px;
+  }
+
+  &-revision-item {
+    border-bottom: 1px dashed #999;
+    clear: both;
+    font-size: 10px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    height: 14px;
+
+    &-id {
+      float: left;
+      margin-right: 10px;
+    }
+
+    &-date {
+      float: left;
+      margin-right: 10px;
+    }
+
+    &-actions {
+      float: right;
+    }
+  }
+}
+

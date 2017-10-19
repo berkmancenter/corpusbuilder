@@ -35,6 +35,9 @@ export default class DocumentOptions extends React.Component {
             <button onClick={ () => this.props.onToggleInfo() }>
               { 'ℹ' }
             </button>
+            <button onClick={ () => this.props.onToggleRevisions() }>
+              { 'Ξ' }
+            </button>
             <div className="side-options">
               <Dropdown>
                 <DropdownTrigger>Branch: { this.props.currentBranch }</DropdownTrigger>
