@@ -105,6 +105,24 @@ export default class DocumentPage extends React.Component {
         }
     }
 
+    nodeTotalOffsetTop(n) {
+        if(n === undefined || n === null) {
+            return 0;
+        }
+        else {
+            return (n.offsetTop || 0) + this.nodeTotalOffsetTop(n.parentNode);
+        }
+    }
+
+    nodeTotalOffsetLeft(n) {
+        if(n === undefined || n === null) {
+            return 0;
+        }
+        else {
+            return (n.offsetLeft || 0) + this.nodeTotalOffsetLeft(n.parentNode);
+        }
+    }
+
     graphemeNodeForSelected(node) {
         return this.parentOf(node, "SPAN", /grapheme/);
     };
@@ -160,8 +178,11 @@ export default class DocumentPage extends React.Component {
         let hasSelection = this.hasSelection();
 
         if(root !== null && root !== undefined && hasSelection) {
-            this.lastMouseX = e.pageX;
-            this.lastMouseY = e.pageY;
+            let offsetTop = this.nodeTotalOffsetTop(root);
+            let offsetLeft = this.nodeTotalOffsetLeft(root);
+
+            this.lastMouseX = e.pageX - offsetLeft;
+            this.lastMouseY = e.pageY - offsetTop;
             this.showMenu = hasSelection;
             this.showAnnotationEditor = false;
         }
@@ -279,12 +300,12 @@ export default class DocumentPage extends React.Component {
         let menu;
         if(this.showMenu) {
             let menuStyles = {
-                position: 'fixed',
+                position: 'absolute',
                 top: this.lastMouseY - 50,
                 left: this.lastMouseX,
                 padding: '10px',
                 color: 'black',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'white',
                 boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.5)',
                 borderRadius: 4
             };
@@ -310,12 +331,12 @@ export default class DocumentPage extends React.Component {
         if(this.showAnnotationEditor) {
             let annotationEditorStyle = {
                 position: 'absolute',
-                top: this.lastMouseY - 150,
+                top: this.lastMouseY - 200,
                 left: 10,
                 right: 10,
                 padding: '10px',
                 color: 'black',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'white',
                 boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.5)',
                 borderRadius: 4
             };
