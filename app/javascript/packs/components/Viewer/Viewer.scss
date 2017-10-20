@@ -2,6 +2,7 @@
   &-viewer {
     border: 2px solid #dfdfdf;
     display: inline-block;
+    box-sizing: content-box;
     font-family: sans-serif;
     position: relative;
 
@@ -12,17 +13,10 @@
     &-contents {
       position: relative;
     }
-  }
-
-  &-options {
-    height: 30px;
-    padding: 5px;
-    background-color: #f2f2f2;
-    color: #777;
-    font-size: 12px;
 
     button {
       height: 30px;
+      padding: 0px;
       border: none;
       color: #777;
       background-color: #ddd;
@@ -32,6 +26,16 @@
       font-size: 14px;
       margin-right: 5px;
     }
+
+  }
+
+  &-options {
+    height: 30px;
+    padding: 5px;
+    box-sizing: content-box;
+    background-color: #f2f2f2;
+    color: #777;
+    font-size: 12px;
 
     button[disabled] {
       opacity: 0.5;
