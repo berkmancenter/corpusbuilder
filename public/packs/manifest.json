@@ -22,6 +22,12 @@
   "components/DocumentRevisionsBrowser/DocumentRevisionsBrowser.js": "/packs/components/DocumentRevisionsBrowser/DocumentRevisionsBrowser.js",
   "components/DocumentRevisionsBrowser/index.css": "/packs/components/DocumentRevisionsBrowser/index.css",
   "components/DocumentRevisionsBrowser/index.js": "/packs/components/DocumentRevisionsBrowser/index.js",
+  "components/MouseManager/MouseManager.js": "/packs/components/MouseManager/MouseManager.js",
+  "components/MouseManager/index.js": "/packs/components/MouseManager/index.js",
+  "components/PopupMenu/PopupMenu.css": "/packs/components/PopupMenu/PopupMenu.css",
+  "components/PopupMenu/PopupMenu.js": "/packs/components/PopupMenu/PopupMenu.js",
+  "components/PopupMenu/index.css": "/packs/components/PopupMenu/index.css",
+  "components/PopupMenu/index.js": "/packs/components/PopupMenu/index.js",
   "components/SelectionManager/SelectionManager.js": "/packs/components/SelectionManager/SelectionManager.js",
   "components/SelectionManager/index.js": "/packs/components/SelectionManager/index.js",
   "components/Viewer/Viewer.css": "/packs/components/Viewer/Viewer.css",
@@ -32,6 +38,7 @@
   "lib/Request.js": "/packs/lib/Request.js",
   "master-tree-example.js": "/packs/master-tree-example.js",
   "stores/Documents.js": "/packs/stores/Documents.js",
+  "stores/Mouse.js": "/packs/stores/Mouse.js",
   "stores/State.js": "/packs/stores/State.js",
   "topic-tree-example.js": "/packs/topic-tree-example.js"
 }

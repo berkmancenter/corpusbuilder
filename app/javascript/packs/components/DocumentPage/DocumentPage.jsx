@@ -80,7 +80,31 @@ export default class DocumentPage extends React.Component {
     }
 
     onSelected(nodes) {
-        console.log("OnSelected! ", nodes);
+        if(this.props.onSelected !== undefined && this.props.onSelected !== null) {
+            this.props.onSelected(
+                // iterating forward through the ghraphemes as an optimization
+                // around the property of the selection being contiguous:
+                this.graphemes.reduce((state, grapheme) => {
+                    if(state.sawLast) {
+                        return state;
+                    }
+
+                    if(!state.sawFirst && grapheme.id === nodes[0].getAttribute('data-id')) {
+                        state.sawFirst = true;
+                    }
+
+                    if(!state.sawLast && grapheme.id === nodes[nodes.length - 1].getAttribute('data-id')) {
+                        state.sawLast = true;
+                    }
+
+                    if(state.sawFirst) {
+                        state.result.push(grapheme);
+                    }
+
+                    return state;
+                }, { result: [], sawFirst: false, sawLast: false }).result
+            );
+        }
     }
 
     onDeselected() {
@@ -172,36 +196,6 @@ export default class DocumentPage extends React.Component {
             width: this.width,
             height: this.surfaceHeight * this.ratio
         };
-
-        let menu;
-        if(this.showMenu) {
-            let menuStyles = {
-                position: 'absolute',
-                top: this.lastMouseY - 50,
-                left: this.lastMouseX,
-                padding: '10px',
-                color: 'black',
-                backgroundColor: 'white',
-                boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.5)',
-                borderRadius: 4
-            };
-            let menuItemStyle = {
-                backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.5)',
-                color: 'black',
-                borderRadius: 2
-            };
-            menu = (
-              <div style={ menuStyles }>
-                <button style={ menuItemStyle } onClick={ () => this.editAnnotation() }>
-                  { '✐' }
-                </button>
-                <button style={ menuItemStyle } onClick={ () => this.editTags() }>
-                  { '#' }
-                </button>
-              </div>
-            );
-        }
 
         let annotationEditor;
         if(this.showAnnotationEditor) {

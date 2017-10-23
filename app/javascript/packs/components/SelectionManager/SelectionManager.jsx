@@ -36,7 +36,7 @@ export default class SelectionManager extends React.Component {
     }
 
     graphemeNodeForSelected(node) {
-        return this.parentOf(node, "SPAN", /grapheme/);
+        return this.parentOf(node, "SPAN", this.props.selector);
     };
 
     documentRootForSelected(node) {

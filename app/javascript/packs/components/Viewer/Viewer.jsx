@@ -5,8 +5,12 @@ import { Provider, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
 
 import state from '../../stores/State'
-import Documents from '../../stores/Documents'
 
+import Documents from '../../stores/Documents'
+import Mouse from '../../stores/Mouse'
+
+import { MouseManager } from '../MouseManager'
+import { PopupMenu } from '../PopupMenu'
 import { DocumentPage } from '../DocumentPage'
 import { DocumentInfo } from '../DocumentInfo'
 import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
@@ -36,6 +40,9 @@ export default class Viewer extends React.Component {
     @observable
     showRevisions = false;
 
+    @observable
+    showPopup = false;
+
     @computed get tree() {
         return this.data.documents.tree(
           this.documentId,
@@ -51,7 +58,8 @@ export default class Viewer extends React.Component {
         super(props);
 
         this.data = {
-            documents: new Documents(props.baseUrl, state)
+            documents: new Documents(props.baseUrl, state),
+            mouse: new Mouse(state)
         };
 
         qwest.base = props.baseUrl;
@@ -80,6 +88,25 @@ export default class Viewer extends React.Component {
     toggleRevisions() {
         this.showInfo = false;
         this.showRevisions = !this.showRevisions;
+    }
+
+    editAnnotation() {
+        console.log("Edit Annotation!");
+    }
+
+    editTags() {
+        console.log("Edit Tags!");
+    }
+
+    onSelected(graphemes) {
+        // make sure the mouse event bubbling comes first
+        setTimeout(() => {
+            this.showPopup = true;
+        }, 0);
+    }
+
+    onPopupClickedOutside() {
+        this.showPopup = false;
     }
 
     render() {
@@ -116,6 +143,7 @@ export default class Viewer extends React.Component {
                 <div className="corpusbuilder-viewer-contents">
                   <DocumentPage document={ doc } page={ page } width={ width }
                                 showCertainties={ this.showCertainties }
+                                onSelected={ this.onSelected.bind(this) }
                                 >
                   </DocumentPage>
                   { otherContent }
@@ -126,6 +154,16 @@ export default class Viewer extends React.Component {
                       onPageSwitch={ this.navigate.bind(this) }
                       />
                 </div>
+                <PopupMenu visible={ this.showPopup }
+                           onClickedOutside={ this.onPopupClickedOutside.bind(this) }
+                           >
+                  <button onClick={ this.editAnnotation.bind(this) }>
+                    { '✐' }
+                  </button>
+                  <button onClick={ this.editTags.bind(this) }>
+                    { '#' }
+                  </button>
+                </PopupMenu>
               </div>
             );
         }
@@ -141,7 +179,9 @@ export default class Viewer extends React.Component {
         return (
             <div className="corpusbuilder-viewer" style={ viewerStyle }>
                 <Provider {...context}>
-                    { content }
+                    <MouseManager>
+                        { content }
+                    </MouseManager>
                 </Provider>
             </div>
         );
