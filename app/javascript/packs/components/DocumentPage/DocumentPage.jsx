@@ -4,6 +4,8 @@ import { observer } from 'mobx-react'
 import state from '../../stores/State'
 import s from './DocumentPage.scss'
 
+import { SelectionManager } from '../SelectionManager'
+
 @observer
 export default class DocumentPage extends React.Component {
 
@@ -13,21 +15,6 @@ export default class DocumentPage extends React.Component {
 
     // using @computed ensures that the values are cached and not re-computed
     // even though they are not mobx related
-
-    @observable
-    showMenu = false;
-
-    @observable
-    showAnnotationEditor = false;
-
-    @observable
-    lastMouseX = 0;
-
-    @observable
-    lastMouseY = 0;
-
-    @observable
-    editedAnnotation = "";
 
     @computed
     get document() {
@@ -92,123 +79,12 @@ export default class DocumentPage extends React.Component {
         this.showMenu = false;
     }
 
-    parentOf(node, nodeName, classMatch) {
-        if(node === null || node === undefined) {
-            return null;
-        }
-
-        if(node.nodeName === nodeName && node.className.match(classMatch)) {
-            return node;
-        }
-        else {
-            return this.parentOf(node.parentNode, nodeName, classMatch);
-        }
+    onSelected(nodes) {
+        console.log("OnSelected! ", nodes);
     }
 
-    nodeTotalOffsetTop(n) {
-        if(n === undefined || n === null) {
-            return 0;
-        }
-        else {
-            return (n.offsetTop || 0) + this.nodeTotalOffsetTop(n.parentNode);
-        }
-    }
-
-    nodeTotalOffsetLeft(n) {
-        if(n === undefined || n === null) {
-            return 0;
-        }
-        else {
-            return (n.offsetLeft || 0) + this.nodeTotalOffsetLeft(n.parentNode);
-        }
-    }
-
-    graphemeNodeForSelected(node) {
-        return this.parentOf(node, "SPAN", /grapheme/);
-    };
-
-    documentRootForSelected(node) {
-        return this.parentOf(node, "DIV", /document-page\b/);
-    };
-
-    annotateEditorRootForSelected(node) {
-        return this.parentOf(node, "DIV", /document-page-annotate/);
-    }
-
-    hasSelection() {
-        let selection = window.getSelection();
-
-        return selection.type === "Range";
-    }
-
-    selectedGraphemes() {
-        let selection = window.getSelection();
-
-        if(selection.type === "Range") {
-            let startGraphemeNode = this.graphemeNodeForSelected(selection.baseNode);
-            let endGraphemeNode = this.graphemeNodeForSelected(selection.focusNode);
-
-            let selectedGraphemes = [];
-            let documentRoot = this.documentRootForSelected(startGraphemeNode);
-            let allNodes = documentRoot.getElementsByClassName('corpusbuilder-grapheme');
-            let started = false;
-
-            for(let node of allNodes) {
-                if(node === startGraphemeNode) {
-                    started = true;
-                }
-
-                if(started) {
-                    selectedGraphemes.push(node);
-                }
-
-                if(node === endGraphemeNode) {
-                    break;
-                }
-            }
-
-            return selectedGraphemes;
-        }
-
-        return [];
-    }
-
-    onMouseUp(e) {
-        let root = this.documentRootForSelected(e.target);
-        let hasSelection = this.hasSelection();
-
-        if(root !== null && root !== undefined && hasSelection) {
-            let offsetTop = this.nodeTotalOffsetTop(root);
-            let offsetLeft = this.nodeTotalOffsetLeft(root);
-
-            this.lastMouseX = e.pageX - offsetLeft;
-            this.lastMouseY = e.pageY - offsetTop;
-            this.showMenu = hasSelection;
-            this.showAnnotationEditor = false;
-        }
-        else {
-            this.showMenu = false;
-
-            let annotateEditorRoot = this.annotateEditorRootForSelected(e.target);
-
-            if(annotateEditorRoot === null || annotateEditorRoot === undefined) {
-                this.showAnnotationEditor = false;
-            }
-        }
-    }
-
-    onAnnotateEditorCancel() {
-        this.showAnnotationEditor = false;
-        this.editedAnnotation = "";
-    }
-
-    onAnnotateEditorSave() {
-        this.showAnnotationEditor = false;
-        this.editedAnnotation = "";
-    }
-
-    onAnnotationChanged(e) {
-        this.editedAnnotation = e.target.value;
+    onDeselected() {
+        console.log("OnDeselected!");
     }
 
     graphemeNodes(grapheme, previous) {
@@ -372,7 +248,11 @@ export default class DocumentPage extends React.Component {
 
         return (
           <div>
-            <div className="corpusbuilder-document-page" style={ pageStyle } onMouseUp={ this.onMouseUp.bind(this) }>
+            <div className="corpusbuilder-document-page" style={ pageStyle }>
+              <SelectionManager selector="corpusbuilder-grapheme"
+                                onSelected={ this.onSelected.bind(this) }
+                                onDeselected={ this.onDeselected.bind(this) }
+                                >
                 {
                   this.graphemes.map(
                       (grapheme, index) => {
@@ -380,9 +260,8 @@ export default class DocumentPage extends React.Component {
                       }
                   )
                 }
+              </SelectionManager>
             </div>
-            { menu }
-            { annotationEditor }
           </div>
         );
     }

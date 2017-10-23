@@ -22,6 +22,8 @@
   "components/DocumentRevisionsBrowser/DocumentRevisionsBrowser.js": "/packs/components/DocumentRevisionsBrowser/DocumentRevisionsBrowser.js",
   "components/DocumentRevisionsBrowser/index.css": "/packs/components/DocumentRevisionsBrowser/index.css",
   "components/DocumentRevisionsBrowser/index.js": "/packs/components/DocumentRevisionsBrowser/index.js",
+  "components/SelectionManager/SelectionManager.js": "/packs/components/SelectionManager/SelectionManager.js",
+  "components/SelectionManager/index.js": "/packs/components/SelectionManager/index.js",
   "components/Viewer/Viewer.css": "/packs/components/Viewer/Viewer.css",
   "components/Viewer/Viewer.js": "/packs/components/Viewer/Viewer.js",
   "components/Viewer/index.css": "/packs/components/Viewer/index.css",
