@@ -70,15 +70,6 @@ export default class DocumentPage extends React.Component {
         return 'hsla(' + hue + ', 100%, 50%, .5)';
     }
 
-    editAnnotation() {
-        this.showMenu = false;
-        this.showAnnotationEditor = true;
-    }
-
-    editTags() {
-        this.showMenu = false;
-    }
-
     onSelected(nodes) {
         if(this.props.onSelected !== undefined && this.props.onSelected !== null) {
             this.props.onSelected(
@@ -196,49 +187,6 @@ export default class DocumentPage extends React.Component {
             width: this.width,
             height: this.surfaceHeight * this.ratio
         };
-
-        let annotationEditor;
-        if(this.showAnnotationEditor) {
-            let annotationEditorStyle = {
-                position: 'absolute',
-                top: this.lastMouseY - 200,
-                left: 10,
-                right: 10,
-                padding: '10px',
-                color: 'black',
-                backgroundColor: 'white',
-                boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.5)',
-                borderRadius: 4
-            };
-            let buttonStyle = {
-                backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.5)',
-                color: 'black',
-                width: 'auto',
-                height: 'auto',
-                padding: '10px',
-                borderRadius: 2
-            };
-            let editorStyle = {
-              border: 'none',
-              width: '100%',
-              display: 'block',
-              fontSize: '13px',
-              marginTop: 10,
-              marginBottom: 10,
-              borderRadius: 2,
-              backgroundColor: 'rgba(0,0,0,0.1)',
-              color: 'black'
-            };
-            annotationEditor = (
-                <div className="corpusbuilder-document-page-annotate-editor" style={ annotationEditorStyle }>
-                    <span>Annotate fragment:</span>
-                    <textarea onChange={ this.onAnnotationChanged.bind(this) } value={ this.editedAnnotation } rows="4" style={ editorStyle }></textarea>
-                    <button onClick={ this.onAnnotateEditorCancel.bind(this) } style={ buttonStyle }>Cancel</button>
-                    <button onClick={ this.onAnnotateEditorSave.bind(this) } style={ buttonStyle }>Save</button>
-                </div>
-            );
-        }
 
         return (
           <div>

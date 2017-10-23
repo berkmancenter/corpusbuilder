@@ -11,6 +11,7 @@ import Mouse from '../../stores/Mouse'
 
 import { MouseManager } from '../MouseManager'
 import { PopupMenu } from '../PopupMenu'
+import { AnnotationEditor } from '../AnnotationEditor'
 import { DocumentPage } from '../DocumentPage'
 import { DocumentInfo } from '../DocumentInfo'
 import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
@@ -42,6 +43,12 @@ export default class Viewer extends React.Component {
 
     @observable
     showPopup = false;
+
+    @observable
+    showAnnotationEditor = false;
+
+    @observable
+    showTagsEditor = false;
 
     @computed get tree() {
         return this.data.documents.tree(
@@ -91,11 +98,17 @@ export default class Viewer extends React.Component {
     }
 
     editAnnotation() {
-        console.log("Edit Annotation!");
+        this.showPopup = false;
+        this.showAnnotationEditor = true;
+    }
+
+    hideAnnotationEditor() {
+        this.showAnnotationEditor = false;
     }
 
     editTags() {
-        console.log("Edit Tags!");
+        this.showPopup = false;
+        this.showTagsEditor = true;
     }
 
     onSelected(graphemes) {
@@ -164,6 +177,9 @@ export default class Viewer extends React.Component {
                     { '#' }
                   </button>
                 </PopupMenu>
+                <AnnotationEditor visible={ this.showAnnotationEditor }
+                                  onCloseRequested={ this.hideAnnotationEditor.bind(this) }
+                                  />
               </div>
             );
         }
