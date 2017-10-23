@@ -2,6 +2,8 @@ import React from 'react';
 import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 
+import { OutsideClicksHandler } from '../OutsideClicksHandler'
+
 import styles from './AnnotationEditor.scss'
 
 @inject('mouse')
@@ -25,6 +27,13 @@ export default class AnnotationEditor extends React.Component {
         }
     }
 
+    onClickedOutside() {
+        if(this.props.visible) {
+            console.log("Close requested");
+            this.requestClose();
+        }
+    }
+
     onAnnotationChanged(value) {
     }
 
@@ -43,7 +52,10 @@ export default class AnnotationEditor extends React.Component {
           top: this.mousePosition.y
         };
 
+        console.log("Rendering visible annotation editor");
+
         return (
+          <OutsideClicksHandler onClick={ this.onClickedOutside.bind(this) }>
             <div className="corpusbuilder-annotation-editor"
                  style={ styles }
                  >
@@ -54,6 +66,7 @@ export default class AnnotationEditor extends React.Component {
                           rows="5">
                 </textarea>
             </div>
+          </OutsideClicksHandler>
         );
     }
 }

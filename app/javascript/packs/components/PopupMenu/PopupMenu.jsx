@@ -1,13 +1,15 @@
 import React from 'react';
 import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
+
+import { OutsideClicksHandler } from '../OutsideClicksHandler'
+
 import styles from './PopupMenu.scss'
 
 @inject('mouse')
 @observer
 export default class PopupMenu extends React.Component {
 
-    menuDomNode = null;
     lastPositionWhenInvisible = null;
 
     @computed
@@ -19,32 +21,10 @@ export default class PopupMenu extends React.Component {
         return this.lastPositionWhenInvisible;
     }
 
-    componentDidMount() {
-        this.setupOutsideClickListener();
-    }
-
-    nodeWithinMenu(node) {
-        if(node === undefined || node === null) {
-            return false;
-        }
-        else if(node === this.menuDomNode) {
-            return true;
-        }
-        else {
-            return this.nodeWithinMenu(node.parentNode);
-        }
-    }
-
-    setupOutsideClickListener() {
-        if(!this.props.onClickedOutside) {
-            return;
-        }
-
-        document.addEventListener('click', (e) => {
-            if(this.props.visible && !this.nodeWithinMenu(e.target)) {
-                this.props.onClickedOutside();
-            }
-        }, true);
+    onOutsideClicked() {
+      if(this.props.visible) {
+        this.props.onClickedOutside();
+      }
     }
 
     render() {
@@ -59,12 +39,13 @@ export default class PopupMenu extends React.Component {
         };
 
         return (
-          <div className="corpusbuilder-popup-menu"
-               style={ styles }
-               ref={ (div) => this.menuDomNode = div }
-               >
-            { this.props.children }
-          </div>
+          <OutsideClicksHandler onClick={ this.onOutsideClicked.bind(this) }>
+            <div className="corpusbuilder-popup-menu"
+                style={ styles }
+                >
+              { this.props.children }
+            </div>
+          </OutsideClicksHandler>
         );
     }
 }

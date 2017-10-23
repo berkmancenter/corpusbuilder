@@ -28,6 +28,8 @@
   "components/DocumentRevisionsBrowser/index.js": "/packs/components/DocumentRevisionsBrowser/index.js",
   "components/MouseManager/MouseManager.js": "/packs/components/MouseManager/MouseManager.js",
   "components/MouseManager/index.js": "/packs/components/MouseManager/index.js",
+  "components/OutsideClicksHandler/OutsideClicksHandler.js": "/packs/components/OutsideClicksHandler/OutsideClicksHandler.js",
+  "components/OutsideClicksHandler/index.js": "/packs/components/OutsideClicksHandler/index.js",
   "components/PopupMenu/PopupMenu.css": "/packs/components/PopupMenu/PopupMenu.css",
   "components/PopupMenu/PopupMenu.js": "/packs/components/PopupMenu/PopupMenu.js",
   "components/PopupMenu/index.css": "/packs/components/PopupMenu/index.css",
