@@ -35,7 +35,7 @@ export default class PopupMenu extends React.Component {
 
         let styles = {
             top: this.mousePosition.y,
-            left: this.mousePosition.x - 50
+            left: this.mousePosition.x
         };
 
         return (

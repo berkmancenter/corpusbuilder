@@ -23,6 +23,11 @@ export default class AnnotationEditor extends React.Component {
         return this.lastPositionWhenInvisible;
     }
 
+    @computed
+    get adjustedTop() {
+        return this.mousePosition.y;
+    }
+
     requestClose() {
         if(this.props.onCloseRequested !== undefined && this.props.onCloseRequested !== null) {
             this.props.onCloseRequested();
@@ -51,7 +56,7 @@ export default class AnnotationEditor extends React.Component {
         }
 
         let styles = {
-          top: this.mousePosition.y - 30
+          top: this.adjustedTop
         };
 
         setTimeout(() => {
