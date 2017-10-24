@@ -14,6 +14,9 @@ export default class AnnotationEditor extends React.Component {
     lastPositionWhenInvisible = null;
     textArea = null;
 
+    @observable
+    editedAnnotation = "";
+
     @computed
     get mousePosition() {
         if(this.lastPositionWhenInvisible === null) {
@@ -36,17 +39,24 @@ export default class AnnotationEditor extends React.Component {
 
     onClickedOutside() {
         if(this.props.visible) {
+            this.editedAnnotation = "";
             this.requestClose();
         }
     }
 
-    onAnnotationChanged(value) {
+    onAnnotationChanged(e) {
+        this.editedAnnotation = e.target.value;
     }
 
-    onAnnotateEditorCancel() {
+    onEditorKeyUp(e) {
+        if(e.ctrlKey && e.keyCode == 13) {
+            this.onAnnotateEditorSave();
+        }
     }
 
     onAnnotateEditorSave() {
+        console.log("Save!");
+        this.requestClose();
     }
 
     render() {
@@ -60,7 +70,9 @@ export default class AnnotationEditor extends React.Component {
         };
 
         setTimeout(() => {
-            this.textArea.focus();
+            if(this.textArea !== null && this.textArea !== null) {
+                this.textArea.focus();
+            }
         }, 100)
 
         return (
@@ -71,6 +83,7 @@ export default class AnnotationEditor extends React.Component {
                 <span>Annotate fragment:</span>
                 <b>CTRL-Enter to save</b>
                 <textarea onChange={ this.onAnnotationChanged.bind(this) }
+                          onKeyUp={ this.onEditorKeyUp.bind(this) }
                           value={ this.editedAnnotation }
                           ref={ (textArea) => this.textArea = textArea  }
                           rows="5">

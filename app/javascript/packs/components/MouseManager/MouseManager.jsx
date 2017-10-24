@@ -35,7 +35,7 @@ export default class MouseManager extends React.Component {
         node.addEventListener('mousemove', (e) => {
             let offset = this.offset(node);
 
-            this.props.mouse.setLastPosition(e.clientX - offset.x, e.clientY - offset.y);
+            this.props.mouse.setLastPosition(e.pageX - offset.x, e.pageY - offset.y);
         }, false);
     }
 
