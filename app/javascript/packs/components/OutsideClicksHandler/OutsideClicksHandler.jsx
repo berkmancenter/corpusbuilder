@@ -10,7 +10,7 @@ export default class OutsideClicksHandler extends React.Component {
         this.setupOutsideClickListener();
     }
 
-    nodeWithinMenu(node) {
+    nodeWithin(node) {
         if(node === undefined || node === null) {
             return false;
         }
@@ -18,7 +18,7 @@ export default class OutsideClicksHandler extends React.Component {
             return true;
         }
         else {
-            return this.nodeWithinMenu(node.parentNode);
+            return this.nodeWithin(node.parentNode);
         }
     }
 
@@ -28,7 +28,7 @@ export default class OutsideClicksHandler extends React.Component {
         }
 
         document.addEventListener('click', (e) => {
-            if(!this.nodeWithinMenu(e.target)) {
+            if(this.rootNode !== null && !this.nodeWithin(e.target)) {
                 this.props.onClick();
             }
         }, false);

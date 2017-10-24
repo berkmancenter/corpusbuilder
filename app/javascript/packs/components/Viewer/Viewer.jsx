@@ -33,6 +33,9 @@ export default class Viewer extends React.Component {
     page = null;
 
     @observable
+    lastSelectedGraphemes = null;
+
+    @observable
     showInfo = false;
 
     @observable
@@ -98,8 +101,11 @@ export default class Viewer extends React.Component {
     }
 
     editAnnotation() {
-        this.showPopup = false;
-        this.showAnnotationEditor = true;
+        // make sure the mouse event bubbling comes first
+        setTimeout(() => {
+            this.showPopup = false;
+            this.showAnnotationEditor = true;
+        }, 0);
     }
 
     hideAnnotationEditor() {
@@ -114,6 +120,7 @@ export default class Viewer extends React.Component {
     onSelected(graphemes) {
         // make sure the mouse event bubbling comes first
         setTimeout(() => {
+            this.lastSelectedGraphemes = graphemes;
             this.showPopup = true;
         }, 0);
     }
@@ -145,16 +152,18 @@ export default class Viewer extends React.Component {
               <div>
                 <div className="corpusbuilder-options top">
                   <DocumentOptions document={ doc }
-                      branches={ this.branches }
-                      currentBranch={ this.currentBranch }
-                      onBranchSwitch={ this.chooseBranch.bind(this) }
-                      onToggleInfo={ this.toggleInfo.bind(this) }
-                      onToggleCertainties={ this.toggleCertainties.bind(this) }
-                      onToggleRevisions={ this.toggleRevisions.bind(this) }
-                      />
+                                   branches={ this.branches }
+                                   currentBranch={ this.currentBranch }
+                                   onBranchSwitch={ this.chooseBranch.bind(this) }
+                                   onToggleInfo={ this.toggleInfo.bind(this) }
+                                   onToggleCertainties={ this.toggleCertainties.bind(this) }
+                                   onToggleRevisions={ this.toggleRevisions.bind(this) }
+                                   />
                 </div>
                 <div className="corpusbuilder-viewer-contents">
-                  <DocumentPage document={ doc } page={ page } width={ width }
+                  <DocumentPage document={ doc }
+                                page={ page }
+                                width={ width }
                                 showCertainties={ this.showCertainties }
                                 onSelected={ this.onSelected.bind(this) }
                                 >
@@ -178,6 +187,10 @@ export default class Viewer extends React.Component {
                   </button>
                 </PopupMenu>
                 <AnnotationEditor visible={ this.showAnnotationEditor }
+                                  document={ doc }
+                                  page={ page }
+                                  width={ width }
+                                  graphemes={ this.lastSelectedGraphemes }
                                   onCloseRequested={ this.hideAnnotationEditor.bind(this) }
                                   />
               </div>

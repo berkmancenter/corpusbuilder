@@ -3,6 +3,7 @@ import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 
 import { OutsideClicksHandler } from '../OutsideClicksHandler'
+import { Highlight } from '../Highlight';
 
 import styles from './AnnotationEditor.scss'
 
@@ -11,6 +12,7 @@ import styles from './AnnotationEditor.scss'
 export default class AnnotationEditor extends React.Component {
 
     lastPositionWhenInvisible = null;
+    textArea = null;
 
     @computed
     get mousePosition() {
@@ -29,7 +31,6 @@ export default class AnnotationEditor extends React.Component {
 
     onClickedOutside() {
         if(this.props.visible) {
-            console.log("Close requested");
             this.requestClose();
         }
     }
@@ -45,14 +46,17 @@ export default class AnnotationEditor extends React.Component {
 
     render() {
         if(!this.props.visible) {
+            this.lastPositionWhenInvisible = null;
             return null;
         }
 
         let styles = {
-          top: this.mousePosition.y
+          top: this.mousePosition.y - 30
         };
 
-        console.log("Rendering visible annotation editor");
+        setTimeout(() => {
+            this.textArea.focus();
+        }, 100)
 
         return (
           <OutsideClicksHandler onClick={ this.onClickedOutside.bind(this) }>
@@ -63,9 +67,15 @@ export default class AnnotationEditor extends React.Component {
                 <b>CTRL-Enter to save</b>
                 <textarea onChange={ this.onAnnotationChanged.bind(this) }
                           value={ this.editedAnnotation }
+                          ref={ (textArea) => this.textArea = textArea  }
                           rows="5">
                 </textarea>
             </div>
+            <Highlight graphemes={ this.props.graphemes }
+                       document={ this.props.document }
+                       page={ this.props.page }
+                       width={ this.props.width }
+                       />
           </OutsideClicksHandler>
         );
     }

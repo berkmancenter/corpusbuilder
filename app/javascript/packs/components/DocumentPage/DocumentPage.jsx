@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import state from '../../stores/State'
 import s from './DocumentPage.scss'
 
+import PagePositioningHelper from '../../lib/PagePositioningHelper'
 import { SelectionManager } from '../SelectionManager'
 
 @observer
@@ -103,60 +104,23 @@ export default class DocumentPage extends React.Component {
     }
 
     graphemeNodes(grapheme, previous) {
-        let graphemeHeight = grapheme.area.lry - grapheme.area.uly;
-        let graphemeWidth = grapheme.area.lrx - grapheme.area.ulx;
-
-        let boxHeight = graphemeHeight * this.ratio;
-        let boxWidth = graphemeWidth * this.ratio;
-        let boxLeft = grapheme.area.ulx * this.ratio;
-        let boxTop = grapheme.area.uly * this.ratio;
-
-        let graphemeStyles = {
-            left: boxLeft,
-            top: boxTop,
-            fontSize: `${boxHeight}px`,
-            height: boxHeight,
-            width: boxWidth
-        };
+        let graphemeStyles = PagePositioningHelper.graphemePositioning(grapheme, this.ratio);
 
         if(this.showCertainties) {
             graphemeStyles.backgroundColor = this.percentageToHsl(grapheme.certainty, 0, 120);
         }
 
-        let spaces = [];
-
-        if(previous !== undefined && previous !== null) {
-            if(grapheme.area.uly == previous.area.uly) {
-                let distance = grapheme.area.ulx - previous.area.lrx;
-
-                if(distance > graphemeWidth * 0.5) {
-                    for(let spaceIndex = 0; spaceIndex * boxWidth < distance / graphemeWidth; spaceIndex++) {
-                        let spaceStyle = {
-                            left: (previous.area.ulx + boxWidth * spaceIndex) * this.ratio,
-                            top: (grapheme.area.uly * this.ratio),
-                            fontSize: boxHeight
-                        };
-                        let spaceKey = `${ grapheme.id }-after-space-${ spaceIndex }`;
-                        spaces.push(
-                            <span className="corpusbuilder-grapheme"
-                                  key={ `space-${ grapheme.id }-${ spaceIndex }` }
-                                  style={ spaceStyle }
-                                  >
-                                &nbsp;
-                            </span>
-                        );
-                    }
-                }
-            }
-            else {
-                let spaceKey = `${ grapheme.id }-crlf`;
-                spaces.push(
-                  <span className="corpusbuilder-grapheme" key={ `crlf-${ grapheme.id }` }>
-                      <br />
-                  </span>
+        let spaces = PagePositioningHelper.spacePositionsBetween(grapheme, previous, this.ratio)
+            .map((spacePosition) => {
+                return (
+                    <span className="corpusbuilder-grapheme"
+                          key={ `space-${ grapheme.id }-${ spacePosition.left }-${ spacePosition.top }` }
+                          style={ spacePosition }
+                          >
+                        { grapheme.area.uly == previous.area.uly ? ' ' : <br /> }
+                    </span>
                 );
-            }
-        }
+            });
 
         let element = (
             <span className="corpusbuilder-grapheme"
