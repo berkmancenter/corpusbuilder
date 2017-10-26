@@ -55,8 +55,13 @@ export default class AnnotationEditor extends React.Component {
     }
 
     onAnnotateEditorSave() {
-        console.log("Save!");
         this.requestClose();
+
+        if(this.props.onSaveRequested !== null && this.props.onSaveRequested !== undefined) {
+            this.props.onSaveRequested(this.editedAnnotation);
+        }
+
+        this.editedAnnotation = "";
     }
 
     render() {

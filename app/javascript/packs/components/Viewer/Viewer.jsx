@@ -7,6 +7,7 @@ import ContentLoader from 'react-content-loader'
 import state from '../../stores/State'
 
 import Documents from '../../stores/Documents'
+import Metadata from '../../stores/Metadata'
 import Mouse from '../../stores/Mouse'
 
 import { MouseManager } from '../MouseManager'
@@ -69,6 +70,7 @@ export default class Viewer extends React.Component {
 
         this.data = {
             documents: new Documents(props.baseUrl, state),
+            metadata: new Metadata(props.baseUrl, state),
             mouse: new Mouse(state)
         };
 
@@ -106,6 +108,15 @@ export default class Viewer extends React.Component {
             this.showPopup = false;
             this.showAnnotationEditor = true;
         }, 0);
+    }
+
+    saveAnnotation(annotation) {
+        this.data.metadata.saveAnnotation(
+            this.documentId,
+            this.branchName,
+            annotation,
+            this.lastSelectedGraphemes
+        );
     }
 
     hideAnnotationEditor() {
@@ -192,6 +203,7 @@ export default class Viewer extends React.Component {
                                   width={ width }
                                   graphemes={ this.lastSelectedGraphemes }
                                   onCloseRequested={ this.hideAnnotationEditor.bind(this) }
+                                  onSaveRequested={ this.saveAnnotation.bind(this) }
                                   />
               </div>
             );

@@ -15,6 +15,9 @@ class State {
 
     @observable
     mouseLastPosition = observable({ x: 0, y: 0 });
+
+    @observable
+    annotations = observable.map();
 }
 
 export default window.__CB_STATE = new State();
