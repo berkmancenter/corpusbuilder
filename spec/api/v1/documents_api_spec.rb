@@ -442,7 +442,7 @@ describe V1::DocumentsAPI, type: :request do
         end
 
         it "returns surfaces with only number, area and graphemes" do
-          expect(valid_request_result["surfaces"].first.keys.sort).to eq(["area", "graphemes", "number"])
+          expect(valid_request_result["surfaces"].first.keys.sort).to eq(["area", "graphemes", "image_url", "number"])
         end
       end
 

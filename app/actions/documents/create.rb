@@ -19,7 +19,7 @@ module Documents
         status: Document.statuses[:initial],
         app_id: @app.id
 
-      document.images << images
+      document.images << Image.where(id: images.map { |i| i["id"] })
 
       Branches::Create.run! parent_revision_id: nil,
         editor_id: editor.id,

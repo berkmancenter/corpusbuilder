@@ -96,10 +96,12 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
       def image_file_response(num)
         file_name = "file_#{num}.png"
-        {
-          name: file_name,
-          url: "/api/v1/pages/#{batch_id}/#{file_name}"
-        }
+        [
+          {
+            name: file_name,
+            url: "/api/v1/pages/#{batch_id}/#{file_name}"
+          }
+        ]
       end
 
       let(:image_file_1) do
