@@ -62,6 +62,10 @@ class Pipeline::Nidaba < Pipeline
     data.fetch("images", [])
   end
 
+  def base_url
+    self.config.base_url
+  end
+
   private
 
   def create_batch
@@ -120,14 +124,16 @@ class Pipeline::Nidaba < Pipeline
         zoom: 0.5
       }),
       task(:segmentation, :tesseract),
-      task(:ocr, :kraken)
+      task(:ocr, :kraken, {
+        model: 'arabic-hayawan'
+      })
     ]
   end
 
   def task(type, name, options = {})
     Proc.new do
       is_rest_successful? do
-        RestClient.post task_url(type, name), options
+        RestClient.post task_url(type, name), options.to_json, { 'Content-Type' => 'application/json' }
         self.data["tasks"] ||= []
         self.data["tasks"] << { type: type, name: name }
       end
@@ -153,7 +159,7 @@ class Pipeline::Nidaba < Pipeline
   end
 
   def assert_status(status)
-    if self.status != status.to_s
+    if self.status.to_s != status.to_s
       raise Pipeline::Error.new, "Expected pipeline with status #{status}"
     end
   end
@@ -172,12 +178,14 @@ class Pipeline::Nidaba < Pipeline
 
   def send_image(image)
     is_rest_successful? do
+      Rails.logger.info "Sending images to Nidaba\n\turl: #{ send_image_url }\n\tfile_path: #{ image.image_scan.current_path }"
       response = RestClient.post send_image_url,
-        file: File.new(image.image_scan.current_path)
+        scans: File.new(image.image_scan.current_path)
       data = JSON.parse(response.body)
+      Rails.logger.info "Result got from Nidaba: #{data}"
       self.data["images"] ||= []
       self.data["images"] << {
-        data["url"] => image.id
+        data.first["url"] => image.id
       }
     end
   end
@@ -202,9 +210,13 @@ class Pipeline::Nidaba < Pipeline
   def is_rest_successful?(&block)
     begin
       block.call
-      true
-    rescue RestClient::RequestFailed
-      false
+     true
+   rescue RestClient::RequestFailed => e
+     Rails.logger.error "Pipeline Error: (For request: #{e.response.request.args.inspect} ) HTTP #{e.response.code}\n#{e.response.body}"
+     false
+   #rescue
+   #  Rails.logger.error "Some error here #{$!.message}\n#{$!.backtrace}"
+   #  false
     end
   end
 end

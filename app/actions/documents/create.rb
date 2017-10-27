@@ -19,6 +19,8 @@ module Documents
         status: Document.statuses[:initial],
         app_id: @app.id
 
+      document.images << images
+
       Branches::Create.run! parent_revision_id: nil,
         editor_id: editor.id,
         name: 'master',
