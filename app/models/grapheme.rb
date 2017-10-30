@@ -6,7 +6,7 @@ class Grapheme < ApplicationRecord
 
   serialize :area, Area::Serializer
 
-  default_scope { order("(graphemes.area[0])[1] asc, (graphemes.area[0])[0] asc") }
+  default_scope { order(:position_weight) }
 
   class Tree < Grape::Entity
     expose :area, with: Area::Tree

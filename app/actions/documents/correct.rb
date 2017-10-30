@@ -14,6 +14,7 @@ module Documents
             area: area(spec),
             value: spec[:value],
             old_id: spec[:id],
+            position_weight: spec[:position_weight],
             surface_number: spec[:surface_number]
         end
       end

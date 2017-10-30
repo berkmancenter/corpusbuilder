@@ -244,10 +244,10 @@ describe Graphemes::QueryMerge do
         Documents::Correct.run! document: document,
           branch_name: development_branch.name,
           graphemes: [
-            { value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
-            { value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 },
-            { id: grapheme1.id, value: '1', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
-            { id: grapheme2.id, value: '2', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
+            { value: 'a', position_weight: 1.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
+            { value: 'b', position_weight: 1.75, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 },
+            { id: grapheme1.id, position_weight: 2.5, value: '1', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
+            { id: grapheme2.id, position_weight: 3.5, value: '2', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme3.id, delete: true }
           ]
 
@@ -276,8 +276,8 @@ describe Graphemes::QueryMerge do
         Documents::Correct.run! document: document,
           branch_name: development_branch.name,
           graphemes: [
-            { value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
-            { value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 },
+            { value: 'a', position_weight: 2.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
+            { value: 'b', position_weight: 3.5, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 },
             { id: grapheme3.id, delete: true }
           ]
 
@@ -286,8 +286,8 @@ describe Graphemes::QueryMerge do
         Documents::Correct.run! document: document,
           branch_name: topic_branch.name,
           graphemes: [
-            { id: grapheme1.id, value: '1', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
-            { id: grapheme2.id, value: '2', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
+            { id: grapheme1.id, value: '1', position_weight: 1.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
+            { id: grapheme2.id, value: '2', position_weight: 1.25, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme4.id, delete: true }
           ]
 
@@ -320,8 +320,8 @@ describe Graphemes::QueryMerge do
         Documents::Correct.run! document: document,
           branch_name: development_branch.name,
           graphemes: [
-            { value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
-            { value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 },
+            { value: 'a', position_weight: 1.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
+            { value: 'b', position_weight: 2.5, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 },
             { id: grapheme4.id, value: '1', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme6.id, delete: true }
           ]
@@ -331,8 +331,8 @@ describe Graphemes::QueryMerge do
         Documents::Correct.run! document: document,
           branch_name: topic_branch.name,
           graphemes: [
-            { id: grapheme1.id, value: '1', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
-            { id: grapheme2.id, value: '2', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
+            { id: grapheme1.id, value: '1', position_weight: 2.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
+            { id: grapheme2.id, value: '2', position_weight: 1.5, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme3.id, delete: true },
             { id: grapheme4.id, delete: true },
             { id: grapheme7.id, delete: true }
@@ -375,13 +375,13 @@ describe Graphemes::QueryMerge do
         Documents::Correct.run! document: document,
           branch_name: topic_branch.name,
           graphemes: [
-            { id: grapheme1.id, value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
-            { id: grapheme2.id, value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
-            { id: grapheme6.id, value: '6', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
+            { id: grapheme1.id, value: 'a', position_weight: 1.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
+            { id: grapheme2.id, value: 'b', position_weight: 2.5, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
+            { id: grapheme6.id, value: '6', position_weight: 3.5, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme3.id, delete: true },
             { id: grapheme5.id, delete: true },
-            { value: '1', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
-            { value: '2', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 }
+            { value: '1', position_weight: 4.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
+            { value: '2', position_weight: 5.5, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 }
           ]
 
         Branches::Commit.run! branch: topic_branch
@@ -389,7 +389,7 @@ describe Graphemes::QueryMerge do
         Documents::Correct.run! document: document,
           branch_name: development_branch.name,
           graphemes: [
-            { id: grapheme1.id, value: '3', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
+            { id: grapheme1.id, value: '3', position_weight: 2.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
           ]
 
         Branches::Commit.run! branch: development_branch
@@ -397,10 +397,10 @@ describe Graphemes::QueryMerge do
         Documents::Correct.run! document: document,
           branch_name: development_branch.name,
           graphemes: [
-            { id: grapheme1.id, value: 'u', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
+            { id: grapheme1.id, value: 'u', position_weight: 1.5, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } },
             { id: grapheme2.id, delete: true },
             { id: grapheme4.id, delete: true },
-            { id: grapheme5.id, value: '5', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } }
+            { id: grapheme5.id, value: '5', position_weight: 2.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } }
           ]
 
         Branches::Commit.run! branch: development_branch

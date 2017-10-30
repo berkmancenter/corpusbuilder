@@ -7,6 +7,8 @@ module Documents
     validates_presence_of :image_ocr_result
 
     def execute
+      grapheme_position = 1
+
       image_ocr_result.elements.each do |element|
         case element.name
         when "surface"
@@ -16,7 +18,10 @@ module Documents
           @_zone = @_surface.zones.create! area: element.area
         when "grapheme"
           @_zone.graphemes.create! area: element.area,
-            value: element.value, certainty: element.certainty
+            value: element.value,
+            certainty: element.certainty,
+            position_weight: grapheme_position
+          grapheme_position += 1
         else
           fail "Invalid OCR element name: #{element.name}"
         end

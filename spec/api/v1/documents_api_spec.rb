@@ -240,28 +240,29 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:surface_2_graphemes) do
       [
-        working_revision.graphemes << create(:grapheme, value: 'd', zone_id: surface_2_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
-        working_revision.graphemes << create(:grapheme, value: 'l', zone_id: surface_2_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
-        working_revision.graphemes << create(:grapheme, value: 'r', zone_id: surface_2_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
-        working_revision.graphemes << create(:grapheme, value: 'o', zone_id: surface_2_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
-        working_revision.graphemes << create(:grapheme, value: 'w', zone_id: surface_2_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
+        working_revision.graphemes << create(:grapheme, position_weight: 0, value: '!', zone_id: surface_2_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
+        working_revision.graphemes << create(:grapheme, position_weight: 5, value: 'd', zone_id: surface_2_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
+        working_revision.graphemes << create(:grapheme, position_weight: 4, value: 'l', zone_id: surface_2_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
+        working_revision.graphemes << create(:grapheme, position_weight: 3, value: 'r', zone_id: surface_2_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
+        working_revision.graphemes << create(:grapheme, position_weight: 2, value: 'o', zone_id: surface_2_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
+        working_revision.graphemes << create(:grapheme, position_weight: 1, value: 'w', zone_id: surface_2_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
       ].flatten
     end
 
     let(:master_graphemes) do
       [
-        working_revision.graphemes << create(:grapheme, value: 'o', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
-        working_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
-        working_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
-        working_revision.graphemes << create(:grapheme, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
-        working_revision.graphemes << create(:grapheme, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
+        working_revision.graphemes << create(:grapheme, position_weight: 5, value: 'o', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
+        working_revision.graphemes << create(:grapheme, position_weight: 4, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
+        working_revision.graphemes << create(:grapheme, position_weight: 3, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
+        working_revision.graphemes << create(:grapheme, position_weight: 2, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
+        working_revision.graphemes << create(:grapheme, position_weight: 1, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
       ].flatten
     end
 
     let(:development_graphemes) do
       [
-        second_revision.graphemes << create(:grapheme, value: 'ó', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.6),
-        second_revision.graphemes << create(:grapheme, value: 'ł', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.7),
+        second_revision.graphemes << create(:grapheme, position_weight: 2, value: 'ó', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.6),
+        second_revision.graphemes << create(:grapheme, position_weight: 1, value: 'ł', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.7),
         second_revision.graphemes << Grapheme.where("area <@ ?", Area.new(ulx: 0, uly: 0, lrx: 60, lry: 20).to_s)
       ].flatten
     end
@@ -452,7 +453,7 @@ describe V1::DocumentsAPI, type: :request do
         end
 
         it "returns only the graphemes attached to a given surface" do
-          expect(only_surface_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("world")
+          expect(only_surface_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("!world")
         end
       end
 
@@ -535,7 +536,7 @@ describe V1::DocumentsAPI, type: :request do
       let(:minimal_valid_params) do
         {
           graphemes: [
-            { value: 'u', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 }
+            { value: 'u', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1, position_weight: 1.5 }
           ]
         }
       end
@@ -564,18 +565,21 @@ describe V1::DocumentsAPI, type: :request do
               id: grapheme1.id,
               area: area_to_params(grapheme1.area),
               surface_number: 1,
+              position_weight: 1.5,
               value: '1'
             },
             {
               id: grapheme2.id,
               area: area_to_params(grapheme2.area),
               surface_number: 1,
+              position_weight: 2.5,
               value: '2'
             },
             {
               id: grapheme3.id,
               area: area_to_params(grapheme3.area),
               surface_number: 1,
+              position_weight: 3.5,
               value: '3'
             }
           ]
@@ -680,16 +684,19 @@ describe V1::DocumentsAPI, type: :request do
             {
               area: area_to_params(grapheme1.area),
               surface_number: 1,
+              position_weight: 1.5,
               value: '1'
             },
             {
               area: area_to_params(grapheme2.area),
               surface_number: 1,
+              position_weight: 2.5,
               value: '2'
             },
             {
               area: area_to_params(grapheme3.area),
               surface_number: 1,
+              position_weight: 3.5,
               value: '3'
             }
           ]
@@ -766,11 +773,11 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:master_graphemes) do
       [
-        head_revision.graphemes << create(:grapheme, value: 'o', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
-        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
-        head_revision.graphemes << create(:grapheme, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
-        head_revision.graphemes << create(:grapheme, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
-        head_revision.graphemes << create(:grapheme, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
+        head_revision.graphemes << create(:grapheme, position_weight: 5, value: 'o', zone_id: first_line.id, area: Area.new(ulx: 80, uly: 0, lrx: 100, lry: 20), certainty: 0.5),
+        head_revision.graphemes << create(:grapheme, position_weight: 4, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 60, uly: 0, lrx: 80, lry: 20), certainty: 0.4),
+        head_revision.graphemes << create(:grapheme, position_weight: 3, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
+        head_revision.graphemes << create(:grapheme, position_weight: 2, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
+        head_revision.graphemes << create(:grapheme, position_weight: 1, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
       ].flatten
     end
 
@@ -839,15 +846,15 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:additions) do
       [
-        { value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
-        { value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 }
+        { value: 'a', position_weight: 1.5, area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1 },
+        { value: 'b', position_weight: 2.5, area: { ulx: 10, uly: 0, lrx: 20, lry: 10 }, surface_number: 1 }
       ]
     end
 
     let(:changes) do
       [
-        { id: grapheme1.id, value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
-        { id: grapheme2.id, value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } }
+        { id: grapheme1.id, position_weight: 3.5, value: 'a', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 } },
+        { id: grapheme2.id, position_weight: 3.5, value: 'b', area: { ulx: 10, uly: 0, lrx: 20, lry: 10 } }
       ]
     end
 
@@ -971,6 +978,7 @@ describe V1::DocumentsAPI, type: :request do
               {
                 value: 'b',
                 surface_number: 1,
+                position_weight: 3.5,
                 area: {
                   ulx: 60,
                   uly: 0,
@@ -1013,6 +1021,7 @@ describe V1::DocumentsAPI, type: :request do
               {
                 value: '2',
                 surface_number: 1,
+                position_weight: 3.5,
                 area: {
                   ulx: 60,
                   uly: 0,
@@ -1037,6 +1046,7 @@ describe V1::DocumentsAPI, type: :request do
               {
                 value: '4',
                 surface_number: 1,
+                position_weight: 3.5,
                 area: {
                   ulx: 70,
                   uly: 0,

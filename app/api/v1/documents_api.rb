@@ -174,6 +174,7 @@ class V1::DocumentsAPI < Grape::API
           optional :id, type: String
           optional :value, type: String
           optional :surface_number, type: Integer
+          optional :position_weight, type: String
           optional :delete, type: Boolean
           optional :area, type: Hash do
             requires :ulx, type: String
