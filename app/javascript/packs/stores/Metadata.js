@@ -26,14 +26,23 @@ export default class Metadata {
         );
 
         this.state.annotations.set(storeId, annotations);
-
-        console.log(this.state);
     }
 
-    annotations(doicumentId, branchName) {
-        // todo: do the fetch here
-
+    annotations(documentId, branchName) {
         let storeId = `${documentId}-${branchName}`;
-        return this.state.annotations.get(storeId) || [];
+
+        if( !this.state.annotations.has(storeId)) {
+            Request
+                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/${branchName}/annotations`)
+                .then(
+                    action(
+                        ( annotations ) => {
+                            this.state.annotations.set(branchName, annotations);
+                        }
+                    )
+                );
+        }
+
+        return this.state.annotations.get(storeId);
     }
 }

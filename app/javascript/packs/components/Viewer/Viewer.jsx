@@ -13,6 +13,7 @@ import Mouse from '../../stores/Mouse'
 import { MouseManager } from '../MouseManager'
 import { PopupMenu } from '../PopupMenu'
 import { AnnotationEditor } from '../AnnotationEditor'
+import { Annotations } from '../Annotations'
 import { DocumentPage } from '../DocumentPage'
 import { DocumentInfo } from '../DocumentInfo'
 import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
@@ -50,6 +51,9 @@ export default class Viewer extends React.Component {
 
     @observable
     showAnnotationEditor = false;
+
+    @observable
+    showAnnotations = false;
 
     @observable
     showTagsEditor = false;
@@ -102,6 +106,11 @@ export default class Viewer extends React.Component {
         this.showRevisions = !this.showRevisions;
     }
 
+    toggleAnnotations() {
+        this.showInfo = this.showCertainties = false;
+        this.showAnnotations = !this.showAnnotations;
+    }
+
     editAnnotation() {
         // make sure the mouse event bubbling comes first
         setTimeout(() => {
@@ -113,7 +122,7 @@ export default class Viewer extends React.Component {
     saveAnnotation(annotation) {
         this.data.metadata.saveAnnotation(
             this.documentId,
-            this.branchName,
+            this.currentBranch,
             annotation,
             this.lastSelectedGraphemes
         );
@@ -169,6 +178,7 @@ export default class Viewer extends React.Component {
                                    onToggleInfo={ this.toggleInfo.bind(this) }
                                    onToggleCertainties={ this.toggleCertainties.bind(this) }
                                    onToggleRevisions={ this.toggleRevisions.bind(this) }
+                                   onToggleAnnotations={ this.toggleAnnotations.bind(this) }
                                    />
                 </div>
                 <div className="corpusbuilder-viewer-contents">
@@ -205,6 +215,12 @@ export default class Viewer extends React.Component {
                                   onCloseRequested={ this.hideAnnotationEditor.bind(this) }
                                   onSaveRequested={ this.saveAnnotation.bind(this) }
                                   />
+                <Annotations visible={ this.showAnnotations }
+                             document={ doc }
+                             branchName={ this.currentBranch }
+                             page={ page }
+                             width={ width }
+                             />
               </div>
             );
         }

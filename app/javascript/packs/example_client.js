@@ -11,6 +11,16 @@ function logRequest(req) {
     console.log(`%c ${req._method} ${req._url}`, 'color: green; font-weight: bold');
 }
 
+mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/master/annotations`, (req, res) => {
+    logRequest(req);
+    return res
+        .status(200)
+        .body(JSON.stringify(
+          [
+          ]
+        ));
+});
+
 mock.get(`${baseUrl}/corpusbuilder/documents/${documentId}/branches`, (req, res) => {
     logRequest(req);
     return res

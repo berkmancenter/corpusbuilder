@@ -76,7 +76,7 @@ export default class Highlight extends React.Component {
         });
 
         return (
-            <div className="corpusbuilder-highlight">
+            <div className="corpusbuilder-highlight" title={ this.props.content }>
               { lines }
             </div>
         );
