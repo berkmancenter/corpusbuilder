@@ -186,6 +186,7 @@ export default class Viewer extends React.Component {
                                 page={ page }
                                 width={ width }
                                 showCertainties={ this.showCertainties }
+                                showImage={ this.props.showImage }
                                 onSelected={ this.onSelected.bind(this) }
                                 >
                   </DocumentPage>

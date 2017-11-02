@@ -1,15 +1,13 @@
 .corpusbuilder {
   &-document-page {
     font-family: Helvetica;
-    color: #bbb;
+    color: transparent;
     background-repeat: no-repeat;
     background-size: contain;
     position: relative;
   }
 
-  &-grapheme {
-    display: inline-block;
-    position: absolute;
-    color: transparent;
+  &-document-page.simple {
+    color: #999;
   }
 }

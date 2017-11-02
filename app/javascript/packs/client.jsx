@@ -8,6 +8,7 @@ class CorpusBuilder {
             <Viewer baseUrl={ options.baseUrl }
                     documentId={ options.documentId }
                     width={ options.width || 600 }
+                    showImage={ options.showImage || false }
                     />,
             element
         );
