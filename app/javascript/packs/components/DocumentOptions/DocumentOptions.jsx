@@ -29,7 +29,7 @@ export default class DocumentOptions extends React.Component {
 
         return (
           <div>
-            <button onClick={ () => this.props.onToggleCertainties() }>
+            <button style={ { display: 'none' } } onClick={ () => this.props.onToggleCertainties() }>
               { '▧' }
             </button>
             <button onClick={ () => this.props.onToggleInfo() }>
