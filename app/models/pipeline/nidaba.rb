@@ -158,12 +158,6 @@ class Pipeline::Nidaba < Pipeline
     end
   end
 
-  def assert_status(status)
-    if self.status.to_s != status.to_s
-      raise Pipeline::Error.new, "Expected pipeline with status #{status}"
-    end
-  end
-
   def create_batch_url
     "#{self.base_url}/api/v1/batch"
   end

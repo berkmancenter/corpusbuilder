@@ -9,4 +9,9 @@ FactoryGirl.define do
     status "initial"
     document_id ""
   end
+
+  factory :local_pipeline, class: Pipeline::Local do
+    status "initial"
+    document_id ""
+  end
 end

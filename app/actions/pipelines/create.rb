@@ -9,7 +9,7 @@ module Pipelines
     private
 
     def pipeline
-      @_pipeline ||= Pipeline::Nidaba.create! document: @document,
+      @_pipeline ||= Pipeline::Local.create! document: @document,
         status: "initial"
     end
   end

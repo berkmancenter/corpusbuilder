@@ -17,8 +17,12 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
   before(:each) do
     allow(RestClient).to receive(:post)
-    allow_any_instance_of(Pipeline::Nidaba).to receive(:create_batch)
-    allow_any_instance_of(Pipeline::Nidaba).to receive(:send_images)
+    allow_any_instance_of(Pipeline::Local).to receive(:store)
+    allow_any_instance_of(Pipeline::Local).to receive(:binarize)
+    allow_any_instance_of(Pipeline::Local).to receive(:deskew)
+    allow_any_instance_of(Pipeline::Local).to receive(:segment)
+    allow_any_instance_of(Pipeline::Local).to receive(:ocr)
+    allow_any_instance_of(Pipeline::Local).to receive(:cleanup)
   end
 
   context "Document is in initial state" do
@@ -41,7 +45,7 @@ RSpec.describe ProcessDocumentJob, type: :job do
     end
 
     it "Calls the pipeline's start method" do
-      expect_any_instance_of(Pipeline::Nidaba).to receive(:start)
+      expect_any_instance_of(Pipeline::Local).to receive(:start)
 
       perform_initial
     end
@@ -66,19 +70,19 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
     let(:document_processing) do
       document = create :document, status: "processing"
-      create :nidaba_pipeline, document_id: document.id, status: Pipeline.statuses["processing"]
+      create :local_pipeline, document_id: document.id, status: Pipeline.statuses["processing"]
       document
     end
 
-    it "Polls the pipeline for changes" do
-      expect_any_instance_of(Pipeline::Nidaba).to receive(:poll)
+    it "Moves the pipeline forward" do
+      expect_any_instance_of(Pipeline::Local).to receive(:forward)
 
       perform_processing
     end
 
     context "Pipeline returns info that it is still processing" do
       before(:each) do
-        expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return(:processing)
+        expect_any_instance_of(Pipeline::Local).to receive(:forward).and_return(:processing)
       end
 
       it "Schedules another run of the same job" do
@@ -90,7 +94,7 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
     context "Pipeline returns an error" do
       before(:each) do
-        expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return("error")
+        expect_any_instance_of(Pipeline::Local).to receive(:forward).and_return("error")
       end
 
       it "Puts document in the error state" do
@@ -107,16 +111,49 @@ RSpec.describe ProcessDocumentJob, type: :job do
     end
 
     context "Pipeline returns success" do
-      let(:tei_result) do
+      let(:parsed_result) do
         [
-          { "abcd1" => "<TEI>1</TEI>" },
-          { "abcd2" => "<TEI>2</TEI>" }
+          {
+            'abcd1' => [
+              Parser::Element.new(name: "surface", area: Area.new(lrx: 100, lry: 10, ulx: 0, uly: 0)),
+              Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 10, ulx: 0, uly: 0)),
+              Parser::Element.new(name: "grapheme", certainty: 0.1, area: Area.new(lrx: 10, lry: 10, ulx: 0, uly: 0), value: 'h'),
+              Parser::Element.new(name: "grapheme", certainty: 0.2, area: Area.new(lrx: 20, lry: 10, ulx: 10, uly: 0), value: 'e'),
+              Parser::Element.new(name: "grapheme", certainty: 0.3, area: Area.new(lrx: 30, lry: 10, ulx: 20, uly: 0), value: 'l'),
+              Parser::Element.new(name: "grapheme", certainty: 0.4, area: Area.new(lrx: 40, lry: 10, ulx: 30, uly: 0), value: 'l'),
+              Parser::Element.new(name: "grapheme", certainty: 0.5, area: Area.new(lrx: 50, lry: 10, ulx: 40, uly: 0), value: 'o'),
+              Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 20, ulx: 0, uly: 10)),
+              Parser::Element.new(name: "grapheme", certainty: 0.7, area: Area.new(lrx: 20, lry: 20, ulx: 10, uly: 10), value: 'o'),
+              Parser::Element.new(name: "grapheme", certainty: 0.6, area: Area.new(lrx: 10, lry: 20, ulx: 0, uly: 10), value: 'w'),
+              Parser::Element.new(name: "grapheme", certainty: 0.8, area: Area.new(lrx: 30, lry: 20, ulx: 20, uly: 10), value: 'r'),
+              Parser::Element.new(name: "grapheme", certainty: 0.9, area: Area.new(lrx: 40, lry: 20, ulx: 30, uly: 10), value: 'l'),
+              Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: 'd')
+            ].lazy
+          },
+          {
+            'abcd2' => [
+              Parser::Element.new(name: "surface", area: Area.new(lrx: 100, lry: 10, ulx: 0, uly: 0)),
+              Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 10, ulx: 0, uly: 0)),
+              Parser::Element.new(name: "grapheme", certainty: 0.1, area: Area.new(lrx: 10, lry: 10, ulx: 0, uly: 0), value: 'h'),
+              Parser::Element.new(name: "grapheme", certainty: 0.2, area: Area.new(lrx: 20, lry: 10, ulx: 10, uly: 0), value: 'e'),
+              Parser::Element.new(name: "grapheme", certainty: 0.3, area: Area.new(lrx: 30, lry: 10, ulx: 20, uly: 0), value: 'l'),
+              Parser::Element.new(name: "grapheme", certainty: 0.4, area: Area.new(lrx: 40, lry: 10, ulx: 30, uly: 0), value: 'l'),
+              Parser::Element.new(name: "grapheme", certainty: 0.5, area: Area.new(lrx: 50, lry: 10, ulx: 40, uly: 0), value: 'o'),
+              Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 20, ulx: 0, uly: 10)),
+              Parser::Element.new(name: "grapheme", certainty: 0.7, area: Area.new(lrx: 20, lry: 20, ulx: 10, uly: 10), value: 'o'),
+              Parser::Element.new(name: "grapheme", certainty: 0.6, area: Area.new(lrx: 10, lry: 20, ulx: 0, uly: 10), value: 'w'),
+              Parser::Element.new(name: "grapheme", certainty: 0.8, area: Area.new(lrx: 30, lry: 20, ulx: 20, uly: 10), value: 'r'),
+              Parser::Element.new(name: "grapheme", certainty: 0.9, area: Area.new(lrx: 40, lry: 20, ulx: 30, uly: 10), value: 'l'),
+              Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: 'd')
+            ].lazy
+          }
         ].lazy
       end
 
       before(:each) do
-        expect_any_instance_of(Pipeline::Nidaba).to receive(:poll).and_return("success")
-        expect_any_instance_of(Pipeline::Nidaba).to receive(:result).and_return(tei_result)
+        expect_any_instance_of(Pipeline::Local).to receive(:forward).and_return("success")
+        expect_any_instance_of(Pipeline::Local).to receive(:result).and_return(parsed_result)
+
         expect(Documents::Compile).to receive(:run!).with({ image_ocr_result: anything, image_id: "abcd1", document: document_processing})
         expect(Documents::Compile).to receive(:run!).with({ image_ocr_result: anything, image_id: "abcd2", document: document_processing})
       end
@@ -146,7 +183,7 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
     let(:document_error) do
       document = create :document, status: "error"
-      create :nidaba_pipeline, document_id: document.id
+      create :local_pipeline, document_id: document.id
       document
     end
 
@@ -170,7 +207,7 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
     let(:document_ready) do
       document = create :document, status: "ready"
-      create :nidaba_pipeline, document_id: document.id
+      create :local_pipeline, document_id: document.id
       document
     end
 
