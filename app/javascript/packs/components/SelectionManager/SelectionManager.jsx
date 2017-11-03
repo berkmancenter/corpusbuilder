@@ -4,45 +4,6 @@ import { observer } from 'mobx-react'
 
 export default class SelectionManager extends React.Component {
 
-    parentOf(node, nodeName, classMatch) {
-        if(node === null || node === undefined) {
-            return null;
-        }
-
-        if(node.nodeName === nodeName && node.className.match(classMatch)) {
-            return node;
-        }
-        else {
-            return this.parentOf(node.parentNode, nodeName, classMatch);
-        }
-    }
-
-    nodeTotalOffsetTop(n) {
-        if(n === undefined || n === null) {
-            return 0;
-        }
-        else {
-            return (n.offsetTop || 0) + this.nodeTotalOffsetTop(n.parentNode);
-        }
-    }
-
-    nodeTotalOffsetLeft(n) {
-        if(n === undefined || n === null) {
-            return 0;
-        }
-        else {
-            return (n.offsetLeft || 0) + this.nodeTotalOffsetLeft(n.parentNode);
-        }
-    }
-
-    graphemeNodeForSelected(node) {
-        return this.parentOf(node, "SPAN", this.props.selector);
-    };
-
-    documentRootForSelected(node) {
-        return this.parentOf(node, "DIV", /selection-root\b/);
-    };
-
     hasSelection() {
         let selection = window.getSelection();
 
@@ -53,45 +14,49 @@ export default class SelectionManager extends React.Component {
         let selection = window.getSelection();
 
         if(selection.type === "Range") {
-            let startGraphemeNode = this.graphemeNodeForSelected(selection.baseNode);
-            let endGraphemeNode = this.graphemeNodeForSelected(selection.focusNode);
+            let selectedText = selection.toString();
+            console.log(`Simplified selection contains ${selectedText.length} characters`);
+            let match = this.props.graphemes.map((g) => {
+                    return g.value;
+                })
+                .join('')
+                .match(
+                    selectedText.replace(/[#-.]|[[-^]|[?|{}]/g, '\\$&')
+                                .replace(/\s+/g, '\\s+')
+                );
 
-            let selectedGraphemes = [];
-            let documentRoot = this.documentRootForSelected(startGraphemeNode);
-            let allNodes = documentRoot.getElementsByClassName('corpusbuilder-grapheme');
-            let started = false;
+            if(match !== null) {
+                let currentIndex = match.index;
+                let nonSpaces = Array.from(selectedText.replace(/\s/g, ''));
+                let graphemes = [];
 
-            for(let node of allNodes) {
-                if(node === startGraphemeNode) {
-                    started = true;
+                while(nonSpaces.length > 0) {
+                    let currentGrapheme = this.props.graphemes[ currentIndex++ ];
+                    graphemes.push(currentGrapheme);
+
+                    if(currentGrapheme.value !== " ") {
+                        nonSpaces.pop();
+                    }
                 }
 
-                if(started) {
-                    selectedGraphemes.push(node);
-                }
+                console.log(graphemes.map((g) => { return g.value }).join(''));
 
-                if(node === endGraphemeNode) {
-                    break;
-                }
+                return graphemes;
             }
-
-            return selectedGraphemes;
+            else {
+                return [];
+            }
         }
+
 
         return [];
     }
 
     onMouseUp(e) {
-        let root = this.documentRootForSelected(e.target);
         let hasSelection = this.hasSelection();
 
-        if(root !== null && root !== undefined && hasSelection) {
-            let offsetTop = this.nodeTotalOffsetTop(root);
-            let offsetLeft = this.nodeTotalOffsetLeft(root);
-            let lastMouseX = e.pageX - offsetLeft;
-            let lastMouseY = e.pageY - offsetTop;
-
-            this.props.onSelected(this.selectedGraphemes(), lastMouseX, lastMouseY);
+        if(hasSelection) {
+            this.props.onSelected(this.selectedGraphemes());
         }
         else {
             this.props.onDeselected();

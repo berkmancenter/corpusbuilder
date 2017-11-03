@@ -104,79 +104,17 @@ export default class DocumentPage extends React.Component {
         return 'hsla(' + hue + ', 100%, 50%, .5)';
     }
 
-    onSelected(nodes) {
-       //if(this.props.onSelected !== undefined && this.props.onSelected !== null) {
-       //    this.props.onSelected(
-       //        // iterating forward through the ghraphemes as an optimization
-       //        // around the property of the selection being contiguous:
-       //        this.graphemes.reduce((state, grapheme) => {
-       //            if(state.sawLast) {
-       //                return state;
-       //            }
+    onSelected(graphemes) {
+       console.log(`Selected ${graphemes.length} graphemes`);
 
-       //            if(!state.sawFirst && grapheme.id === nodes[0].getAttribute('data-id')) {
-       //                state.sawFirst = true;
-       //            }
-
-       //            if(!state.sawLast && grapheme.id === nodes[nodes.length - 1].getAttribute('data-id')) {
-       //                state.sawLast = true;
-       //            }
-
-       //            if(state.sawFirst) {
-       //                state.result.push(grapheme);
-       //            }
-
-       //            return state;
-       //        }, { result: [], sawFirst: false, sawLast: false }).result
-       //    );
-       //}
+       if(this.props.onSelected !== undefined && this.props.onSelected !== null) {
+           this.props.onSelected(graphemes);
+       }
     }
 
     onDeselected() {
         console.log("OnDeselected!");
     }
-
-   //graphemeNodes(grapheme, previous) {
-   //    let graphemeStyles = PagePositioningHelper.graphemePositioning(grapheme, this.ratio);
-
-   //    if(this.showCertainties) {
-   //        graphemeStyles.backgroundColor = this.percentageToHsl(grapheme.certainty, 0, 120);
-   //    }
-
-   //    let spaces = PagePositioningHelper.spacePositionsBetween(grapheme, previous, this.ratio)
-   //        .map((spacePosition) => {
-   //            return (
-   //                <span className="corpusbuilder-grapheme"
-   //                      key={ `space-${ grapheme.id }-${ spacePosition.left }-${ spacePosition.top }` }
-   //                      style={ spacePosition }
-   //                      >
-   //                    { grapheme.area.uly == previous.area.uly ? ' ' : <br /> }
-   //                </span>
-   //            );
-   //        });
-
-   //    let element = (
-   //        <span className="corpusbuilder-grapheme"
-   //              key={ grapheme.id }
-   //              style={ graphemeStyles }
-   //              data-id={ grapheme.id }
-   //              >
-   //            { grapheme.value }
-   //        </span>
-   //    )
-
-   //    if(spaces.length > 0) {
-   //        return (
-   //            <span key={ `grapheme-spaces-${ grapheme.id }` }>
-   //              { spaces }
-   //              { element }
-   //            </span>
-   //        );
-   //    }
-   //    else {
-   //        return element;
-   //    }
-   //}
 
     render() {
         let pageStyle = {
@@ -193,7 +131,7 @@ export default class DocumentPage extends React.Component {
             <div className={ `corpusbuilder-document-page ${ this.props.showImage ? '' : 'simple' }` }
                  style={ pageStyle }
                  >
-              <SelectionManager selector="corpusbuilder-grapheme"
+              <SelectionManager graphemes={ this.graphemes }
                                 onSelected={ this.onSelected.bind(this) }
                                 onDeselected={ this.onDeselected.bind(this) }
                                 >
