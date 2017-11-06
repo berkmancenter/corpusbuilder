@@ -17,12 +17,9 @@ RSpec.describe ProcessDocumentJob, type: :job do
 
   before(:each) do
     allow(RestClient).to receive(:post)
-    allow_any_instance_of(Pipeline::Local).to receive(:store)
-    allow_any_instance_of(Pipeline::Local).to receive(:binarize)
-    allow_any_instance_of(Pipeline::Local).to receive(:deskew)
+    allow_any_instance_of(Pipeline::Local).to receive(:preprocess)
     allow_any_instance_of(Pipeline::Local).to receive(:segment)
     allow_any_instance_of(Pipeline::Local).to receive(:ocr)
-    allow_any_instance_of(Pipeline::Local).to receive(:cleanup)
   end
 
   context "Document is in initial state" do

@@ -26,6 +26,10 @@ class Pipeline < ApplicationRecord
     raise NotImplementedError
   end
 
+  def cleanup!
+    raise NotImplementedError
+  end
+
   def result
     raise NotImplementedError
   end
