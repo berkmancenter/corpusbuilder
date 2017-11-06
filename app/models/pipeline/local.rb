@@ -8,7 +8,11 @@ class Pipeline::Local < Pipeline
   def result
     assert_status :success
 
-    # todo: add hOCR parsing here
+    document.images.lazy.map do |image|
+      {
+        image.id => HocrParser.parse(image.hocr.read)
+      }
+    end
   end
 
   def forward

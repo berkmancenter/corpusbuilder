@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Pipeline::Local, type: :model do
+describe Pipeline::Local, type: :model do
 
   let(:client_app) do
     create :app
@@ -8,6 +8,38 @@ RSpec.describe Pipeline::Local, type: :model do
 
   let(:document) do
     create :document, status: Document.statuses[:processing], app_id: client_app.id
+  end
+
+  context "the result method" do
+    let(:pipeline) do
+      create :local_pipeline, document_id: document.id, data: { "stage" => "done" },
+        status: Pipeline.statuses[:success]
+    end
+
+    let(:image1) { instance_double("Image", id: "id1", hocr: double(read: hocr_contents)) }
+    let(:image2) { instance_double("Image", id: "id2") }
+    let(:image3) { instance_double("Image", id: "id3") }
+    let(:images) { [ image1, image2, image3 ] }
+    let(:hocr_contents) { "<html></html>" }
+
+    before(:each) do
+      expect_any_instance_of(Document).to receive(:images).and_return(images)
+    end
+
+    it "returns a lazy enumerator of hashes with image id being a key and the value being a lazy enumerator" do
+      result = pipeline.result
+
+      expect(result.class).to eq(Enumerator::Lazy)
+      expect(result.first.class).to eq(Hash)
+      expect(result.first.keys.first).to eq(image1.id)
+      expect(result.first.values.first).to be_a(Parser)
+    end
+
+    it "calls the HocrParser.parse on each hocr file content" do
+      expect(HocrParser).to receive(:parse).with(hocr_contents)
+
+      pipeline.result.first
+    end
   end
 
   context "the forward method" do
