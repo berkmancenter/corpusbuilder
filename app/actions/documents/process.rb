@@ -28,6 +28,9 @@ module Documents
       else
         reschedule(0.1.second)
       end
+    rescue
+      document.error!
+      raise $!
     end
 
     def when_error

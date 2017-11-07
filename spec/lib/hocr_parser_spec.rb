@@ -42,6 +42,10 @@ describe HocrParser do
         expect(surfaces.count).to eq(1)
       end
 
+      it "contains a proper number of zone elements" do
+        expect(zones.count).to eq(30)
+      end
+
       it "contains a proper number of grapheme elements" do
         expect(graphemes.count).to eq(1772)
       end

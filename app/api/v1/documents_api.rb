@@ -64,6 +64,8 @@ class V1::DocumentsAPI < Grape::API
     post do
       authorize!
 
+      # todo: return meaningful error when editor isn't found
+
       action! Documents::Create, params.merge(app: @current_app)
     end
 

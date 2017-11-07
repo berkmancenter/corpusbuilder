@@ -9,6 +9,7 @@ class Pipeline::Local < Pipeline
     assert_status :success
 
     document.images.lazy.map do |image|
+      Rails.logger.debug "Pipeline::Local asked for results from file #{image.hocr}"
       {
         image.id => HocrParser.parse(image.hocr.read)
       }
@@ -31,6 +32,8 @@ class Pipeline::Local < Pipeline
 
     if stage == "done"
       return :success
+    else
+      return :processing
     end
   end
 
@@ -59,11 +62,14 @@ class Pipeline::Local < Pipeline
   end
 
   def ocr
+    Rails.logger.debug "Doing or in the local pipeline"
     next_image, one_after = document.images.lazy.select do |i|
       !i.ocred?
     end.take(2).to_a
+    Rails.logger.debug "Next: #{next_image} One After: #{one_after}"
 
     if next_image.present?
+      Rails.logger.debug "Doing OCR on: #{next_image}"
       # todo: implement switching between backends
       Images::OCR.run!(
         image: next_image,

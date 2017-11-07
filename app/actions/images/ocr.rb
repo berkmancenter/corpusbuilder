@@ -9,6 +9,10 @@ module Images
 
     def execute
       file_path = backend_action.run!(image: image).result
+      Rails.logger.debug "The OCR results file returned: #{file_path}"
+      if !File.exist?(file_path)
+        raise StandardError, "Tesseract seems to have returned the results but the outpout file has not been found. Output file path: #{file_path}"
+      end
       file = File.new(file_path)
       image.hocr = file
       image.save!

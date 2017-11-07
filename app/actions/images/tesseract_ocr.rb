@@ -5,14 +5,19 @@ module Images
     validates :image, presence: true
 
     def execute
+      Rails.logger.info "Running Tesseract with: #{command}"
       tesseract_output = `#{command}`
       tesseract_status = $?
+      Rails.logger.info "Tesseract returned #{tesseract_output}"
+      Rails.logger.info "Tesseract status #{tesseract_status}"
 
       if !tesseract_status.success?
         raise "Tesseract returned abnormally. Status: #{tesseract_status}. Output: #{tesseract_output}"
       end
 
-      file_path
+      Que.logger.debug "Tesseract resulting file should be found at #{file_path}.hocr"
+
+      "#{file_path}.hocr"
     end
 
     def file_path

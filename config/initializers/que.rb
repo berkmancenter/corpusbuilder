@@ -1,0 +1,1 @@
+Que.logger = Rails.logger

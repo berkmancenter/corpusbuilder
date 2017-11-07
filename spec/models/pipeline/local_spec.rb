@@ -53,7 +53,7 @@ describe Pipeline::Local, type: :model do
       context "when the step raises exception" do
         it "keeps the stage at the same level" do
           allow_any_instance_of(Pipeline::Local).to receive(step).and_raise(StandardError)
-          pipeline.forward
+          pipeline.forward!
           expect(pipeline.reload.stage).to eq(stage)
         end
       end
@@ -61,16 +61,29 @@ describe Pipeline::Local, type: :model do
       context "when the step returns :more indicating more work to be done" do
         it "keeps the stage at the same level" do
           allow_any_instance_of(Pipeline::Local).to receive(step).and_return(:more)
-          pipeline.forward
+          pipeline.forward!
           expect(pipeline.reload.stage).to eq(stage)
+        end
+
+        it "keeps the status at the processing status" do
+          allow_any_instance_of(Pipeline::Local).to receive(step).and_return(:more)
+          pipeline.forward!
+          expect(pipeline.reload.processing?).to be_truthy
         end
       end
 
       context "when the step returns :done indicating no more work to be done" do
         it "moves the stage to the next level" do
           expect_any_instance_of(Pipeline::Local).to receive(step).and_return(:done)
-          pipeline.forward
+          pipeline.forward!
           expect(pipeline.reload.stage).to eq(next_stage)
+        end
+
+        it "handles the status properly" do
+          allow_any_instance_of(Pipeline::Local).to receive(step).and_return(:done)
+          pipeline.forward!
+          accessor = step == :ocr ? :success? : :processing?
+          expect(pipeline.reload.send(accessor)).to be_truthy
         end
       end
     end
@@ -109,6 +122,12 @@ describe Pipeline::Local, type: :model do
 
         expect(pipeline.preprocess).to eq(:done)
       end
+
+      it "keeps the status at the processing status" do
+        allow_any_instance_of(Pipeline::Local).to receive(step).and_return(:more)
+        pipeline.forward!
+        expect(pipeline.reload.processing?).to be_truthy
+      end
     end
 
     context "the segment stage" do
@@ -117,6 +136,16 @@ describe Pipeline::Local, type: :model do
       let(:stage) { "segment" }
       let(:step) { :segment }
       let(:next_stage) { "ocr" }
+      let(:pipeline) do
+        create :local_pipeline, document_id: document.id, data: { "stage" => "segment" },
+          status: Pipeline.statuses[:processing]
+      end
+
+      it "keeps the status at the processing status" do
+        allow_any_instance_of(Pipeline::Local).to receive(step).and_return(:done)
+        pipeline.forward!
+        expect(pipeline.reload.processing?).to be_truthy
+      end
     end
 
     context "the ocr stage" do
@@ -140,7 +169,13 @@ describe Pipeline::Local, type: :model do
         expect_any_instance_of(Document).to receive(:images).and_return(images)
         expect(Images::OCR).to receive(:run!).with(image: image2, backend: :tesseract)
 
-        pipeline.forward
+        pipeline.forward!
+      end
+
+      it "makes the status be success" do
+        allow_any_instance_of(Pipeline::Local).to receive(step).and_return(:done)
+        pipeline.forward!
+        expect(pipeline.reload.success?).to be_truthy
       end
     end
 

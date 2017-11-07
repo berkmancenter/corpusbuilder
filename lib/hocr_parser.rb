@@ -8,6 +8,7 @@ class HocrParser < Parser
   end
 
   def elements(node = xml_page_root)
+    Rails.logger.debug "HocrParser.elements with node being: #{node.class}"
     node_class = attr(node, "class")
 
     Enumerator::Lazy.new([ 0 ]) do |yielder, _|
@@ -53,7 +54,7 @@ class HocrParser < Parser
   def line_node_to_element(xml_node)
     Parser::Element.new(
       area: node_area(xml_node),
-      name: "line"
+      name: "zone"
     )
   end
 

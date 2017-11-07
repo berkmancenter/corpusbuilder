@@ -26,6 +26,7 @@ module Documents
           fail "Invalid OCR element name: #{element.name}"
         end
       end
+      # todo: add those graphemes into the master branch
     end
 
     def image
