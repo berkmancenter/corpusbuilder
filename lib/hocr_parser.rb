@@ -1,5 +1,5 @@
 class HocrParser < Parser
-  attr_accessor :element_parser, :hocr_string, :yielder
+  attr_accessor :element_parser, :hocr_string, :yielder, :bidi
 
   def self.parse(hocr_string)
     # todo: make the following work with streams and make
@@ -59,7 +59,7 @@ class HocrParser < Parser
 
   def word_node_to_elements(xml_node)
     unordered = xml_node.text.chars
-    ordered = Bidi.new.to_visual(xml_node.text, direction(xml_node)).chars
+    ordered = bidi.to_visual(xml_node.text, direction(xml_node)).chars
     count_all = ordered.count
 
     used_indexes = Set.new
@@ -116,5 +116,6 @@ class HocrParser < Parser
 
   def initialize(hocr_string)
     @hocr_string = hocr_string
+    @bidi = Bidi.new
   end
 end
