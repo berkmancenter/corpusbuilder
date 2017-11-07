@@ -84,9 +84,16 @@ class HocrParser < Parser
       Parser::Element.new(
         area: node_area(xml_node, ordered_index.call(char), count_all),
         name: "grapheme",
-        value: char
+        certainty: node_certainty(xml_node),
+        value: char,
+        grouping: xml_node.attr('title')
       )
     end
+  end
+
+  def node_certainty(xml_node)
+    wconf = xml_node.attr('title').split(';').map(&:strip).find { |m| m[/x_wconf/] }
+    wconf.split(' ').last.to_f / 100.0
   end
 
   def node_area(xml_node, index = nil, count_all = nil)
