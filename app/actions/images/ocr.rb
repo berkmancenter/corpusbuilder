@@ -12,6 +12,8 @@ module Images
       file = File.new(file_path)
       image.hocr = file
       image.save!
+      file.close
+      image
     end
 
     def backend_action

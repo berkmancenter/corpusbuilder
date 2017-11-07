@@ -49,11 +49,17 @@ describe Documents::Compile do
     create :document, status: Document.statuses[:processing]
   end
 
+  let(:file) do
+    File.new(Rails.root.join("spec", "support", "files", "file_2.png"))
+  end
+
   let(:image) do
-    create :image,
+    _image = create :image,
       name: "file_2.png",
       order: 1,
-      image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png"))
+      image_scan: file
+    file.close
+    _image
   end
 
   let(:surfaces) do

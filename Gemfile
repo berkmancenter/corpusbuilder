@@ -27,6 +27,7 @@ gem 'rest-client'
 gem 'nokogiri'
 gem 'scenic'
 gem 'active_record_union'
+gem 'bidi'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
