@@ -22,7 +22,7 @@ describe Documents::Compile do
   end
 
   let(:parser) do
-    instance_double("TeiParser", elements: elements)
+    instance_double("HocrParser", elements: elements)
   end
 
   let(:proper_params) do
@@ -43,6 +43,28 @@ describe Documents::Compile do
     {
       image_ocr_result: parser
     }
+  end
+
+  let(:editor) do
+    create :editor
+  end
+
+  let(:master_revision) do
+    create :revision, document_id: document.id
+  end
+
+  let(:working_revision) do
+    create :revision,
+      document_id: document.id,
+      parent_id: master_revision.id,
+      status: Revision.statuses[:working]
+  end
+
+  let(:master_branch) do
+    create :branch,
+      revision_id: master_revision.id,
+      name: 'master',
+      editor_id: editor.id
   end
 
   let(:document) do
@@ -77,7 +99,9 @@ describe Documents::Compile do
   end
 
   let(:proper_call) do
-    Documents::Compile.run proper_params
+    master_branch
+    working_revision
+    Documents::Compile.run! proper_params
   end
 
   let(:no_document_call) do
@@ -134,6 +158,18 @@ describe Documents::Compile do
 
     expect(graphemes.map(&:position_weight)).to eq((1..(graphemes.count)).to_a)
     expect(graphemes.map(&:value).join).to eq("helloowrld")
+  end
+
+  it "attaches the newly created graphemes to the master branch of the document" do
+    proper_call
+
+    expect(master_branch.graphemes.map(&:id).sort).to eq(graphemes.map(&:id).sort)
+  end
+
+  it "attaches the newly created graphemes to the master branch working revision of the document" do
+    proper_call
+
+    expect(master_branch.working.graphemes.map(&:id).sort).to eq(graphemes.map(&:id).sort)
   end
 end
 

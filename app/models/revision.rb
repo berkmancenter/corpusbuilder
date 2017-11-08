@@ -6,8 +6,8 @@ class Revision < ApplicationRecord
 
   workflow status: [ :regular, :working, :conflict ]
 
-  has_many :branches
-  has_and_belongs_to_many :graphemes
+  has_many :branches, dependent: :destroy
+  has_and_belongs_to_many :graphemes, dependent: :destroy
 
   scope :working, -> {
     where(status: [

@@ -3,10 +3,10 @@ class Document < ApplicationRecord
 
   workflow status: [ :initial, :processing, :error, :ready ]
 
-  has_one :pipeline
-  has_many :revisions
+  has_one :pipeline, dependent: :destroy
+  has_many :revisions, dependent: :destroy
   has_many :branches, through: :revisions
-  has_many :surfaces
+  has_many :surfaces, dependent: :destroy
   has_many :images
   belongs_to :app
 
