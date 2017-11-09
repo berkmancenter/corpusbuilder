@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/elad/ruby-bidi.git
+  revision: 20192431ee087ef820b78f64892f06676da2536c
+  ref: 20192431ee087ef820b78f64892f06676da2536c
+  specs:
+    bidi (0.0.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -56,7 +63,6 @@ GEM
       ice_nine (~> 0.11.0)
       thread_safe (~> 0.3, >= 0.3.1)
     bcrypt (3.1.11)
-    bidi (0.0.2)
     bindex (0.5.0)
     builder (3.2.3)
     byebug (9.0.6)
@@ -311,7 +317,7 @@ PLATFORMS
 DEPENDENCIES
   active_record_union
   airborne
-  bidi
+  bidi!
   byebug
   carrierwave (~> 1.0)
   dotenv-rails

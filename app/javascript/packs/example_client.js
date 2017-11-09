@@ -2,8 +2,8 @@ import mock from 'xhr-mock'
 import masterTreeJson from './master-tree-example.json'
 import topicTreeJson from './topic-tree-example.json'
 
-let baseUrl = 'localhost.dev';
-let documentId = "43f158c6-fae8-4aef-b696-dd28024f6936";
+let baseUrl = 'http://46.shariasource.berkman.temphost.net:7946';
+let documentId = "b1f3a3e6-c2f4-4c33-9563-0068bb965a83";
 
 mock.setup();
 

@@ -67,14 +67,26 @@ class HocrParser < Parser
 
     indexes_map = Proc.new do |char|
       ordered.each_index.lazy.select do |i|
-        unordered[i] == char
+        ordered[i] == char
       end
     end
 
     ordered_index = Proc.new do |char|
-      index = indexes_map.call(char).drop_while do |i|
+      filtered = indexes_map.call(char).drop_while do |i|
         used_indexes.include? i
-      end.next
+      end
+
+      index = begin
+        filtered.next
+      rescue StopIteration
+        mirrored_codepoints = $mirrorMap[char.codepoints.first]
+
+        if mirrored_codepoints.present?
+          mirrored_char = mirrored_codepoints.first.chr
+
+          ordered_index.call(mirrored_char)
+        end
+      end
 
       used_indexes << index
 
@@ -103,6 +115,7 @@ class HocrParser < Parser
     ulx, uly, lrx, lry = bbox_string.split(' ').drop(1).map(&:to_i)
 
     if index.present? and count_all.present?
+      # todo: fix: reverse that for the graphemes in a word
       width = lrx - ulx
       lrx = ulx + (index + 1) * width * 1.0 / count_all
       ulx = ulx + index       * width * 1.0 / count_all

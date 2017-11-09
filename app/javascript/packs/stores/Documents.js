@@ -10,7 +10,7 @@ export default class Documents {
     tree(documentId, branchName = 'master') {
         if( !this.state.trees.has(branchName)) {
             Request
-                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/${branchName}/tree`)
+                .get(`${this.baseUrl}/api/documents/${documentId}/${branchName}/tree`)
                 .then(
                     action(
                         ( tree ) => {
@@ -26,7 +26,7 @@ export default class Documents {
     info(documentId) {
         if( !this.state.infos.has(documentId)) {
             Request
-                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}`)
+                .get(`${this.baseUrl}/api/documents/${documentId}`)
                 .then(
                     action(
                         ( info ) => {
@@ -42,11 +42,11 @@ export default class Documents {
     branches(documentId) {
         if( !this.state.branches.has(documentId)) {
             Request
-                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/branches`)
+                .get(`${this.baseUrl}/api/documents/${documentId}/branches`)
                 .then(
                     action(
                         ( branches ) => {
-                            this.state.branches.set( documentId, branches );
+                            this.state.branches.set( documentId, branches.branches );
                         }
                     )
                 );
@@ -65,7 +65,7 @@ export default class Documents {
 
         if( !documentRevisions.has(branchName) ) {
             Request
-                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/${branchName}/revisions`)
+                .get(`${this.baseUrl}/api/documents/${documentId}/${branchName}/revisions`)
                 .then(
                     action(
                         ( revisions ) => {

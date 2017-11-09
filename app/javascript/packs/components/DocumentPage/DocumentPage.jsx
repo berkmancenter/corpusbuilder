@@ -140,6 +140,7 @@ export default class DocumentPage extends React.Component {
                       (line, index) => {
                           return <DocumentLine key={ `document-line-${index}` }
                                                line={ line }
+                                               number={ index + 1 }
                                                ratio={ this.ratio }
                                                />
                       }

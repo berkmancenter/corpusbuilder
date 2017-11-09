@@ -33,7 +33,7 @@ export default class Metadata {
 
         if( !this.state.annotations.has(storeId)) {
             Request
-                .get(`${this.baseUrl}/corpusbuilder/documents/${documentId}/${branchName}/annotations`)
+                .get(`${this.baseUrl}/api/documents/${documentId}/${branchName}/annotations`)
                 .then(
                     action(
                         ( annotations ) => {
