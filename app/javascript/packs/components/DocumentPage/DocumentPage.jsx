@@ -128,6 +128,16 @@ export default class DocumentPage extends React.Component {
 
         return (
           <div>
+            <div className={ 'corpusbuilder-document-page simple' }
+                 style={ pageStyle }
+              >
+              &nbsp;
+            </div>
+            <div className={ 'corpusbuilder-document-page simple' }
+                 style={ pageStyle }
+              >
+              &nbsp;
+            </div>
             <div className={ `corpusbuilder-document-page ${ this.props.showImage ? '' : 'simple' }` }
                  style={ pageStyle }
                  >
