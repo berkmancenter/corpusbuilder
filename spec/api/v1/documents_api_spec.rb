@@ -19,20 +19,17 @@ describe V1::DocumentsAPI, type: :request do
 
   let(:image1) do
     create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
-      name: "file_1.png",
-      order: 1
+      name: "file_1.png"
   end
 
   let(:image2) do
     create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
-      name: "file_2.png",
-      order: 2
+      name: "file_2.png"
   end
 
   let(:image3) do
     create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
-      name: "file_3.png",
-      order: 3
+      name: "file_3.png"
   end
 
   let(:standard_area) do
@@ -82,14 +79,14 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:data_empty_metadata) do
       {
-        images: [ { id: 1 }, { id: 2 } ],
+        images: [ { id: image1.id }, { id: image2.id } ],
         metadata: { }
       }
     end
 
     let(:data_minimal_correct) do
       {
-        images: [ { id: 1 }, { id: 2 } ],
+        images: [ { id: image2.id }, { id: image1.id } ],
         metadata: { title: "Fancy Book" }.to_json,
         editor_email: editor.email
       }
@@ -129,6 +126,23 @@ describe V1::DocumentsAPI, type: :request do
       document = Document.find new_id
 
       expect(document.branches.joins(:editor).where(editors: { email: editor.email })).to be_present
+    end
+
+    it "updates the images order attribute based on their order in the params" do
+      post url, params: data_minimal_correct, headers: headers
+
+      new_id = JSON.parse(response.body)["id"]
+      document = Document.find new_id
+
+      expect(document.images.count).to eq(2)
+      expect(document.images.map(&:order)).to eq([1, 2])
+      expect(document.images.map(&:id)).to eq([image2.id, image1.id])
+    end
+
+    it "fails when a given image id doesn't exist" do
+      post url, params: data_minimal_correct.merge({ images: [ { id: -1 } ] }), headers: headers
+
+      expect(response.status).to eq(400)
     end
   end
 

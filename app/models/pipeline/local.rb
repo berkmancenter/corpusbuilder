@@ -62,7 +62,7 @@ class Pipeline::Local < Pipeline
   end
 
   def ocr
-    Rails.logger.debug "Doing or in the local pipeline"
+    Rails.logger.debug "Doing ocr in the local pipeline"
     next_image, one_after = document.images.lazy.select do |i|
       !i.ocred?
     end.take(2).to_a

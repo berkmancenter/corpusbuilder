@@ -11,9 +11,19 @@ describe Documents::Create do
     create :editor
   end
 
+  let(:image1) do
+    create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+      name: "file_1.png"
+  end
+
+  let(:image2) do
+    create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+      name: "file_2.png"
+  end
+
   let(:proper_params) do
     {
-      images: [ { id: 2 }, { id: 2 } ],
+      images: [ { id: image1.id }, { id: image2.id } ],
       metadata: {
         title: "A good read"
       },
@@ -27,7 +37,7 @@ describe Documents::Create do
   end
 
   it "turns valid when given valid parameters" do
-    expect(proper_call).to be_valid
+    expect(proper_call.errors).to be_empty
   end
 
   it "Enqueues the ProcessDocument job" do

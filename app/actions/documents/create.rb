@@ -19,7 +19,18 @@ module Documents
         status: Document.statuses[:initial],
         app_id: @app.id
 
-      document.images << Image.where(id: images.map { |i| i["id"] })
+      document.images << image_records
+
+      # producing image.count SQL UPDATE statements but since we're here
+      # in a background job and books have at most 1k - 2k pages we can
+      # worry about it if it turns out being too costly.
+      #
+      # (speeding it up by defering the commit by wrapping inside the transaction)
+      Image.connection.transaction do
+        image_records.each_with_index do |image, index|
+          image.update_attribute(:order, index + 1)
+        end
+      end
 
       Branches::Create.run! parent_revision_id: nil,
         editor_id: editor.id,
@@ -34,6 +45,17 @@ module Documents
     end
 
     private
+
+    def image_records
+      @_image_records ||= Image.find(image_ids).
+              index_by(&:id).
+              slice(*image_ids).
+              values
+    end
+
+    def image_ids
+      @_image_ids ||= images.map { |image| image[:id] }
+    end
 
     def editor
       Editor.where(email: editor_email).first

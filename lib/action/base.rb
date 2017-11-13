@@ -14,7 +14,9 @@ module Action
       end
 
       if instance.valid?
-        instance.instance_variable_set "@_result", instance.execute
+        App.connection.transaction do
+          instance.instance_variable_set "@_result", instance.execute
+        end
       else
         raise ActionError, { action: instance.class, messages: instance.errors.full_messages, params: params }
       end
