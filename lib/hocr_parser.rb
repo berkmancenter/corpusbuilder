@@ -115,7 +115,6 @@ class HocrParser < Parser
     ulx, uly, lrx, lry = bbox_string.split(' ').drop(1).map(&:to_i)
 
     if index.present? and count_all.present?
-      # todo: fix: reverse that for the graphemes in a word
       width = lrx - ulx
       lrx = ulx + (index + 1) * width * 1.0 / count_all
       ulx = ulx + index       * width * 1.0 / count_all
