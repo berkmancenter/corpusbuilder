@@ -237,7 +237,7 @@ export default class DocumentLine extends React.Component {
     }
 
     measureText(text) {
-        if(this._measurer === null) {
+        if(true || this._measurer === null) {
             let _div = this.div;
             let styles = window.getComputedStyle(_div);
             let measurer = document.createElement('div');
@@ -249,7 +249,11 @@ export default class DocumentLine extends React.Component {
             measurer.style.display = 'none';
 
             _div.append(measurer);
-            this._measurer = measurer;
+            measurer.style.display = 'block';
+            measurer.textContent = text;
+            let result = measurer.offsetWidth;
+            measurer.remove();
+            return result;
         }
 
         this._measurer.style.display = 'block';
@@ -275,7 +279,7 @@ export default class DocumentLine extends React.Component {
             color: (this.letterSpacing === null ? 'transparent' : null)
         };
 
-        if(this.letterSpacing === null) {
+        if(this.text.trim() !== "" && this.letterSpacing === null) {
             setTimeout((() => {
                 if(this._mounted) {
                     this.forceUpdate();

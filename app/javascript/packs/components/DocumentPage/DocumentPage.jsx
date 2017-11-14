@@ -85,12 +85,22 @@ export default class DocumentPage extends React.Component {
 
     @computed
     get surfaceWidth() {
-        return this.document.global.right_max - this.document.global.left_min;
+        if(this.surface === null || this.surface === undefined) {
+            return this.document.global.right_max - this.document.global.left_min;
+        }
+        else {
+            return this.surface.area.lrx - this.surface.area.ulx;
+        }
     }
 
     @computed
     get surfaceHeight() {
-        return this.document.global.bottom_max - this.document.global.top_min;
+        if(this.surface === null || this.surface === undefined) {
+            return this.document.global.bottom_max - this.document.global.top_min;
+        }
+        else {
+            return this.surface.area.lry - this.surface.area.uly;
+        }
     }
 
     @computed
