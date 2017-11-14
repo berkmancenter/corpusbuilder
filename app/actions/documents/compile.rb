@@ -24,6 +24,7 @@ module Documents
             position_weight: grapheme_position
           )
           grapheme_position += 1
+          # todo: make the following faster:
           master_branch.revision.graphemes << g
           master_branch.working.graphemes << g
         else

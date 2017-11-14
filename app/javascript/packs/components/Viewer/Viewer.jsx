@@ -32,7 +32,7 @@ export default class Viewer extends React.Component {
     documentId = null;
 
     @observable
-    page = null;
+    page = 1;
 
     @observable
     lastSelectedGraphemes = null;
@@ -61,7 +61,8 @@ export default class Viewer extends React.Component {
     @computed get tree() {
         return this.data.documents.tree(
           this.documentId,
-          this.currentBranch
+          this.currentBranch,
+          this.page
         );
     }
 
@@ -230,8 +231,7 @@ export default class Viewer extends React.Component {
         }
 
         let viewerStyle = {
-            minWidth: `${this.props.width}px`,
-            minHeight: `${this.props.width}px`,
+            minWidth: `${this.props.width}px`
         };
 
         return (

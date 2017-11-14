@@ -155,9 +155,9 @@ describe Pipeline::Local, type: :model do
       let(:step) { :ocr }
       let(:next_stage) { "done" }
 
-      let(:image1) { instance_double("Image", :ocred? => true) }
-      let(:image2) { instance_double("Image", :ocred? => false) }
-      let(:image3) { instance_double("Image", :ocred? => false) }
+      let(:image1) { instance_double("Image", :ocred? => true, name: '1') }
+      let(:image2) { instance_double("Image", :ocred? => false, name: '2') }
+      let(:image3) { instance_double("Image", :ocred? => false, name: '3') }
       let(:images) { [ image1, image2, image3 ] }
 
       let(:pipeline) do

@@ -44,6 +44,10 @@ export default class DocumentPage extends React.Component {
 
     @computed
     get graphemes() {
+        // todo: remove the following:
+        if(this.surface === null || this.surface === undefined) {
+            return [];
+        }
         return this.surface.graphemes;
     }
 
@@ -81,12 +85,12 @@ export default class DocumentPage extends React.Component {
 
     @computed
     get surfaceWidth() {
-        return this.surface.area.lrx - this.surface.area.ulx;
+        return this.document.global.right_max - this.document.global.left_min;
     }
 
     @computed
     get surfaceHeight() {
-        return this.surface.area.lry - this.surface.area.uly;
+        return this.document.global.bottom_max - this.document.global.top_min;
     }
 
     @computed
@@ -117,24 +121,38 @@ export default class DocumentPage extends React.Component {
     }
 
     render() {
+        let page1Style = {
+            width: this.width,
+            height: this.surfaceHeight * this.ratio,
+            transform: `rotate(${Math.random() * (3 - -3) + -3}deg)`
+        };
+
+        let page2Style = {
+            width: this.width,
+            height: this.surfaceHeight * this.ratio,
+            transform: `rotate(${Math.random() * (3 - -3) + -3}deg)`
+        };
+
         let pageStyle = {
             width: this.width,
             height: this.surfaceHeight * this.ratio
         };
 
         if(this.props.showImage) {
+            page1Style.backgroundImage = `url(${ this.surface.image_url })`;
+            page2Style.backgroundImage = `url(${ this.surface.image_url })`;
             pageStyle.backgroundImage = `url(${ this.surface.image_url })`;
         }
 
         return (
           <div>
             <div className={ 'corpusbuilder-document-page simple' }
-                 style={ pageStyle }
+                 style={ page1Style }
               >
               &nbsp;
             </div>
             <div className={ 'corpusbuilder-document-page simple' }
-                 style={ pageStyle }
+                 style={ page2Style }
               >
               &nbsp;
             </div>

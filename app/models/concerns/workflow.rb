@@ -16,7 +16,7 @@ module Workflow
 
       def workflow_update_state(column, state)
         states = self.class.send column.to_s.pluralize
-        update_attribute column, states[state]
+        self.reload.update_attribute column, states[state]
         if self.respond_to? "on_#{state}".to_sym
           self.send "on_#{state}".to_sym
         end

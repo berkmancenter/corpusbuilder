@@ -9,11 +9,11 @@ class Area
     @ulx = options[:ulx].to_i
     @uly = options[:uly].to_i
 
-    if @lry <= @uly
+    if @lry < @uly
       raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards (lry = #{@lry} and uly = #{@uly})"
     end
 
-    if @lrx <= @ulx
+    if @lrx < @ulx
       raise ArgumentError, "Lower right corner should point at **higher** x value since X axis points to the right (lrx = #{@lrx} and ulx = #{@ulx})"
     end
   end
@@ -51,11 +51,11 @@ class Area
     def self.dump(value)
       return nil if value.nil?
 
-      if value.lry <= value.uly
+      if value.lry < value.uly
         raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards"
       end
 
-      if value.lrx <= value.ulx
+      if value.lrx < value.ulx
         raise ArgumentError, "Lower right corner should point at **higher** x value since X axis points to the right"
       end
 

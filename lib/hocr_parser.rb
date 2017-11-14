@@ -59,19 +59,27 @@ class HocrParser < Parser
   end
 
   def word_node_to_elements(xml_node)
+    Rails.logger.debug "Node text: #{xml_node.text}"
+
     unordered = xml_node.text.chars
     ordered = bidi.to_visual(xml_node.text, direction(xml_node)).chars
+    ordered_codepoints = ordered.map(&:codepoints).flatten
     count_all = ordered.count
+
+    Rails.logger.debug "Unordered list of graphemes: #{unordered.try(:inspect)}"
+    Rails.logger.debug "Ordered list of graphemes: #{ordered.try(:inspect)}"
 
     used_indexes = Set.new
 
     indexes_map = Proc.new do |char|
+      codepoint = char.codepoints.first
+
       ordered.each_index.lazy.select do |i|
-        ordered[i] == char
+        ordered_codepoints[i] == codepoint
       end
     end
 
-    ordered_index = Proc.new do |char|
+    ordered_index = Proc.new do |char, depth = 0|
       filtered = indexes_map.call(char).drop_while do |i|
         used_indexes.include? i
       end
@@ -79,12 +87,15 @@ class HocrParser < Parser
       index = begin
         filtered.next
       rescue StopIteration
+        Rails.logger.debug "StopIteration for the grapheme: ( #{char.codepoints.first} ) with depth: #{depth} for the unordered list being #{unordered} the ordered being #{ordered} and the used_indexes being #{used_indexes.inspect}"
+        Rails.logger.debug "The indexes map for the grapheme: #{indexes_map.call(char).to_a}"
+        Rails.logger.debug "The ordered codepoints: #{ordered.map(&:codepoints).flatten}"
         mirrored_codepoints = $mirrorMap[char.codepoints.first]
 
         if mirrored_codepoints.present?
           mirrored_char = mirrored_codepoints.first.chr
 
-          ordered_index.call(mirrored_char)
+          ordered_index.call(mirrored_char, depth + 1)
         end
       end
 

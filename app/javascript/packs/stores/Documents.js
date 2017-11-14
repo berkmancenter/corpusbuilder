@@ -7,20 +7,40 @@ export default class Documents {
         this.baseUrl = baseUrl;
     }
 
-    tree(documentId, branchName = 'master') {
-        if( !this.state.trees.has(branchName)) {
+    tree(documentId, branchName = 'master', page = 1, preloadNext = 1, preloadPrev = 1) {
+        let key = `${branchName}-${page}`
+        if( !this.state.trees.has(key)) {
             Request
-                .get(`${this.baseUrl}/api/documents/${documentId}/${branchName}/tree`)
+                .get(
+                  `${this.baseUrl}/api/documents/${documentId}/${branchName}/tree`,
+                  {
+                      surface_number: page
+                  }
+                )
                 .then(
                     action(
                         ( tree ) => {
-                            this.state.trees.set(branchName, tree);
+                            this.state.surfaceCounts.set(`${documentId}-${branchName}`, tree.global.surfaces_count);
+                            this.state.trees.set(key, tree);
                         }
                     )
                 );
         }
 
-        return this.state.trees.get(branchName);
+        if(preloadNext > 0 || preloadPrev > 0) {
+            let count = this.state.surfaceCounts.get(`${documentId}-${branchName}`);
+
+            if(count !== null && count !== undefined) {
+                if(preloadNext > 0 && page + 1 <= count) {
+                    this.tree(documentId, branchName, page + 1, preloadNext - 1, 0);
+                }
+                if(preloadPrev > 0 && page > 1) {
+                    this.tree(documentId, branchName, page - 1, 0, preloadPrev - 1);
+                }
+            }
+        }
+
+        return this.state.trees.get(key);
     }
 
     info(documentId) {

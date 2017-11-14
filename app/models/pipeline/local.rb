@@ -26,6 +26,9 @@ class Pipeline::Local < Pipeline
         next_stage!
       end
     rescue
+      Rails.logger.error "Pipeline::Local forward failed with:"
+      Rails.logger.error $!.message
+      Rails.logger.error $!.backtrace
       # todo: provide the mechanism of number of tries
       return :error
     end
@@ -66,10 +69,10 @@ class Pipeline::Local < Pipeline
     next_image, one_after = document.images.lazy.select do |i|
       !i.ocred?
     end.take(2).to_a
-    Rails.logger.debug "Next: #{next_image} One After: #{one_after}"
+    Rails.logger.debug "Next: #{next_image.try(:name)} One After: #{one_after.try(:name)}"
 
     if next_image.present?
-      Rails.logger.debug "Doing OCR on: #{next_image}"
+      Rails.logger.debug "Doing OCR on: #{next_image.name}"
       # todo: implement switching between backends
       Images::OCR.run!(
         image: next_image,

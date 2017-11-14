@@ -8,6 +8,15 @@ export default class DocumentLine extends React.Component {
 
     _spaceWidth = null;
     _measurer = null;
+    _mounted = false;
+
+    componentDidMount() {
+        this._mounted = true;
+    }
+
+    componentWillUnmount() {
+        this._mounted = false;
+    }
 
     get div() {
         return document.getElementById(this.elementId);
@@ -219,7 +228,9 @@ export default class DocumentLine extends React.Component {
            let unscaledWidth = lastWord[ lastWord.length - 1 ].area.lrx - firstWord[ 0 ].area.ulx;
            let scaledWidth = unscaledWidth * this.props.ratio;
 
-           return ( scaledWidth - measuredWidth ) / ( countChars - 1 );
+           let result = ( scaledWidth - measuredWidth ) / ( countChars - 1 );
+
+           return isNaN(result) ? null : result;
        }
 
        return null;
@@ -266,7 +277,9 @@ export default class DocumentLine extends React.Component {
 
         if(this.letterSpacing === null) {
             setTimeout((() => {
-                this.forceUpdate();
+                if(this._mounted) {
+                    this.forceUpdate();
+                }
             }).bind(this), 0);
         }
 

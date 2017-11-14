@@ -5,6 +5,9 @@ class State {
     trees = observable.map();
 
     @observable
+    surfaceCounts = observable.map();
+
+    @observable
     branches = observable.map();
 
     @observable

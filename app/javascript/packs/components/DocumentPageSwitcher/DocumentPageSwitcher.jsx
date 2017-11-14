@@ -24,15 +24,15 @@ export default class DocumentPageSwitcher extends React.Component {
       let doc = this.props.document;
       let firstSurface = this.props.document.surfaces[0];
       let page = this.props.page;
-      let countPages = doc.surfaces.length;
+      let countPages = doc.global.surfaces_count;
 
-      let pageOptions = this.props.document.surfaces.map(
-          (surface) => {
+      let pageOptions = (new Array(this.props.document.global.surfaces_count - 1)).fill(0).map(
+          (_, surface) => {
               return (
-                  <li key={ `page-dropdown-${ surface.id }` }
-                      onClick={ () => this.props.onPageSwitch.bind(surface.number) }
+                  <li key={ `page-dropdown-${ surface }` }
+                      onClick={ () => this.props.onPageSwitch(surface + 1) }
                       >
-                      { surface.number === page ? `* ${ surface.number }` : surface.number }
+                      { surface.number === page ? `* ${ surface + 1 }` : (surface + 1) }
                   </li>
               );
           }
@@ -40,18 +40,18 @@ export default class DocumentPageSwitcher extends React.Component {
 
       return (
           <div className="corpusbuilder-document-page-switcher">
-            <button onClick={ () => this.props.onPageSwitch(firstSurface.number) }
-                    disabled={ page == firstSurface.number }
+            <button onClick={ () => this.props.onPageSwitch(1) }
+                    disabled={ page == 1 }
                     >
-              { '|←' }
+              { '❙◀' }
             </button>
             <button onClick={ () => this.props.onPageSwitch(page - 1) }
-                    disabled={ page == firstSurface.number }
+                    disabled={ page == 1 }
                     >
-              { '←' }
+              { '◀' }
             </button>
             <Dropdown>
-              <DropdownTrigger>Page: { page } / { doc.surfaces.length }</DropdownTrigger>
+              <DropdownTrigger>Page: { page } / { doc.global.surfaces_count }</DropdownTrigger>
               <DropdownContent>
                 <ul>
                   { pageOptions }
@@ -59,10 +59,10 @@ export default class DocumentPageSwitcher extends React.Component {
               </DropdownContent>
             </Dropdown>
             <button onClick={ () => this.props.onPageSwitch(page + 1) } disabled={ page == countPages }>
-              { '→' }
+              { '▶' }
             </button>
             <button onClick={ () => this.props.onPageSwitch(countPages) } disabled={ page == countPages }>
-              { '→|' }
+              { '▶❙' }
             </button>
           </div>
       );
