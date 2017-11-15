@@ -165,19 +165,19 @@ export default class DocumentPage extends React.Component {
     render() {
         let page1Style = {
             width: this.width,
-            height: this.surfaceHeight * this.ratio,
+            height: Math.floor(this.surfaceHeight * this.ratio),
             transform: `rotate(${Math.random() * (3 - -3) + -3}deg)`
         };
 
         let page2Style = {
             width: this.width,
-            height: this.surfaceHeight * this.ratio,
+            height: Math.floor(this.surfaceHeight * this.ratio),
             transform: `rotate(${Math.random() * (3 - -3) + -3}deg)`
         };
 
         let pageStyle = {
             width: this.width,
-            height: this.surfaceHeight * this.ratio
+            height: Math.floor(this.surfaceHeight * this.ratio)
         };
 
         if(this.props.showImage) {

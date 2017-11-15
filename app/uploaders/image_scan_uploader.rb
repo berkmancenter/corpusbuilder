@@ -3,11 +3,27 @@ class ImageScanUploader < CarrierWave::Uploader::Base
 
   storage :file
 
-  process convert: 'png'
-
   version :preprocessed, if: :has_document? do
     # todo: implement the preprocessing here
-    process convert: 'png'
+  end
+
+  version :web do
+    process :format_web
+  end
+
+  def format_web
+    manipulate! do | img |
+      img.format( 'jpg' ) do | c |
+        c.strip
+        c.colorspace 'sRGB'
+        c.quality '75'
+        c.density '72'
+        c.resample '72'
+        c.resize '800'
+      end
+
+      img
+    end
   end
 
   def has_document? picture

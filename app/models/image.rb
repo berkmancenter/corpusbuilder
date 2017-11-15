@@ -11,7 +11,7 @@ class Image < ApplicationRecord
   end
 
   def preprocessed?
-    image_scan.version_exists? :preprocessed
+    image_scan.preprocessed.file.exists?
   end
 
   def ocred?
@@ -19,7 +19,7 @@ class Image < ApplicationRecord
   end
 
   def image_scan_url
-    "#{base_url}#{image_scan.url}"
+    "#{base_url}#{image_scan.url(:web)}"
   end
 
   class Short < Grape::Entity
