@@ -18,10 +18,6 @@ export default class DocumentLine extends React.Component {
         this._mounted = false;
     }
 
-    get div() {
-        return document.getElementById(this.elementId);
-    }
-
     // @computed
     get text() {
         let state = {
@@ -196,7 +192,7 @@ export default class DocumentLine extends React.Component {
     }
 
     get letterSpacingByWord() {
-        if(this.div !== null && this.hasWords) {
+        if(this.hasWords) {
             let measuredWidth = this.measureText(this.firstWordText);
             let countChars = this.firstWord.length;
             let unscaledWidth = this.firstWord[ countChars - 1 ].area.lrx - this.firstWord[ 0 ].area.ulx;
@@ -208,19 +204,15 @@ export default class DocumentLine extends React.Component {
     }
 
     get spaceWidth() {
-        if(this._spaceWidth === null && this.div !== null) {
-            let context = document.createElement('canvas').getContext('2d');
-            let styles = window.getComputedStyle(this.div);
-            context.font = `${Math.round(styles.fontSize)}px ${styles.fontFamily}`;
-
-            this._spaceWidth = context.measureText(' ').width;
+        if(this._spaceWidth === null) {
+            return this.measureText(' ');
         }
 
         return this._spaceWidth;
     }
 
     get letterSpacing() {
-       if(this.div !== null && this.hasWords) {
+       if(this.hasWords) {
            let measuredWidth = this.measureText(this.text);
            let countChars = this.text.length;
            let lastWord = this.words[ this.words.length - 1];
@@ -237,31 +229,7 @@ export default class DocumentLine extends React.Component {
     }
 
     measureText(text) {
-        if(true || this._measurer === null) {
-            let _div = this.div;
-            let styles = window.getComputedStyle(_div);
-            let measurer = document.createElement('div');
-
-            measurer.style.position = "absolute";
-            measurer.style.fontFamily = styles.fontFamily;
-            measurer.style.fontSize = styles.fontSize;
-            measurer.style.whiteSpace = 'pre';
-            measurer.style.display = 'none';
-
-            _div.append(measurer);
-            measurer.style.display = 'block';
-            measurer.textContent = text;
-            let result = measurer.offsetWidth;
-            measurer.remove();
-            return result;
-        }
-
-        this._measurer.style.display = 'block';
-        this._measurer.textContent = text;
-        let result = this._measurer.offsetWidth;
-        this._measurer.style.display = 'none';
-
-        return result;
+        return this.props.onMeasureTextRequested(text, this.fontSize);
     }
 
     @computed
@@ -279,13 +247,13 @@ export default class DocumentLine extends React.Component {
             color: (this.letterSpacing === null ? 'transparent' : null)
         };
 
-        if(this.text.trim() !== "" && this.letterSpacing === null) {
-            setTimeout((() => {
-                if(this._mounted) {
-                    this.forceUpdate();
-                }
-            }).bind(this), 0);
-        }
+       //if(this.text.trim() !== "" && this.letterSpacing === null) {
+       //    setTimeout((() => {
+       //        if(this._mounted) {
+       //            this.forceUpdate();
+       //        }
+       //    }).bind(this), 0);
+       //}
 
         return (
             <div className="corpusbuilder-document-line"

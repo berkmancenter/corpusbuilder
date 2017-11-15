@@ -113,9 +113,24 @@ export default class DocumentPage extends React.Component {
         return this.props.showCertainties;
     }
 
+    get rulerId() {
+        return `corpusbuilder-page-ruler-${this.document.global.id}`;
+    }
+
+    get ruler() {
+        return document.getElementById(this.rulerId);
+    }
+
     percentageToHsl(percentage, hue0, hue1) {
         var hue = (percentage * (hue1 - hue0)) + hue0;
         return 'hsla(' + hue + ', 100%, 50%, .5)';
+    }
+
+    onMeasureTextRequested(text, fontSize) {
+        this.ruler.textContent = text;
+        this.ruler.style.fontSize = fontSize + "px";
+
+        return this.ruler.offsetWidth;
     }
 
     onSelected(graphemes) {
@@ -154,6 +169,14 @@ export default class DocumentPage extends React.Component {
             pageStyle.backgroundImage = `url(${ this.surface.image_url })`;
         }
 
+        if(this.ruler === null) {
+            setTimeout(() => {
+                this.forceUpdate();
+            }, 0);
+        }
+
+        console.log("DocumentPage render");
+
         return (
           <div>
             <div className={ 'corpusbuilder-document-page simple' }
@@ -174,17 +197,19 @@ export default class DocumentPage extends React.Component {
                                 onDeselected={ this.onDeselected.bind(this) }
                                 >
                 {
-                  this.lines.map(
+                  this.ruler === null ? [] : this.lines.map(
                       (line, index) => {
                           return <DocumentLine key={ `document-line-${index}` }
                                                line={ line }
                                                number={ index + 1 }
                                                ratio={ this.ratio }
+                                               onMeasureTextRequested={ this.onMeasureTextRequested.bind(this) }
                                                />
                       }
                   )
                 }
               </SelectionManager>
+              <div id={ this.rulerId } className={ 'corpusbuilder-document-page-ruler' }>&nbsp;</div>
             </div>
           </div>
         );

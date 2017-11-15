@@ -34,7 +34,9 @@ class Document < ApplicationRecord
            min((surfaces.area[1])[0]) as left_min,
            max((surfaces.area[0])[0]) as right_max,
            count(surfaces.*) as surfaces_count}
-      ).first.attributes.slice("surfaces_count", "bottom_max", "top_min", "left_min", "right_max")
+      ).first.
+     attributes.slice("surfaces_count", "bottom_max", "top_min", "left_min", "right_max").
+     merge(id: document.id)
     end
     expose :surfaces do |document, options|
       _surfaces = if options.key? :surface_number

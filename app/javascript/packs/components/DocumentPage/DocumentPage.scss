@@ -8,7 +8,7 @@
     margin-top: 5px;
     margin-bottom: 10px;
     background-repeat: no-repeat;
-    background-size: contain;
+    background-size: cover;
     position: relative;
     transition: transform 0.75s ease-in-out;
     overflow: hidden;
@@ -24,5 +24,13 @@
 
   &-document-page.simple {
     color: #777;
+  }
+
+  &-document-page-ruler {
+    color: transparent;
+    height: 0px;
+    overflow: hidden;
+    position: absolute;
+    white-space: pre;
   }
 }
