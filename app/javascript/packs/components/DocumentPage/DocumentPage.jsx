@@ -11,6 +11,8 @@ import { SelectionManager } from '../SelectionManager'
 @observer
 export default class DocumentPage extends React.Component {
 
+    rulerCache = new Map();
+
     // rendering all graphemes here as spans instead of using a sperate
     // component here to speed the rendering up as we have lots of graphemes
     // to render
@@ -127,10 +129,25 @@ export default class DocumentPage extends React.Component {
     }
 
     onMeasureTextRequested(text, fontSize) {
+        if(window._count === undefined) {
+            window._count = 1;
+        }
+        else {
+            window._count += 1;
+        }
+
+        if(text === " ") {
+            if(this.rulerCache.has(Math.round(fontSize))) {
+                return this.rulerCache.get(Math.round(fontSize));
+            }
+        }
+
         this.ruler.textContent = text;
         this.ruler.style.fontSize = fontSize + "px";
 
-        return this.ruler.offsetWidth;
+        let result = this.ruler.offsetWidth;
+
+        return result;
     }
 
     onSelected(graphemes) {

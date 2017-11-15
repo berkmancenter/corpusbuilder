@@ -205,7 +205,8 @@ export default class DocumentLine extends React.Component {
 
     get spaceWidth() {
         if(this._spaceWidth === null) {
-            return this.measureText(' ');
+            // return this.measureText(' ');
+            this._spaceWidth = this.measureText(' ');
         }
 
         return this._spaceWidth;
@@ -238,22 +239,15 @@ export default class DocumentLine extends React.Component {
     }
 
     render() {
+        this._spaceWidth = null;
+
         let dynamicStyles = {
             fontSize: this.fontSize,
             height: this.fontSize,
             top: this.top,
             left: this.left,
-            letterSpacing: this.letterSpacing,
-            color: (this.letterSpacing === null ? 'transparent' : null)
+            letterSpacing: this.letterSpacing
         };
-
-       //if(this.text.trim() !== "" && this.letterSpacing === null) {
-       //    setTimeout((() => {
-       //        if(this._mounted) {
-       //            this.forceUpdate();
-       //        }
-       //    }).bind(this), 0);
-       //}
 
         return (
             <div className="corpusbuilder-document-line"
