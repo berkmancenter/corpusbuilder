@@ -1,7 +1,6 @@
 import React from 'react';
-import * as qwest from 'qwest';
 import { observable, computed } from 'mobx';
-import { Provider, observer } from 'mobx-react'
+import { inject, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
 
 import state from '../../stores/State'
@@ -22,6 +21,7 @@ import { DocumentOptions } from '../DocumentOptions'
 
 import s from './Viewer.scss'
 
+@inject('documents')
 @observer
 export default class Viewer extends React.Component {
 
@@ -59,7 +59,7 @@ export default class Viewer extends React.Component {
     showTagsEditor = false;
 
     @computed get tree() {
-        return this.data.documents.tree(
+        return this.props.documents.tree(
           this.documentId,
           this.currentBranch,
           this.page
@@ -67,19 +67,15 @@ export default class Viewer extends React.Component {
     }
 
     @computed get branches() {
-        return this.data.documents.branches(this.documentId) || [];
+        return this.props.documents.branches(this.documentId) || [];
+    }
+
+    @computed get width() {
+        return this.props.width;
     }
 
     constructor(props) {
         super(props);
-
-        this.data = {
-            documents: new Documents(props.baseUrl, state),
-            metadata: new Metadata(props.baseUrl, state),
-            mouse: new Mouse(state)
-        };
-
-        qwest.base = props.baseUrl;
 
         this.documentId = this.props.documentId;
         this.currentBranch = this.props.branchName || 'master';
@@ -151,9 +147,8 @@ export default class Viewer extends React.Component {
     }
 
     render() {
-        let context = this.data;
         let doc = this.tree;
-        let width = this.props.width;
+        let width = this.width;
         let branchName = this.currentBranch;
         let content;
 
@@ -236,11 +231,9 @@ export default class Viewer extends React.Component {
 
         return (
             <div className="corpusbuilder-viewer" style={ viewerStyle }>
-                <Provider {...context}>
-                    <MouseManager>
-                        { content }
-                    </MouseManager>
-                </Provider>
+                <MouseManager>
+                    { content }
+                </MouseManager>
             </div>
         );
     }

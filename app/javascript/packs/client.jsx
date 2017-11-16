@@ -1,15 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Viewer } from './components/Viewer'
+import { WindowManager } from './components/WindowManager'
 
 class CorpusBuilder {
     static init(element, options) {
         ReactDOM.render(
-            <Viewer baseUrl={ options.baseUrl }
-                    documentId={ options.documentId }
-                    width={ options.width || 600 }
-                    showImage={ options.showImage || false }
-                    />,
+            <WindowManager baseUrl={ options.baseUrl }
+                           documentId={ options.documentId }
+                           allowImages={ options.allowImages || false }
+                           host={ element }
+                           />,
             element
         );
     }
