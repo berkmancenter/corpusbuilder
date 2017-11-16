@@ -5,7 +5,7 @@ module Images
     validates :image, presence: true
 
     def execute
-      # todo: implement me
+      image.image_scan.recreate_versions! :preprocessed
     end
   end
 end

@@ -74,6 +74,27 @@ export default class Viewer extends React.Component {
         return this.props.width;
     }
 
+    @computed
+    get height() {
+        let width = this.tree.surfaces[0].area.lrx - this.tree.surfaces[0].area.ulx;
+        let height = this.tree.surfaces[0].area.lry - this.tree.surfaces[0].area.uly;
+
+        let ratio = this.width / width;
+
+        return height * ratio;
+    }
+
+    @computed
+    get documentMaxHeight() {
+        if(this.tree === null || this.tree === undefined) {
+            return this.width;
+        }
+
+        let ratio = this.width / this.tree.global.tallest_surface.width;
+
+        return ratio * this.tree.global.tallest_surface.height;
+    }
+
     constructor(props) {
         super(props);
 
@@ -157,12 +178,20 @@ export default class Viewer extends React.Component {
             let otherContent;
 
             if(this.showInfo) {
-              otherContent = <DocumentInfo document={ doc } />;
+                otherContent = <DocumentInfo document={ doc } />;
             }
 
             if(this.showRevisions) {
-              otherContent = <DocumentRevisionsBrowser document={ doc } branchName={ this.currentBranch } />;
+                otherContent = <DocumentRevisionsBrowser document={ doc } branchName={ this.currentBranch } />;
             }
+
+            let contentStyles = {
+                height: this.documentMaxHeight + 20
+            };
+
+            let pageWrapperStyle = {
+                top: (this.documentMaxHeight + 20 - this.height) / 2
+            };
 
             content = (
               <div>
@@ -177,15 +206,17 @@ export default class Viewer extends React.Component {
                                    onToggleAnnotations={ this.toggleAnnotations.bind(this) }
                                    />
                 </div>
-                <div className="corpusbuilder-viewer-contents">
-                  <DocumentPage document={ doc }
-                                page={ page }
-                                width={ width }
-                                showCertainties={ this.showCertainties }
-                                showImage={ this.props.showImage }
-                                onSelected={ this.onSelected.bind(this) }
-                                >
-                  </DocumentPage>
+                <div className="corpusbuilder-viewer-contents" style={ contentStyles }>
+                  <div className="corpusbuilder-viewer-contents-wrapper" style={ pageWrapperStyle }>
+                    <DocumentPage document={ doc }
+                                  page={ page }
+                                  width={ width }
+                                  showCertainties={ this.showCertainties }
+                                  showImage={ this.props.showImage }
+                                  onSelected={ this.onSelected.bind(this) }
+                                  >
+                    </DocumentPage>
+                  </div>
                   { otherContent }
                 </div>
                 <div className="corpusbuilder-options bottom">
