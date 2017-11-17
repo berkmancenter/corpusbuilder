@@ -1,5 +1,6 @@
 class Image < ApplicationRecord
   mount_uploader :image_scan, ImageScanUploader
+  mount_uploader :processed_image, ProcessedImageUploader
   mount_uploader :hocr, HocrUploader
 
   belongs_to :document, required: false
@@ -11,7 +12,7 @@ class Image < ApplicationRecord
   end
 
   def preprocessed?
-    image_scan.preprocessed.file.exists?
+    processed_image.present?
   end
 
   def ocred?

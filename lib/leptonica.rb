@@ -1,5 +1,5 @@
 module Leptonica
-  module C
+  module Lib
     extend FFI::Library
     ffi_lib ['liblept', 'liblept', 'liblept.so.5']
 
@@ -7,20 +7,34 @@ module Leptonica
     attach_function :pixFindSkewAndDeskew, [ :pointer, :int, :pointer, :pointer ], :pointer
     attach_function :pixDestroy, [ :pointer ], :void
     attach_function :pixWriteImpliedFormat, [ :string, :pointer, :int, :int ], :int
-    attach_function :dewarpSinglePage, [ :pointer, :int, :int, :int, :pointer, :pointer, :int ], :int
     attach_function :pixBackgroundNormSimple, [ :pointer, :pointer, :pointer ], :pointer
+    attach_function :pixConvertRGBToGray, [ :pointer, :float, :float, :float ], :pointer
+    attach_function :pixThresholdToBinary, [ :pointer, :int ], :pointer
+    attach_function :pixCreateTemplate, [ :pointer ], :pointer
+    attach_function :pixExtractTextlines, [ :pointer, :int, :int, :int, :int, :int, :int, :pointer ], :pointer
+    attach_function :pixGetWidth, [ :pointer ], :int
+
+    attach_function :dewarpSinglePage, [ :pointer, :int, :int, :int, :pointer, :pointer, :int ], :int
+    attach_function :dewarpCreate, [ :pointer, :int ], :pointer
+    attach_function :dewarpBuildPageModel, [ :pointer, :pointer ], :int
+    attach_function :dewarpaApplyDisparity, [ :pointer, :int, :pointer, :int, :int, :int, :pointer, :pointer ], :int
+    attach_function :dewarpDestroy, [ :pointer ], :void
+
+    attach_function :dewarpaCreate, [ :int, :int, :int, :int, :int ], :pointer
+    attach_function :dewarpaInsertDewarp, [ :pointer, :pointer ], :void
+    attach_function :dewarpaDestroy, [ :pointer ], :void
   end
 
   class Tools
     def self.deskew(in_path, out_path)
-      pixels = C.pixRead in_path
-      output_pixels = C.pixFindSkewAndDeskew pixels, 4, FFI::Pointer::NULL, FFI::Pointer::NULL
+      pixels = Lib.pixRead in_patLib
+      output_pixels = Lib.pixFindSkewAndDeskew pixels, 4, FFI::Pointer::NULL, FFI::Pointer::NULL
 
       if output_pixels.null?
         raise StandardError, "Leptonica pixFindSkewAndDeskew failed returning null pointer"
       end
 
-      if C.pixWriteImpliedFormat( out_path, output_pixels, 100, 0 ) != 0
+      if Lib.pixWriteImpliedFormat( out_path, output_pixels, 100, 0 ) != 0
         raise StandardError, "Leptonica failed to write deskewed image"
       end
     rescue
@@ -31,16 +45,64 @@ module Leptonica
     end
 
     def self.dewarp(in_path, out_path)
-      pixels = C.pixRead in_path
-      normed = C.pixBackgroundNormSimple pixels, FFI::Pointer::NULL, FFI::Pointer::NULL
+      pixels = Lib.pixRead in_path
+      normed = Lib.pixBackgroundNormSimple(pixels, FFI::Pointer::NULL, FFI::Pointer::NULL)
+      output = Lib.pixThresholdToBinary(normed, 130)
+      output_pointer = FFI::MemoryPointer.new :pointer
+      output_pointer.put_pointer(0, output)
+      dewarp = Lib.dewarpCreate(output, 0)
+      dewarpa = FFI::Pointer::NULL
+
+      lines = 50
+
+      while lines > 0
+        dewarpa = Lib.dewarpaCreate(1, 32, 1, lines, -1)
+        Lib.dewarpaInsertDewarp(dewarpa, dewarp)
+
+        if Lib.dewarpBuildPageModel(dewarp, FFI::Pointer::NULL) != 0
+          if lines == 1
+            raise StandardError, "Leptonica failed to create the dewarp model"
+          end
+        else
+          break
+        end
+
+        lines -= 1
+      end
+
+      if Lib.dewarpaApplyDisparity(dewarpa, 0, pixels, -1, 0, 0, output_pointer, FFI::Pointer::NULL) != 0
+        raise StandardError, "Leptonica failed to apply the disparity model in order to dewarp the image"
+      end
+
+      output_modified = output_pointer.get_pointer(0)
+
+      if Lib.pixWriteImpliedFormat( out_path, output_modified, 100, 0 ) != 0
+        raise StandardError, "Leptonica failed to write dewarped image"
+      end
+
+      true
+    ensure
+      pix_destroy(pixels) if defined?(pixels)
+      pix_destroy(normed) if defined?(normed)
+      pix_destroy(converted) if defined?(converted)
+      pix_destroy(output) if defined?(output)
+      pix_destroy(output_modified) if defined?(output_modified)
+      dewarp_destroy(dewarp) if defined?(dewarp)
+    end
+
+    def self.dewarp_simple(in_path, out_path)
+      pixels = Lib.pixRead in_path
+      normed = Lib.pixBackgroundNormSimple pixels, FFI::Pointer::NULL, FFI::Pointer::NULL
       output = FFI::MemoryPointer.new :pointer
       output.put_pointer(0, normed)
 
-      if C.dewarpSinglePage( pixels, 0, 1, 1, output, FFI::Pointer::NULL, 0 ) != 0
+      if Lib.dewarpSinglePage( pixels, 0, 1, 1, output, FFI::Pointer::NULL, 0 ) != 0
         raise StandardError, "Leptonica dewarpSinglePage has failed"
       end
 
-      if C.pixWriteImpliedFormat( out_path, normed, 100, 0 ) != 0
+      dewarped = output.get_pointer(0)
+
+      if Lib.pixWriteImpliedFormat( out_path, dewarped, 100, 0 ) != 0
         raise StandardError, "Leptonica failed to write dewarped image"
       end
 
@@ -48,14 +110,33 @@ module Leptonica
     rescue
       raise $!
     ensure
-      pix_destroy(pixels) if pixels.present? && !pixels.null?
-      pix_destroy(normed) if normed.present? && !normed.null?
+      pix_destroy(pixels) if defined?(pixels) && pixels.present? && !pixels.null?
+      pix_destroy(normed) if defined?(normed) && normed.present? && !normed.null?
+      pix_destroy(dewarped) if defined?(dewarped) && dewarped.present? && !dewarped.null?
+    end
+
+    def self.dewarp_destroy(pointer)
+      pix_pointer = FFI::MemoryPointer.new :pointer
+      pix_pointer.put_pointer(0, pointer)
+      Lib.dewarpDestroy(pix_pointer)
+    end
+
+    def self.dewarpa_destroy(pointer)
+      pix_pointer = FFI::MemoryPointer.new :pointer
+      pix_pointer.put_pointer(0, pointer)
+      Lib.dewarpaDestroy(pix_pointer)
     end
 
     def self.pix_destroy(pointer)
       pix_pointer = FFI::MemoryPointer.new :pointer
       pix_pointer.put_pointer(0, pointer)
-      C.pixDestroy(pix_pointer)
+      Lib.pixDestroy(pix_pointer)
+    end
+
+    def self.ptaa_destroy(pointer)
+      pix_pointer = FFI::MemoryPointer.new :pointer
+      pix_pointer.put_pointer(0, pointer)
+      Lib.ptaaDestroy(pix_pointer)
     end
   end
 
