@@ -3,10 +3,6 @@ class ImageScanUploader < CarrierWave::Uploader::Base
 
   storage :file
 
-  version :preprocessed, if: :has_document? do
-    # todo: implement the preprocessing here
-  end
-
   version :web do
     process :format_web
   end

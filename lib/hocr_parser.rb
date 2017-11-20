@@ -1,9 +1,10 @@
+# Parses the string containing the hOCR classifier output.
+# Doesn't work with streams as is turned out the "traditional" approach is
+# sufficiently performant and didn't eat that lot of memory
 class HocrParser < Parser
   attr_accessor :element_parser, :hocr_string, :yielder, :bidi
 
   def self.parse(hocr_string)
-    # todo: make the following work with streams and make
-    # the string case performant too
     new(hocr_string.gsub(/\<\?.*$/, ''))
   end
 

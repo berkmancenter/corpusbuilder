@@ -6,16 +6,18 @@ module Images
 
     def execute
       Rails.logger.info "Running Tesseract with: #{command}"
+
       tesseract_output = `#{command}`
       tesseract_status = $?
+
       Rails.logger.info "Tesseract returned #{tesseract_output}"
       Rails.logger.info "Tesseract status #{tesseract_status}"
 
       if !tesseract_status.success?
-        raise "Tesseract returned abnormally. Status: #{tesseract_status}. Output: #{tesseract_output}"
+        raise StandardError, "Tesseract returned abnormally. Status: #{tesseract_status}. Output: #{tesseract_output}"
       end
 
-      Que.logger.debug "Tesseract resulting file should be found at #{file_path}.hocr"
+      Rails.logger.debug "Tesseract resulting file should be found at #{file_path}.hocr"
 
       "#{file_path}.hocr"
     end
@@ -29,7 +31,7 @@ module Images
     end
 
     def image_file_path
-      image.image_scan.path
+      image.preprocessed_image.path
     end
 
     def model

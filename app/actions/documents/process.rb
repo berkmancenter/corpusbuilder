@@ -3,7 +3,6 @@ module Documents
     attr_accessor :document
 
     def execute
-      # todo: gather as much info about what wenrt wrong if it does as possible
       self.send "when_#{document.status}"
     end
 

@@ -7,8 +7,6 @@ class TeiParser < Parser
   attr_accessor :element_parser, :tei_string, :yielder
 
   def self.parse(tei_string)
-    # todo: make the following work with streams and make
-    # the string case performant too
     new(tei_string.gsub(/\<\?.*$/, ''))
   end
 

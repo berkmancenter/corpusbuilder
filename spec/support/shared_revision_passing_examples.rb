@@ -28,6 +28,7 @@ RSpec.shared_examples "revision accepting route" do
       good_revision_request
 
       #byebug if response.status != success_status
+    #  byebug if response.status == 500
 
       expect(response.status).to eq(success_status)
     end

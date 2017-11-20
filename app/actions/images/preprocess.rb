@@ -9,6 +9,9 @@ module Images
       deskew
       dewarp
       store
+      cleanup
+
+      image
     end
 
     def binarize
@@ -26,6 +29,10 @@ module Images
     def store
       image.processed_image = File.open(dewarped_temp_file)
       image.save!
+    end
+
+    def cleanup
+      File.rm [ binarized_temp_path, deskewed_temp_path, dewarped_temp_file ]
     end
 
     private

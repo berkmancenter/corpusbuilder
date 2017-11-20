@@ -259,13 +259,13 @@ RSpec.describe Pipeline::Nidaba, type: :model do
         expect(send_image_request).to have_been_requested.twice
       end
 
-      pending "stores images in order in pipeline data attribute" do
-        pipeline.start
+      pending "stores images in order in pipeline data attribute" #do
+       # pipeline.start
 
-        expect(pipeline.data["images"].count).to eq(2)
-        expect(pipeline.data["images"][0]["/api/v1/pages/#{batch_id}/file_1.png"]).to eq(image_1.id)
-        expect(pipeline.data["images"][1]["/api/v1/pages/#{batch_id}/file_2.png"]).to eq(image_2.id)
-      end
+       # expect(pipeline.data["images"].count).to eq(2)
+       # expect(pipeline.data["images"][0]["/api/v1/pages/#{batch_id}/file_1.png"]).to eq(image_1.id)
+       # expect(pipeline.data["images"][1]["/api/v1/pages/#{batch_id}/file_2.png"]).to eq(image_2.id)
+      #end
 
       # changing the following to **not** sending if that's not needed
       # since we already have all metadata

@@ -28,11 +28,7 @@ class Document < ApplicationRecord
   class Tree < Grape::Entity
     expose :id
     expose :global do |document|
-      {
-        id: document.id,
-        surfaces_count: document.surfaces.count,
-        tallest_surface: (
-          document.
+      tallest = document.
             surfaces.
             select(%Q{
               ((surfaces.area[0])[1]) - ((surfaces.area[1])[1]) as height,
@@ -41,9 +37,14 @@ class Document < ApplicationRecord
             reorder(nil).
             order("height desc").
             limit(1).
-            first.
-            attributes.
-            slice("height", "width")
+            first
+
+      {
+        id: document.id,
+        surfaces_count: document.surfaces.count,
+        tallest_surface: (
+          tallest.try(:attributes).
+            try(:slice, "height", "width")
         )
       }
     end

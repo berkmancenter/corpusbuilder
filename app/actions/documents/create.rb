@@ -7,6 +7,8 @@ module Documents
     validates :metadata, presence: true
     validates :editor_email, presence: true
 
+    validate :editor_exists
+
     def execute
       document = Document.create! title: @metadata[:title],
         author: @metadata[:author],
@@ -58,7 +60,13 @@ module Documents
     end
 
     def editor
-      Editor.where(email: editor_email).first
+      @_editor ||= Editor.where(email: editor_email).first
+    end
+
+    def editor_exists
+      if !editor.present?
+        errors.add(:editor_email, "doesn't specify an editor that exists in the system")
+      end
     end
   end
 end

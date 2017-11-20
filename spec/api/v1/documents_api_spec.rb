@@ -411,10 +411,20 @@ describe V1::DocumentsAPI, type: :request do
       end
 
       let(:good_branch_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+
         get url(document.id, master_branch.name), headers: headers
       end
 
       let(:good_revision_request) do
+        master_branch
+        development_branch
+        surfaces
+        graphemes
+
         get url(document.id, head_revision.id), headers: headers
       end
 
