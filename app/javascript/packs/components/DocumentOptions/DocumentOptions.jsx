@@ -8,6 +8,7 @@ import { Provider, observer } from 'mobx-react'
 
 import s from './DocumentOptions.scss'
 import dropdownStyles from 'react-simple-dropdown/styles/Dropdown.css'
+import fontAwesome from 'font-awesome/scss/font-awesome.scss'
 
 export default class DocumentOptions extends React.Component {
     constructor(props) {
@@ -29,15 +30,16 @@ export default class DocumentOptions extends React.Component {
 
         return (
           <div>
-            <button onClick={ () => this.props.onToggleCertainties() }>
-              { '▧' }
-            </button>
-            <button onClick={ () => this.props.onToggleAnnotations() }>
-              { '✐' }
-            </button>
+            <button className={ 'fa fa-map-o' } onClick={ () => this.props.onToggleCertainties() } />
+            <button className={ 'fa fa-commenting' } onClick={ () => this.props.onToggleAnnotations() } />
+            <button className={ 'fa fa-file-image-o' } onClick={ () => this.props.onToggleBackground() } />
             <div className="side-options">
               <Dropdown>
-                <DropdownTrigger>Branch: <b>{ this.props.currentBranch }</b></DropdownTrigger>
+                <DropdownTrigger>
+                  <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
+                  &nbsp;
+                  Branch: <b>{ this.props.currentBranch }</b>
+                </DropdownTrigger>
                 <DropdownContent>
                   <ul>
                     { branchesOptions }

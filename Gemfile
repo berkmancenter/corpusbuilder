@@ -29,6 +29,7 @@ gem 'scenic'
 gem 'active_record_union'
 gem 'bidi', git: 'https://github.com/elad/ruby-bidi.git', ref: '20192431ee087ef820b78f64892f06676da2536c'
 gem 'ffi'
+gem 'rack-cors', :require => 'rack/cors'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

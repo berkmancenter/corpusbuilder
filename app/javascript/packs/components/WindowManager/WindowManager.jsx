@@ -10,6 +10,7 @@ import Metadata from '../../stores/Metadata'
 import Mouse from '../../stores/Mouse'
 
 import styles from './WindowManager.scss';
+import fontAwesome from 'font-awesome/scss/font-awesome.scss'
 
 @observer
 export default class WindowManager extends React.Component {
@@ -40,9 +41,21 @@ export default class WindowManager extends React.Component {
                 <div>
                     <div className="corpusbuilder-global-options">
                       <ul className={ 'corpusbuilder-tabs' }>
-                        <li className={ 'corpusbuilder-tabs-active' }>Pages</li>
-                        <li>Document Info</li>
-                        <li>Revisions</li>
+                        <li className={ 'corpusbuilder-tabs-active' }>
+                          <i className={ 'fa fa-book' } aria-hidden="true"></i>
+                            &nbsp;
+                          Pages
+                        </li>
+                        <li>
+                          <i className={ 'fa fa-info-circle' } aria-hidden="true"></i>
+                            &nbsp;
+                          Document Info
+                        </li>
+                        <li>
+                          <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
+                            &nbsp;
+                          Versions
+                        </li>
                       </ul>
                     </div>
                     <Viewer width={ 445 }
