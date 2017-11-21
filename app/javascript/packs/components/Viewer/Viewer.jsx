@@ -189,9 +189,7 @@ export default class Viewer extends React.Component {
                 height: this.documentMaxHeight + 20
             };
 
-            let pageWrapperStyle = {
-                top: (this.documentMaxHeight + 20 - this.height) / 2
-            };
+            let mainPageTop = (this.documentMaxHeight + 20 - this.height) / 2;
 
             content = (
               <div>
@@ -207,10 +205,12 @@ export default class Viewer extends React.Component {
                                    />
                 </div>
                 <div className="corpusbuilder-viewer-contents" style={ contentStyles }>
-                  <div className="corpusbuilder-viewer-contents-wrapper" style={ pageWrapperStyle }>
+                  <div className="corpusbuilder-viewer-contents-wrapper">
                     <DocumentPage document={ doc }
                                   page={ page }
                                   width={ width }
+                                  mainPageTop={ mainPageTop }
+                                  documentMaxHeight={ this.documentMaxHeight }
                                   showCertainties={ this.showCertainties }
                                   showImage={ this.props.showImage }
                                   onSelected={ this.onSelected.bind(this) }

@@ -4,8 +4,9 @@ class Kraken
     kraken_output = `#{command}`
     kraken_status = $?
 
-    Rails.logger.info "Kraken output: #{kraken_output}"
-    Rails.logger.info "Kraken status: #{kraken_status}"
+    Rails.logger.info "> #{command}"
+    Rails.logger.info kraken_output
+    Rails.logger.info "(returned status): #{kraken_status}"
 
     if kraken_status != 0
       raise StandardError, "Kraken failed to binarize the image:\n\n> #{command}\n#{kraken_output}"

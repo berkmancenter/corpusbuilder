@@ -27,7 +27,16 @@ module Leptonica
 
   class Tools
     def self.deskew(in_path, out_path)
-      pixels = Lib.pixRead in_patLib
+      if !File.exist?(in_path)
+        raise StandardError, "Leptonica::Tools.deskew has been given a path to inexistant file: '#{in_path}'"
+      end
+
+      pixels = Lib.pixRead in_path
+
+      if pixels.null?
+        raise StandardError, "Leptonica::Tools.deskew couldn't load file: '#{in_path}' (null pointer returned)"
+      end
+
       output_pixels = Lib.pixFindSkewAndDeskew pixels, 4, FFI::Pointer::NULL, FFI::Pointer::NULL
 
       if output_pixels.null?
@@ -45,6 +54,10 @@ module Leptonica
     end
 
     def self.dewarp(in_path, out_path)
+      if !File.exist?(in_path)
+        raise StandardError, "Leptonica::Tools.dewarp has been given a path to inexistant file: '#{in_path}'"
+      end
+
       pixels = Lib.pixRead in_path
       normed = Lib.pixBackgroundNormSimple(pixels, FFI::Pointer::NULL, FFI::Pointer::NULL)
       output = Lib.pixThresholdToBinary(normed, 130)
@@ -54,14 +67,20 @@ module Leptonica
       dewarpa = FFI::Pointer::NULL
 
       lines = 50
+      samples = 2**6
 
       while lines > 0
-        dewarpa = Lib.dewarpaCreate(1, 32, 1, lines, -1)
+        dewarpa = Lib.dewarpaCreate(1, samples, 1, lines, -1)
         Lib.dewarpaInsertDewarp(dewarpa, dewarp)
 
         if Lib.dewarpBuildPageModel(dewarp, FFI::Pointer::NULL) != 0
-          if lines == 1
-            raise StandardError, "Leptonica failed to create the dewarp model"
+          if lines == 4
+            if samples == 8
+              raise StandardError, "Leptonica failed to create the dewarp model for the input image: #{in_path}"
+            else
+              lines = 50
+              samples /= 2
+            end
           end
         else
           break

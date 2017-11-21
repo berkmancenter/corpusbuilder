@@ -38,6 +38,13 @@ export default class WindowManager extends React.Component {
         return <div className="corpusbuilder-window-manager">
             <Provider {...this.sharedContext}>
                 <div>
+                    <div className="corpusbuilder-global-options">
+                      <ul className={ 'corpusbuilder-tabs' }>
+                        <li className={ 'corpusbuilder-tabs-active' }>Pages</li>
+                        <li>Document Info</li>
+                        <li>Revisions</li>
+                      </ul>
+                    </div>
                     <Viewer width={ 445 }
                             key={ 1 }
                             documentId={ this.props.documentId }

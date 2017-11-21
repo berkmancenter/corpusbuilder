@@ -31,6 +31,11 @@ export default class DocumentPage extends React.Component {
     }
 
     @computed
+    get documentMaxHeight() {
+        return this.props.documentMaxHeight;
+    }
+
+    @computed
     get page() {
         return this.props.page;
     }
@@ -165,18 +170,21 @@ export default class DocumentPage extends React.Component {
     render() {
         let page1Style = {
             width: this.width,
-            height: Math.floor(this.surfaceHeight * this.ratio),
-            transform: `rotate(${Math.random() * (3 - -3) + -3}deg)`
+            height: this.documentMaxHeight,
+            backgroundSize: 'cover',
+            transform: `rotate(${Math.random() * (2 - -2) + -2}deg)`
         };
 
         let page2Style = {
             width: this.width,
+            top: this.props.mainPageTop,
             height: Math.floor(this.surfaceHeight * this.ratio),
             transform: `rotate(${Math.random() * (3 - -3) + -3}deg)`
         };
 
         let pageStyle = {
             width: this.width,
+            top: this.props.mainPageTop,
             height: Math.floor(this.surfaceHeight * this.ratio)
         };
 
@@ -191,8 +199,6 @@ export default class DocumentPage extends React.Component {
                 this.forceUpdate();
             }, 0);
         }
-
-        console.log("DocumentPage render");
 
         return (
           <div>

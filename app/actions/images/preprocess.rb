@@ -24,6 +24,8 @@ module Images
 
     def dewarp
       Leptonica::Tools.dewarp deskewed_temp_path, dewarped_temp_file
+    rescue
+      Leptonica::Tools.dewarp_simple deskewed_temp_path, dewarped_temp_file
     end
 
     def store
@@ -32,21 +34,21 @@ module Images
     end
 
     def cleanup
-      File.rm [ binarized_temp_path, deskewed_temp_path, dewarped_temp_file ]
+      FileUtils.rm [ binarized_temp_path, deskewed_temp_path, dewarped_temp_file ]
     end
 
     private
 
     def binarized_temp_path
-      Tempfile.new('binarized').path
+      @_binarized_temp_path ||= TempfileUtils.next_path('binarized')
     end
 
     def deskewed_temp_path
-      Tempfile.new('deskewed').path
+      @_deskewed_temp_path ||= TempfileUtils.next_path('deskewed')
     end
 
     def dewarped_temp_file
-      Tempfile.new('dewarped').path
+      @_dewarped_temp_file ||= TempfileUtils.next_path('dewarped')
     end
   end
 end

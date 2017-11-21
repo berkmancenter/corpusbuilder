@@ -48,16 +48,20 @@ module Documents
 
       graphemes = self.graphemes.to_a
 
-      conn.copy_data "COPY graphemes (id, area, value, certainty, position_weight, zone_id, created_at, updated_at) FROM STDIN CSV DELIMITER ';'" do
+      Rails.logger.info "Using Postgres COPY to add #{graphemes.count} graphemes"
+
+      conn.copy_data "COPY graphemes (id, area, value, certainty, position_weight, zone_id, created_at, updated_at) FROM STDIN CSV" do
         graphemes.each do |grapheme|
            data = [ grapheme.id, grapheme.area.to_s,
                     grapheme.value, grapheme.certainty,
                     grapheme.position_weight, grapheme.zone_id,
                     DateTime.now.to_s(:db), DateTime.now.to_s(:db)
            ]
-           conn.put_copy_data "#{data.join(';')}\n"
+           conn.put_copy_data data.to_csv
         end
       end
+
+      Rails.logger.info "Copying of #{graphemes.count} graphemes done"
     end
 
     def copy_data_into_graphemes_revisions
@@ -73,11 +77,15 @@ module Documents
 
       grapheme_ids = graphemes.map(&:id)
 
+      Rails.logger.info "Using Postgres COPY to add #{graphemes.count} graphemes to the revision #{revision_id}"
+
       conn.copy_data "COPY graphemes_revisions (grapheme_id, revision_id) FROM STDIN CSV" do
         grapheme_ids.each do |grapheme_id|
           conn.put_copy_data "#{grapheme_id},#{revision_id}\n"
         end
       end
+
+      Rails.logger.info "Copied #{graphemes.count} graphemes to the revision #{revision_id}"
     end
 
     def master_branch

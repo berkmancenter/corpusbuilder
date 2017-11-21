@@ -29,16 +29,10 @@ export default class DocumentOptions extends React.Component {
 
         return (
           <div>
-            <button style={ { display: 'none' } } onClick={ () => this.props.onToggleCertainties() }>
+            <button onClick={ () => this.props.onToggleCertainties() }>
               { '▧' }
             </button>
-            <button onClick={ () => this.props.onToggleInfo() }>
-              { 'ℹ' }
-            </button>
-            <button onClick={ () => this.props.onToggleRevisions() }>
-              { 'Ξ' }
-            </button>
-            <button style={ { display: 'none' } } onClick={ () => this.props.onToggleAnnotations() }>
+            <button onClick={ () => this.props.onToggleAnnotations() }>
               { '✐' }
             </button>
             <div className="side-options">

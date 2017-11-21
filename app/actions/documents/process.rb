@@ -25,12 +25,13 @@ module Documents
         end
         document.ready!
         document.pipeline.cleanup!
+        Rails.logger.info "Processing document #{document.id} done successfully"
       else
         reschedule(0.1.second)
       end
     rescue
-      document.error!
       Rails.logger.error $!.message
+      document.error!
       raise $!
     end
 
