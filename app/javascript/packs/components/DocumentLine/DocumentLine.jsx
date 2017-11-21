@@ -18,7 +18,6 @@ export default class DocumentLine extends React.Component {
         this._mounted = false;
     }
 
-    // @computed
     get text() {
         let state = {
             result: "",

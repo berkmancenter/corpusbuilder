@@ -37,7 +37,7 @@ export default class DocumentOptions extends React.Component {
             </button>
             <div className="side-options">
               <Dropdown>
-                <DropdownTrigger>Branch: { this.props.currentBranch }</DropdownTrigger>
+                <DropdownTrigger>Branch: <b>{ this.props.currentBranch }</b></DropdownTrigger>
                 <DropdownContent>
                   <ul>
                     { branchesOptions }

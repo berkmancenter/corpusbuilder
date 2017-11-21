@@ -115,6 +115,8 @@
   "components/WindowManager/index.js.map": "/packs/components/WindowManager/index.js.map",
   "example_client.js": "/packs/example_client.js",
   "example_client.js.map": "/packs/example_client.js.map",
+  "lib/MathUtils.js": "/packs/lib/MathUtils.js",
+  "lib/MathUtils.js.map": "/packs/lib/MathUtils.js.map",
   "lib/PagePositioningHelper.js": "/packs/lib/PagePositioningHelper.js",
   "lib/PagePositioningHelper.js.map": "/packs/lib/PagePositioningHelper.js.map",
   "lib/Request.js": "/packs/lib/Request.js",
