@@ -29,6 +29,9 @@ export default class Viewer extends React.Component {
     currentBranch = null;
 
     @observable
+    showImage = false;
+
+    @observable
     documentId = null;
 
     @observable
@@ -100,6 +103,7 @@ export default class Viewer extends React.Component {
 
         this.documentId = this.props.documentId;
         this.currentBranch = this.props.branchName || 'master';
+        this.showImage = this.props.showImage;
     }
 
     navigate(page) {
@@ -127,6 +131,10 @@ export default class Viewer extends React.Component {
     toggleAnnotations() {
         this.showInfo = this.showCertainties = false;
         this.showAnnotations = !this.showAnnotations;
+    }
+
+    toggleBackground() {
+        this.showImage = !this.showImage;
     }
 
     editAnnotation() {
@@ -202,6 +210,7 @@ export default class Viewer extends React.Component {
                                    onToggleCertainties={ this.toggleCertainties.bind(this) }
                                    onToggleRevisions={ this.toggleRevisions.bind(this) }
                                    onToggleAnnotations={ this.toggleAnnotations.bind(this) }
+                                   onToggleBackground={ this.toggleBackground.bind(this) }
                                    />
                 </div>
                 <div className="corpusbuilder-viewer-contents" style={ contentStyles }>
@@ -212,7 +221,7 @@ export default class Viewer extends React.Component {
                                   mainPageTop={ mainPageTop }
                                   documentMaxHeight={ this.documentMaxHeight }
                                   showCertainties={ this.showCertainties }
-                                  showImage={ this.props.showImage }
+                                  showImage={ this.showImage }
                                   onSelected={ this.onSelected.bind(this) }
                                   >
                     </DocumentPage>
