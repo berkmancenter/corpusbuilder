@@ -108,6 +108,10 @@ export default class Viewer extends React.Component {
 
     navigate(page) {
         this.page = page;
+
+        if(this.props.onPageSwitch !== null && this.props.onPageSwitch !== undefined) {
+            this.props.onPageSwitch(page);
+        }
     }
 
     chooseBranch(branch) {
@@ -173,6 +177,18 @@ export default class Viewer extends React.Component {
 
     onPopupClickedOutside() {
         this.showPopup = false;
+    }
+
+    componentWillMount() {
+        this.page = this.props.page || 1;
+    }
+
+    componentWillUpdate() {
+        //this.page = this.props.page || 1;
+    }
+
+    componentWillReceiveProps(props) {
+        this.page = props.page || 1;
     }
 
     render() {

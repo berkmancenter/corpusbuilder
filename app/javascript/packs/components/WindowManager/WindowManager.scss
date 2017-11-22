@@ -1,6 +1,14 @@
 .corpusbuilder {
   &-window-manager {
     background-color: #f2f2f2;
+
+    &-options {
+      width: auto;
+      position: absolute;
+      left: 430px;
+      margin-top: -56px;
+      background: none;
+    }
   }
 
   &-global-options {

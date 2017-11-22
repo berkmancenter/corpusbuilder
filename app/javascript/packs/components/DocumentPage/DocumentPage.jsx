@@ -6,6 +6,7 @@ import s from './DocumentPage.scss'
 
 import PagePositioningHelper from '../../lib/PagePositioningHelper'
 import { DocumentLine } from '../DocumentLine'
+import { FakePage } from '../FakePage'
 import { SelectionManager } from '../SelectionManager'
 import MathUtils from '../../lib/MathUtils'
 
@@ -229,16 +230,12 @@ export default class DocumentPage extends React.Component {
 
         return (
           <div>
-            <div className={ 'corpusbuilder-document-page simple' }
-                 style={ page1Style }
-              >
+            <FakePage style={ page1Style }>
               &nbsp;
-            </div>
-            <div className={ 'corpusbuilder-document-page simple' }
-                 style={ page2Style }
-              >
+            </FakePage>
+            <FakePage style={ page2Style }>
               &nbsp;
-            </div>
+            </FakePage>
             <div className={ `corpusbuilder-document-page ${ this.props.showImage ? '' : 'simple' }` }
                  style={ pageStyle }
                  >
