@@ -10,6 +10,8 @@ module Documents
     validates_presence_of :image_ocr_result
 
     def execute
+      Rails.logger.info "Compiling the document page for image_id = #{image_id}"
+
       copy_data_into_graphemes
       copy_data_into_graphemes_revisions
     end

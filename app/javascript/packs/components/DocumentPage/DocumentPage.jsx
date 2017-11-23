@@ -67,22 +67,13 @@ export default class DocumentPage extends React.Component {
         };
 
         let lines = this.graphemes.reduce((state, grapheme) => {
-            let runningYAvg = state.lineYSum / ( state.currentColumn - 1 );
-            let runningHeightAvg = state.lineHeightSum / ( state.currentColumn - 1 );
+            state.result[ state.result.length - 1 ].push( grapheme );
 
-            if(grapheme.area.uly - runningYAvg > 0.8 * runningHeightAvg) {
-                state.result.push([]);
-                state.lineYSum = 0;
-                state.lineHeightSum = 0;
-                state.currentColumn = 1;
-                state.currentRow += 1;
+            // if we're seeing the pop-directionality grapheme then
+            // it's a mark of the end of line:
+            if(grapheme.value.charCodeAt(0) === 0x202c) {
+                state.result.push( [ ] );
             }
-
-            state.result[ state.currentRow - 1 ].push(grapheme);
-
-            state.currentColumn++;
-            state.lineYSum += grapheme.area.uly;
-            state.lineHeightSum += grapheme.area.lry - grapheme.area.uly;
 
             return state;
         }, initialState).result;

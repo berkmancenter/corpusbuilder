@@ -76,7 +76,7 @@ class Pipeline::Local < Pipeline
       # todo: implement switching between backends
       Images::OCR.run!(
         image: next_image,
-        backend: :kraken #:tesseract
+        backend: :tesseract
       )
       return one_after.present? ? :more : :done
     else
