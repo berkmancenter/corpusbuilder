@@ -14,7 +14,6 @@ import { PopupMenu } from '../PopupMenu'
 import { AnnotationEditor } from '../AnnotationEditor'
 import { Annotations } from '../Annotations'
 import { DocumentPage } from '../DocumentPage'
-import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
 import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
 import { DocumentOptions } from '../DocumentOptions'
 import { Button } from '../Button';
@@ -43,13 +42,7 @@ export default class Viewer extends React.Component {
     lastSelectedGraphemes = null;
 
     @observable
-    showInfo = false;
-
-    @observable
     showCertainties = false;
-
-    @observable
-    showRevisions = false;
 
     @observable
     showPopup = false;
@@ -132,16 +125,6 @@ export default class Viewer extends React.Component {
         this.showCertainties = !this.showCertainties;
     }
 
-    toggleInfo() {
-        this.showRevisions = false;
-        this.showInfo = !this.showInfo;
-    }
-
-    toggleRevisions() {
-        this.showInfo = false;
-        this.showRevisions = !this.showRevisions;
-    }
-
     toggleAnnotations() {
         this.showInfo = this.showCertainties = false;
         this.showAnnotations = !this.showAnnotations;
@@ -211,14 +194,6 @@ export default class Viewer extends React.Component {
             let page = this.page || doc.surfaces[0].number;
             let otherContent;
 
-            if(this.showInfo) {
-                otherContent = <DocumentInfo document={ doc } />;
-            }
-
-            if(this.showRevisions) {
-                otherContent = <DocumentRevisionsBrowser document={ doc } branchName={ this.currentBranch } />;
-            }
-
             let contentStyles = {
                 height: this.documentMaxHeight + 20
             };
@@ -232,9 +207,7 @@ export default class Viewer extends React.Component {
                                    branches={ this.branches }
                                    currentBranch={ this.currentBranch }
                                    onBranchSwitch={ this.chooseBranch.bind(this) }
-                                   onToggleInfo={ this.toggleInfo.bind(this) }
                                    onToggleCertainties={ this.toggleCertainties.bind(this) }
-                                   onToggleRevisions={ this.toggleRevisions.bind(this) }
                                    onToggleAnnotations={ this.toggleAnnotations.bind(this) }
                                    onToggleBackground={ this.toggleBackground.bind(this) }
                                    />

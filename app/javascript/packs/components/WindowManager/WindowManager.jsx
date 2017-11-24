@@ -8,6 +8,7 @@ import { default as Dropdown } from 'react-simple-dropdown'
 import { DropdownTrigger, DropdownContent } from 'react-simple-dropdown'
 import { Button } from '../Button';
 import { DocumentInfo } from '../DocumentInfo'
+import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
 
 import Documents from '../../stores/Documents'
 import Metadata from '../../stores/Metadata'
@@ -230,6 +231,9 @@ export default class WindowManager extends React.Component {
     }
 
     renderVersions() {
+        return <DocumentRevisionsBrowser height={ this.maxViewerHeight }
+                                         document={ this.document }
+                                         branchName={ 'master' } />;
     }
 
     renderContent() {

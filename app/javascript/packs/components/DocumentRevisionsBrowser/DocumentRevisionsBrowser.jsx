@@ -33,8 +33,12 @@ export default class DocumentRevisionsBrowser extends React.Component {
             );
         });
 
+        let dynamicStyles = {
+            height: this.props.height
+        };
+
         return (
-          <div className="corpusbuilder-revisions-browser">
+          <div style={ dynamicStyles } className="corpusbuilder-revisions-browser">
             { revisionItems }
           </div>
         );

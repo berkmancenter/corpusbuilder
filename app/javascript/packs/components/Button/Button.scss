@@ -1,7 +1,8 @@
 .corpusbuilder {
-    &-button {
+    &-button, &-button:active, &-button:focus {
       height: 30px;
       line-height: 30px;
+      outline:none;
       padding: 0px 10px 0px;
       text-align: center;
       border: none;
