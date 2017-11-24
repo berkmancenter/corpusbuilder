@@ -13,6 +13,7 @@ module Leptonica
     attach_function :pixCreateTemplate, [ :pointer ], :pointer
     attach_function :pixExtractTextlines, [ :pointer, :int, :int, :int, :int, :int, :int, :pointer ], :pointer
     attach_function :pixGetWidth, [ :pointer ], :int
+    attach_function :pixConvertRGBToGrayMinMax, [ :pointer, :int32 ], :pointer
 
     attach_function :dewarpSinglePage, [ :pointer, :int, :int, :int, :pointer, :pointer, :int ], :int
     attach_function :dewarpCreate, [ :pointer, :int ], :pointer
@@ -60,13 +61,14 @@ module Leptonica
 
       pixels = Lib.pixRead in_path
       normed = Lib.pixBackgroundNormSimple(pixels, FFI::Pointer::NULL, FFI::Pointer::NULL)
-      output = Lib.pixThresholdToBinary(normed, 130)
+      grayed = Lib.pixConvertRGBToGrayMinMax(normed, 2)
+      output = Lib.pixThresholdToBinary(grayed, 130)
       output_pointer = FFI::MemoryPointer.new :pointer
       output_pointer.put_pointer(0, output)
       dewarp = Lib.dewarpCreate(output, 0)
       dewarpa = FFI::Pointer::NULL
 
-      lines = 50
+      lines = 30
       samples = 2**6
 
       while lines > 0
@@ -103,6 +105,7 @@ module Leptonica
     ensure
       pix_destroy(pixels) if defined?(pixels)
       pix_destroy(normed) if defined?(normed)
+      pix_destroy(grayed) if defined?(grayed)
       pix_destroy(converted) if defined?(converted)
       pix_destroy(output) if defined?(output)
       pix_destroy(output_modified) if defined?(output_modified)

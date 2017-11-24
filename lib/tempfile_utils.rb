@@ -1,8 +1,8 @@
+require 'tmpdir'
+require 'securerandom'
+
 class TempfileUtils
   def self.next_path(part)
-    f = Tempfile.new(part)
-    res = f.path
-    f.close
-    res
+    File.join(Dir.tmpdir, "#{part}-#{SecureRandom.uuid}")
   end
 end

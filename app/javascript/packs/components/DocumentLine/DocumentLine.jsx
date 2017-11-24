@@ -51,7 +51,7 @@ export default class DocumentLine extends React.Component {
     }
 
     spacesNumBetween(word1, word2) {
-        if(this.spaceWidth === null) {
+        if(this.spaceWidth === null || word1 === undefined || word2 === undefined) {
             return 1;
         }
 
@@ -72,14 +72,28 @@ export default class DocumentLine extends React.Component {
     }
 
     @computed
+    get specialCodePoints() {
+        return [ 0x202c, 0x200e, 0x200f ];
+    }
+
+    @computed
+    get concreteGraphemes() {
+        return this.props.line.filter((grapheme) => {
+            let codePoint = grapheme.value.codePointAt(0);
+
+            return  this.specialCodePoints.indexOf(codePoint) === -1;
+        });
+    }
+
+    @computed
     get left() {
-        return this.props.line
+        return this.concreteGraphemes
             .reduce((min, g) => { return Math.min(min, g.area.ulx) }, 1e+22) * this.props.ratio;
     }
 
     @computed
     get top() {
-        return this.props.line
+        return this.concreteGraphemes
             .reduce((min, g) => { return Math.min(min, g.area.uly) }, 1e+22) * this.props.ratio;
     }
 
@@ -129,18 +143,22 @@ export default class DocumentLine extends React.Component {
         let currentWordIndex = -1;
 
         for(let grapheme of this.visualLine) {
-            let graphemeWidth = grapheme.area.lrx - grapheme.area.ulx;
+            let codePoint = grapheme.value.codePointAt(0);
 
-            if(lastUlx === null || lastLrx === null || grapheme.area.ulx - lastLrx > 0.1 * graphemeWidth) {
-                results.push([ grapheme ]);
-                currentWordIndex++;
-            }
-            else {
-                results[ currentWordIndex ].push(grapheme);
-            }
+            if([ 0x200e, 0x200f, 0x202c ].indexOf(codePoint) === -1) {
+                let graphemeWidth = grapheme.area.lrx - grapheme.area.ulx;
 
-            lastUlx = grapheme.area.ulx;
-            lastLrx = grapheme.area.lrx;
+                if(lastUlx === null || lastLrx === null || grapheme.area.ulx - lastLrx > 0.1 * graphemeWidth) {
+                    results.push([ grapheme ]);
+                    currentWordIndex++;
+                }
+                else {
+                    results[ currentWordIndex ].push(grapheme);
+                }
+
+                lastUlx = grapheme.area.ulx;
+                lastLrx = grapheme.area.lrx;
+            }
         }
 
         return results;
@@ -163,7 +181,16 @@ export default class DocumentLine extends React.Component {
             return null;
         }
 
-        return this.wordIndex.get(this.props.line[0]);
+        let index = 0;
+        let word = undefined;
+        let graphemes = this.props.line;
+
+        while(index < graphemes.length && word === undefined) {
+            word = this.wordIndex.get(graphemes[index]);
+            index++;
+        }
+
+        return word;
     }
 
     @computed
@@ -175,6 +202,12 @@ export default class DocumentLine extends React.Component {
            let graphemes = [];
 
            for(let grapheme of this.props.line) {
+               let codePoint = grapheme.value.codePointAt(0);
+
+               if([ 0x200e, 0x200f, 0x202c ].indexOf(codePoint) === -1) {
+                   continue;
+               }
+
                let currentWord = this.wordIndex.get(grapheme);
 
                if(currentWord !== this.firstWord) {

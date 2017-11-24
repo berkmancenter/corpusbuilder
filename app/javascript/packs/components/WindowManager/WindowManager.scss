@@ -12,7 +12,7 @@
   }
 
   &-global-options {
-    background: linear-gradient(to top, #d0d0d0, #dfdfdf);
+    background: #ccc;
   }
 
   &-tabs {
@@ -20,11 +20,9 @@
     margin: 0px;
     padding: 0px;
     display: flex;
-    padding-left: 5px;
 
     li {
-      background: linear-gradient(to top, #dfdfdf, #f4f4f4);
-      margin-top: 5px;
+      background: #dfdfdf;
       min-width: 120px;
       text-align: center;
       color: #777;
@@ -33,12 +31,11 @@
       padding-bottom: 4px;
       font-size: 13px;
       cursor: pointer;
-      margin-right: 5px;
-      box-shadow: 0px 1px 1px 0px;
+      border-right: 1px solid #bbb;
     }
 
     &-active {
-      background: linear-gradient(to top, #f2f2f2, #fafafa) !important;
+      background: #f2f2f2 !important;
     }
 
   }
