@@ -2,6 +2,7 @@ import React from 'react';
 
 import { default as Dropdown } from 'react-simple-dropdown'
 import { DropdownTrigger, DropdownContent } from 'react-simple-dropdown'
+import { Button } from '../Button';
 
 import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react'
@@ -29,25 +30,30 @@ export default class DocumentOptions extends React.Component {
         );
 
         return (
-          <div>
-            <button className={ 'fa fa-map-o' } onClick={ () => this.props.onToggleCertainties() } />
-            <button className={ 'fa fa-commenting' } onClick={ () => this.props.onToggleAnnotations() } />
-            <button className={ 'fa fa-file-image-o' } onClick={ () => this.props.onToggleBackground() } />
-            <div className="side-options">
-              <Dropdown>
-                <DropdownTrigger>
-                  <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
-                  &nbsp;
-                  Branch: <b>{ this.props.currentBranch }</b>
-                </DropdownTrigger>
-                <DropdownContent>
-                  <ul>
-                    { branchesOptions }
-                  </ul>
-                </DropdownContent>
-              </Dropdown>
+            <div>
+                <Dropdown>
+                    <DropdownTrigger>
+                        <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
+                        &nbsp;
+                        Branch: <b>{ this.props.currentBranch }</b>
+                    </DropdownTrigger>
+                    <DropdownContent>
+                        <ul>
+                          { branchesOptions }
+                        </ul>
+                    </DropdownContent>
+                </Dropdown>
+                <div className={ 'corpusbuilder-options-separator' }>&nbsp;</div>
+                <Button onClick={ () => this.props.onToggleCertainties() } >
+                    <i className={ 'fa fa-map-o' }>&nbsp;</i>
+                </Button>
+                <Button onClick={ () => this.props.onToggleAnnotations() } >
+                    <i className={ 'fa fa-commenting' }>&nbsp;</i>
+                </Button>
+                <Button onClick={ () => this.props.onToggleBackground() } >
+                    <i className={ 'fa fa-file-image-o' }>&nbsp;</i>
+                </Button>
             </div>
-          </div>
         );
     }
 }

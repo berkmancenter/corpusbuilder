@@ -12,7 +12,7 @@
   }
 
   &-global-options {
-    background: #ccc;
+    background: #d0d0d0;
   }
 
   &-tabs {
@@ -21,14 +21,19 @@
     padding: 0px;
     display: flex;
 
-    li {
+    .corpusbuilder-button {
+      margin: 0px;
+      box-shadow: none;
+      background: inherit;
+      font-weight: normal;
+      padding: 0px;
+    }
+
+    div {
       background: #dfdfdf;
       min-width: 120px;
       text-align: center;
       color: #777;
-      padding: 15px;
-      padding-top: 4px;
-      padding-bottom: 4px;
       font-size: 13px;
       cursor: pointer;
       border-right: 1px solid #bbb;

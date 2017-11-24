@@ -77,37 +77,6 @@ export default class DocumentPage extends React.Component {
 
             return state;
         }, initialState).result;
-
-       //return lines.reduce((state, line) => {
-       //    let heights = line.map((grapheme) => {
-       //        return grapheme.area.lry - grapheme.area.uly;
-       //    });
-
-       //    let stdHeight = MathUtils.std(heights);
-       //    let meanHeight = MathUtils.mean(heights);
-
-       //    let sublines = line.reduce((substate, grapheme) => {
-       //        let localDiffFromMean = Math.abs(grapheme.area.lry - grapheme.area.uly - meanHeight);
-       //        let localLevel = localDiffFromMean / stdHeight;
-
-       //        // if the levels differ by more than 2 standard deviations then we split:
-       //        if(substate.lastLevel !== null && Math.abs(substate.lastLevel - localLevel) > 2) {
-       //            substate.result.push([]);
-       //        }
-
-       //        substate.result[ substate.result.length - 1 ].push( grapheme );
-       //        substate.lastLevel = localLevel;
-
-       //        return substate;
-       //    }, { result: [ [] ], lastLevel: null }).result;
-
-       //    for(let subline of sublines) {
-       //       state.push(subline);
-       //    }
-
-       //    return state;
-       //}, []);
-
        return lines;
     }
 

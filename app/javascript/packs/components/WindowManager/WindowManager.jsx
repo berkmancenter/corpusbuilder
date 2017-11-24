@@ -6,6 +6,8 @@ import { Provider, observer } from 'mobx-react'
 import { Viewer } from '../Viewer'
 import { default as Dropdown } from 'react-simple-dropdown'
 import { DropdownTrigger, DropdownContent } from 'react-simple-dropdown'
+import { Button } from '../Button';
+import { DocumentInfo } from '../DocumentInfo'
 
 import Documents from '../../stores/Documents'
 import Metadata from '../../stores/Metadata'
@@ -28,10 +30,35 @@ export default class WindowManager extends React.Component {
     currentMode = this.modes[0];
 
     @observable
+    currentTab = this.tabs[0];
+
+    @observable
     leftPage = 1;
 
     @observable
     rightPage = 2;
+
+    @observable
+    maxViewerHeight = 0;
+
+    @computed
+    get host() {
+        return this.props.host;
+    }
+
+    @computed
+    get paneWidth() {
+        return Math.floor(this.host.offsetWidth / 2) - 40;
+    }
+
+    @computed
+    get document() {
+        return this.sharedContext.documents.tree(
+          this.props.documentId,
+          'master',
+          1
+        );
+    }
 
     @computed
     get sharedContext() {
@@ -53,6 +80,39 @@ export default class WindowManager extends React.Component {
             { name: 'follow-current', title: 'Follow Current' },
             { name: 'independent', title: 'Independent Panes' }
         ];
+    }
+
+    get tabs() {
+        return [
+            { name: 'pages', title: 'Pages' },
+            { name: 'info', title: 'Document Info' },
+            { name: 'versions', title: 'Versions' }
+        ];
+    }
+
+    @computed
+    get modesOptions() {
+        return this.modes.map((mode) => {
+            return (
+              <li key={ `mode-${ mode.name }` }
+                  onClick={ () => this.onModeSwitch(mode) }
+                  >
+                  { this.currentMode.name === mode.name ? `* ${mode.title}` : mode.title }
+              </li>
+            );
+        });
+    }
+
+    navigatePages() {
+        this.currentTab = this.tabs[0];
+    }
+
+    navigateInfo() {
+        this.currentTab = this.tabs[1];
+    }
+
+    navigateVersions() {
+        this.currentTab = this.tabs[2];
     }
 
     onModeSwitch(mode) {
@@ -88,67 +148,111 @@ export default class WindowManager extends React.Component {
         }
     }
 
-    render() {
-        let modesOptions = this.modes.map((mode) => {
-            return (
-              <li key={ `mode-${ mode.name }` }
-                  onClick={ () => this.onModeSwitch(mode) }
-                  >
-                  { this.currentMode.name === mode.name ? `* ${mode.title}` : mode.title }
-              </li>
-            );
-        });
+    onViewerRendered(el) {
+        this.maxViewerHeight = Math.max(this.maxViewerHeight, el.offsetHeight);
+    }
 
+    renderNavigation() {
+
+        return (
+            <div className="corpusbuilder-global-options">
+              <div className={ 'corpusbuilder-tabs' }>
+                <Button onClick={ this.navigatePages.bind(this) }>
+                    <div className={ this.currentTab.name === 'pages' ? 'corpusbuilder-tabs-active' : '' }>
+                        <i className={ 'fa fa-book' } aria-hidden="true"></i>
+                          &nbsp;
+                        Pages
+                    </div>
+                </Button>
+                <Button onClick={ this.navigateInfo.bind(this) }>
+                    <div className={ this.currentTab.name === 'info' ? 'corpusbuilder-tabs-active' : '' }>
+                        <i className={ 'fa fa-info-circle' } aria-hidden="true"></i>
+                          &nbsp;
+                        Document Info
+                    </div>
+                </Button>
+                <Button onClick={ this.navigateVersions.bind(this) }>
+                    <div className={ this.currentTab.name === 'versions' ? 'corpusbuilder-tabs-active' : '' }>
+                        <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
+                          &nbsp;
+                        Versions
+                    </div>
+                </Button>
+              </div>
+            </div>
+        );
+    }
+
+    renderDocumentPanes() {
+        return (
+            [
+              <Viewer width={ this.paneWidth }
+                    key={ 1 }
+                    page={ this.leftPage }
+                    documentId={ this.props.documentId }
+                    allowImage={ this.allowImage }
+                    onRendered={ this.onViewerRendered.bind(this) }
+                    onPageSwitch={ this.onLeftPageSwitch.bind(this) }
+                    />,
+              <Viewer width={ this.paneWidth }
+                      key={ 2 }
+                      page={ this.rightPage }
+                      documentId={ this.props.documentId }
+                      allowImage={ this.allowImage }
+                      onRendered={ this.onViewerRendered.bind(this) }
+                      onPageSwitch={ this.onRightPageSwitch.bind(this) }
+                      />
+            ]
+        );
+    }
+
+    renderPanesOptions() {
+        return (
+            <div className={ 'corpusbuilder-window-manager-options' } key={ 'pane-options' }>
+              <Dropdown>
+                <DropdownTrigger>
+                  <i className={ 'fa fa-files-o' } aria-hidden="true"></i>
+                  &nbsp;
+                  Mode: <b>{ this.currentMode.title }</b>
+                </DropdownTrigger>
+                <DropdownContent>
+                  <ul>
+                    { this.modesOptions }
+                  </ul>
+                </DropdownContent>
+              </Dropdown>
+            </div>
+        );
+    }
+
+    renderInfo() {
+        return <DocumentInfo height={ this.maxViewerHeight } document={ this.document } />;
+    }
+
+    renderVersions() {
+    }
+
+    renderContent() {
+        if(this.currentTab.name === 'pages') {
+            return [
+                this.renderDocumentPanes(),
+                this.renderPanesOptions()
+            ];
+        }
+        else if(this.currentTab.name === 'info') {
+            return this.renderInfo();
+        }
+        else {
+            return this.renderVersions();
+        }
+    }
+
+    render() {
         return <div className="corpusbuilder-window-manager">
             <Provider {...this.sharedContext}>
                 <div>
-                    <div className="corpusbuilder-global-options">
-                      <ul className={ 'corpusbuilder-tabs' }>
-                        <li className={ 'corpusbuilder-tabs-active' }>
-                          <i className={ 'fa fa-book' } aria-hidden="true"></i>
-                            &nbsp;
-                          Pages
-                        </li>
-                        <li>
-                          <i className={ 'fa fa-info-circle' } aria-hidden="true"></i>
-                            &nbsp;
-                          Document Info
-                        </li>
-                        <li>
-                          <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
-                            &nbsp;
-                          Versions
-                        </li>
-                      </ul>
-                    </div>
-                    <Viewer width={ 445 }
-                            key={ 1 }
-                            page={ this.leftPage }
-                            documentId={ this.props.documentId }
-                            allowImage={ this.allowImage }
-                            onPageSwitch={ this.onLeftPageSwitch.bind(this) }
-                            />
-                    <Viewer width={ 445 }
-                            key={ 2 }
-                            page={ this.rightPage }
-                            documentId={ this.props.documentId }
-                            allowImage={ this.allowImage }
-                            onPageSwitch={ this.onRightPageSwitch.bind(this) }
-                            />
-                    <div className={ 'corpusbuilder-window-manager-options' }>
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <i className={ 'fa fa-files-o' } aria-hidden="true"></i>
-                          &nbsp;
-                          Mode: <b>{ this.currentMode.title }</b>
-                        </DropdownTrigger>
-                        <DropdownContent>
-                          <ul>
-                            { modesOptions }
-                          </ul>
-                        </DropdownContent>
-                      </Dropdown>
-                    </div>
+                    { this.renderNavigation() }
+                    { this.renderContent() }
                 </div>
             </Provider>
         </div>

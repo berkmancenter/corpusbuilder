@@ -29,6 +29,11 @@
       float: right;
     }
 
+    &-separator {
+      display: inline-block;
+      width: 10px;
+    }
+
     .dropdown {
       display: inline-block;
       line-height: 30px;

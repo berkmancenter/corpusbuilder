@@ -2,6 +2,7 @@ import React from 'react';
 
 import { default as Dropdown } from 'react-simple-dropdown'
 import { DropdownTrigger, DropdownContent } from 'react-simple-dropdown'
+import { Button } from '../Button';
 
 import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react'
@@ -40,16 +41,16 @@ export default class DocumentPageSwitcher extends React.Component {
 
       return (
           <div className="corpusbuilder-document-page-switcher">
-            <button onClick={ () => this.props.onPageSwitch(1) }
+            <Button onClick={ () => this.props.onPageSwitch(1) }
                     disabled={ page == 1 }
                     >
               { '❙◀' }
-            </button>
-            <button onClick={ () => this.props.onPageSwitch(page - 1) }
+            </Button>
+            <Button onClick={ () => this.props.onPageSwitch(page - 1) }
                     disabled={ page == 1 }
                     >
               { '◀' }
-            </button>
+            </Button>
             <Dropdown>
               <DropdownTrigger>Page: { page } / { doc.global.surfaces_count }</DropdownTrigger>
               <DropdownContent>
@@ -58,12 +59,12 @@ export default class DocumentPageSwitcher extends React.Component {
                 </ul>
               </DropdownContent>
             </Dropdown>
-            <button onClick={ () => this.props.onPageSwitch(page + 1) } disabled={ page == countPages }>
+            <Button onClick={ () => this.props.onPageSwitch(page + 1) } disabled={ page == countPages }>
               { '▶' }
-            </button>
-            <button onClick={ () => this.props.onPageSwitch(countPages) } disabled={ page == countPages }>
+            </Button>
+            <Button onClick={ () => this.props.onPageSwitch(countPages) } disabled={ page == countPages }>
               { '▶❙' }
-            </button>
+            </Button>
           </div>
       );
     }

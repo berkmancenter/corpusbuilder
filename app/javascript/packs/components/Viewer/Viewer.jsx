@@ -14,16 +14,18 @@ import { PopupMenu } from '../PopupMenu'
 import { AnnotationEditor } from '../AnnotationEditor'
 import { Annotations } from '../Annotations'
 import { DocumentPage } from '../DocumentPage'
-import { DocumentInfo } from '../DocumentInfo'
 import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
 import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
 import { DocumentOptions } from '../DocumentOptions'
+import { Button } from '../Button';
 
 import s from './Viewer.scss'
 
 @inject('documents')
 @observer
 export default class Viewer extends React.Component {
+
+    div = null;
 
     @observable
     currentBranch = null;
@@ -114,6 +116,14 @@ export default class Viewer extends React.Component {
         }
     }
 
+    reportElement(div) {
+        this.div = div;
+
+        if(div !== null && this.props.onRendered !== null && this.props.onRendered !== undefined) {
+            this.props.onRendered(div);
+        }
+    }
+
     chooseBranch(branch) {
         this.currentBranch = branch.name;
     }
@@ -183,8 +193,8 @@ export default class Viewer extends React.Component {
         this.page = this.props.page || 1;
     }
 
-    componentWillUpdate() {
-        //this.page = this.props.page || 1;
+    componentDidUpdate() {
+        this.reportElement(this.div);
     }
 
     componentWillReceiveProps(props) {
@@ -253,12 +263,12 @@ export default class Viewer extends React.Component {
                 <PopupMenu visible={ this.showPopup }
                            onClickedOutside={ this.onPopupClickedOutside.bind(this) }
                            >
-                  <button onClick={ this.editAnnotation.bind(this) }>
+                  <Button onClick={ this.editAnnotation.bind(this) }>
                     { '✐' }
-                  </button>
-                  <button onClick={ this.editTags.bind(this) }>
+                  </Button>
+                  <Button onClick={ this.editTags.bind(this) }>
                     { '#' }
-                  </button>
+                  </Button>
                 </PopupMenu>
                 <AnnotationEditor visible={ this.showAnnotationEditor }
                                   document={ doc }
@@ -286,7 +296,7 @@ export default class Viewer extends React.Component {
         };
 
         return (
-            <div className="corpusbuilder-viewer" style={ viewerStyle }>
+            <div ref={ this.reportElement.bind(this) } className="corpusbuilder-viewer" style={ viewerStyle }>
                 <MouseManager>
                     { content }
                 </MouseManager>

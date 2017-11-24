@@ -22,6 +22,10 @@ export default class DocumentInfo extends React.Component {
           return sum + surface.graphemes.length;
         }, 0);
 
+        let dynamicStyles = {
+            height: this.props.height
+        };
+
         if(info !== undefined && info !== null) {
           content = (
             <div>
@@ -43,7 +47,7 @@ export default class DocumentInfo extends React.Component {
         }
 
         return (
-          <div className="corpusbuilder-document-info">
+          <div style={ dynamicStyles } className="corpusbuilder-document-info">
             { content }
           </div>
         );
