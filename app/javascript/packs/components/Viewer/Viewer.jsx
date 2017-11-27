@@ -31,6 +31,9 @@ export default class Viewer extends React.Component {
     currentBranch = null;
 
     @observable
+    editing = false;
+
+    @observable
     showImage = false;
 
     @observable
@@ -57,7 +60,8 @@ export default class Viewer extends React.Component {
     @observable
     showTagsEditor = false;
 
-    @computed get tree() {
+    @computed
+    get tree() {
         return this.props.documents.tree(
           this.documentId,
           this.currentBranch,
@@ -65,11 +69,13 @@ export default class Viewer extends React.Component {
         );
     }
 
-    @computed get branches() {
+    @computed
+    get branches() {
         return this.props.documents.branches(this.documentId) || [];
     }
 
-    @computed get width() {
+    @computed
+    get width() {
         return this.props.width;
     }
 
@@ -120,6 +126,10 @@ export default class Viewer extends React.Component {
 
     chooseBranch(branch) {
         this.currentBranch = branch.name;
+    }
+
+    toggleBranchMode(isOn) {
+      this.editing = isOn;
     }
 
     toggleCertainties(isOn) {
@@ -206,7 +216,9 @@ export default class Viewer extends React.Component {
                   <DocumentOptions document={ doc }
                                    branches={ this.branches }
                                    currentBranch={ this.currentBranch }
+                                   editing={ this.editing }
                                    onBranchSwitch={ this.chooseBranch.bind(this) }
+                                   onBranchModeToggle={ this.toggleBranchMode.bind(this) }
                                    onToggleCertainties={ this.toggleCertainties.bind(this) }
                                    onToggleAnnotations={ this.toggleAnnotations.bind(this) }
                                    onToggleBackground={ this.toggleBackground.bind(this) }

@@ -16,6 +16,11 @@ export default class DocumentOptions extends React.Component {
         super(props);
     }
 
+    @computed
+    get currentBranchMode() {
+        return this.props.currentBranchMode;
+    }
+
     render() {
         let branchesOptions = this.props.branches.map(
             (branch) => {
@@ -31,6 +36,10 @@ export default class DocumentOptions extends React.Component {
 
         return (
             <div>
+                <Button toggles={ true } onToggle={ this.props.onBranchModeToggle.bind(this) } >
+                    <i className={ 'fa fa-pencil' }>&nbsp;</i>
+                </Button>
+                <div className={ 'corpusbuilder-options-separator' }>&nbsp;</div>
                 <Dropdown>
                     <DropdownTrigger>
                         <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
