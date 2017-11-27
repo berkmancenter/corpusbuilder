@@ -118,11 +118,6 @@ export default class DocumentPage extends React.Component {
         return document.getElementById(this.rulerId);
     }
 
-    percentageToHsl(percentage, hue0, hue1) {
-        var hue = (percentage * (hue1 - hue0)) + hue0;
-        return 'hsla(' + hue + ', 100%, 50%, .5)';
-    }
-
     onMeasureTextRequested(text, fontSize) {
         if(window._count === undefined) {
             window._count = 1;
@@ -212,6 +207,7 @@ export default class DocumentPage extends React.Component {
                                                line={ line }
                                                number={ index + 1 }
                                                ratio={ this.ratio }
+                                               showCertainties={ this.showCertainties }
                                                onMeasureTextRequested={ this.onMeasureTextRequested.bind(this) }
                                                />
                       }

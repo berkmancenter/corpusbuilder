@@ -1,6 +1,7 @@
 import React from 'react'
 import { computed, observable } from 'mobx'
 import { observer } from 'mobx-react'
+import MathUtils from '../../lib/MathUtils';
 import styles from './DocumentLine.scss'
 
 @observer
@@ -62,6 +63,11 @@ export default class DocumentLine extends React.Component {
         let gap = absolutePixelDiff * this.props.ratio;
 
         return ( gap + this.letterSpacingByWord ) / ( this.spaceWidth + this.letterSpacingByWord );
+    }
+
+    @computed
+    get showCertainties() {
+        return this.props.showCertainties;
     }
 
     @computed
@@ -194,6 +200,60 @@ export default class DocumentLine extends React.Component {
     }
 
     @computed
+    get ratio() {
+        return this.props.ratio;
+    }
+
+    percentageToHsl(percentage, hue0 = 0, hue1 = 120) {
+        var hue = (percentage * (hue1 - hue0)) + hue0;
+        return 'hsla(' + hue + ', 100%, 50%, .35)';
+    }
+
+    boundsFor(graphemes) {
+        let minUlx = graphemes.reduce((min, g) => { return Math.min(min, g.area.ulx) }, graphemes[0].area.ulx);
+        let maxLrx = graphemes.reduce((max, g) => { return Math.max(max, g.area.lrx) }, graphemes[0].area.lrx);
+        let meanTop = MathUtils.mean(graphemes.map((g) => { return g.area.uly }));
+        let meanBottom = MathUtils.mean(graphemes.map((g) => { return g.area.lry }));
+
+        return {
+            top: meanTop * this.ratio,
+            bottom: meanBottom * this.ratio,
+            left: minUlx * this.ratio,
+            right: maxLrx * this.ratio
+        }
+    }
+
+    @computed
+    get lineBounds() {
+        return this.boundsFor(this.concreteGraphemes);
+    }
+
+    @computed
+    get certaintiesMapDataURL() {
+        let canvas = document.createElement('canvas');
+        let context = canvas.getContext('2d');
+
+        context.canvas.width = 415;
+        context.canvas.height = 20;
+
+        for(let word of this.words) {
+            let certainty = parseFloat(word[0].certainty);
+            let color = this.percentageToHsl(certainty);
+            let bounds = this.boundsFor(word);
+
+            context.fillStyle = color;
+            context.fillRect(
+                bounds.left - this.lineBounds.left,
+                0,
+                bounds.right - bounds.left,
+                this.lineBounds.bottom - this.lineBounds.top
+            );
+        }
+
+        return canvas.toDataURL();
+    }
+
+    @computed
     get firstWordText() {
         if(!this.hasWords) {
             return null;
@@ -280,6 +340,10 @@ export default class DocumentLine extends React.Component {
             left: this.left,
             letterSpacing: this.letterSpacing
         };
+
+        if(this.showCertainties) {
+            dynamicStyles.backgroundImage = `url(${ this.certaintiesMapDataURL })`;
+        }
 
         return (
             <div className="corpusbuilder-document-line"
