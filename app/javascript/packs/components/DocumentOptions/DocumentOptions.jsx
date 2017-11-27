@@ -44,13 +44,13 @@ export default class DocumentOptions extends React.Component {
                     </DropdownContent>
                 </Dropdown>
                 <div className={ 'corpusbuilder-options-separator' }>&nbsp;</div>
-                <Button onClick={ () => this.props.onToggleCertainties() } >
+                <Button toggles={ true } onToggle={ this.props.onToggleCertainties.bind(this) } >
                     <i className={ 'fa fa-map-o' }>&nbsp;</i>
                 </Button>
-                <Button onClick={ () => this.props.onToggleAnnotations() } >
+                <Button toggles={ true } onToggle={ this.props.onToggleAnnotations.bind(this) } >
                     <i className={ 'fa fa-commenting' }>&nbsp;</i>
                 </Button>
-                <Button onClick={ () => this.props.onToggleBackground() } >
+                <Button toggles={ true } onToggle={ this.props.onToggleBackground.bind(this) } >
                     <i className={ 'fa fa-file-image-o' }>&nbsp;</i>
                 </Button>
             </div>

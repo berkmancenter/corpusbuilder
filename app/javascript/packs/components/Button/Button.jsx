@@ -29,7 +29,7 @@ export default class Button extends React.Component {
 
     render() {
         return (
-            <button className={ 'corpusbuilder-button' } onClick={ this.onClick.bind(this) }>
+            <button className={ `corpusbuilder-button ${ this.toggles && this.toggled ? 'corpusbuilder-button-toggled' : '' }` } onClick={ this.onClick.bind(this) }>
                 { this.props.children }
             </button>
         );

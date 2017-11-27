@@ -122,17 +122,16 @@ export default class Viewer extends React.Component {
         this.currentBranch = branch.name;
     }
 
-    toggleCertainties() {
-        this.showCertainties = !this.showCertainties;
+    toggleCertainties(isOn) {
+        this.showCertainties = isOn;
     }
 
-    toggleAnnotations() {
-        this.showInfo = this.showCertainties = false;
-        this.showAnnotations = !this.showAnnotations;
+    toggleAnnotations(isOn) {
+        this.showAnnotations = isOn;
     }
 
-    toggleBackground() {
-        this.showImage = !this.showImage;
+    toggleBackground(isOn) {
+        this.showImage = isOn;
     }
 
     editAnnotation() {

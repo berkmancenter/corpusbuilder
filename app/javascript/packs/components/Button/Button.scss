@@ -15,10 +15,14 @@
       font-weight: bold;
       font-size: 14px;
       margin: 0px;
+
+    }
+
+    &-button-toggled, &-button-toggled:active, &-button-toggled:focus {
+      background-image: linear-gradient(to top, #fafafa 0%, #eaeaea 90%);
     }
 
     &-button:hover {
       color: #777;
-      background-image: linear-gradient(-180deg, #fcfcfc 0%, #ececec 90%);
     }
 }
