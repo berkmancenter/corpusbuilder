@@ -21,6 +21,7 @@ import { Button } from '../Button';
 import s from './Viewer.scss'
 
 @inject('documents')
+@inject('metadata')
 @observer
 export default class Viewer extends React.Component {
 
@@ -143,7 +144,7 @@ export default class Viewer extends React.Component {
     }
 
     saveAnnotation(annotation) {
-        this.data.metadata.saveAnnotation(
+        this.props.metadata.saveAnnotation(
             this.documentId,
             this.currentBranch,
             annotation,

@@ -22,7 +22,7 @@ export default class SelectionManager extends React.Component {
                 .join('')
                 .match(
                     selectedText.replace(/[#-.]|[[-^]|[?|{}]/g, '\\$&')
-                                .replace(/\s+/g, '\\s+')
+                                .replace(/\s+/g, '\\s*')
                 );
 
             if(match !== null) {

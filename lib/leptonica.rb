@@ -22,6 +22,7 @@ module Leptonica
     attach_function :dewarpDestroy, [ :pointer ], :void
 
     attach_function :dewarpaCreate, [ :int, :int, :int, :int, :int ], :pointer
+    attach_function :dewarpaUseBothArrays, [ :pointer, :int32 ], :int32
     attach_function :dewarpaInsertDewarp, [ :pointer, :pointer ], :void
     attach_function :dewarpaDestroy, [ :pointer ], :void
   end
@@ -65,22 +66,24 @@ module Leptonica
       output = Lib.pixThresholdToBinary(grayed, 130)
       output_pointer = FFI::MemoryPointer.new :pointer
       output_pointer.put_pointer(0, output)
-      dewarp = Lib.dewarpCreate(output, 0)
+      dewarp = FFI::Pointer::NULL
       dewarpa = FFI::Pointer::NULL
 
       lines = 30
-      samples = 2**6
+      samples = 2**8
 
       while lines > 0
-        dewarpa = Lib.dewarpaCreate(1, samples, 1, lines, -1)
+        dewarpa = Lib.dewarpaCreate(1, samples, 1, lines, 50)
+        Lib.dewarpaUseBothArrays(dewarpa, 1)
         Lib.dewarpaInsertDewarp(dewarpa, dewarp)
+        dewarp = Lib.dewarpCreate(output, 0)
 
         if Lib.dewarpBuildPageModel(dewarp, FFI::Pointer::NULL) != 0
           if lines == 4
             if samples == 8
               raise StandardError, "Leptonica failed to create the dewarp model for the input image: #{in_path}"
             else
-              lines = 50
+              lines = 30
               samples /= 2
             end
           end
