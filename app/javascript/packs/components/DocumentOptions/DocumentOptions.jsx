@@ -23,7 +23,7 @@ export default class DocumentOptions extends React.Component {
                     <li key={ `branch-${ branch.revision_id }` }
                         onClick={ () => this.props.onBranchSwitch(branch) }
                         >
-                        { this.props.currentBranch === branch.name ? `* ${branch.name}` : branch.name }
+                        { this.props.currentBranch === branch.name ? `➜ ${branch.name}` : branch.name }
                     </li>
                 );
             }

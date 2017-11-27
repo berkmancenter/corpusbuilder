@@ -5,6 +5,10 @@
     justify-content: center;
     height: 30px;
 
+    .dropdown__content {
+      bottom: 30px;
+    }
+
     button {
       font-size: 8px !important;
     }

@@ -98,7 +98,7 @@ export default class WindowManager extends React.Component {
               <li key={ `mode-${ mode.name }` }
                   onClick={ () => this.onModeSwitch(mode) }
                   >
-                  { this.currentMode.name === mode.name ? `* ${mode.title}` : mode.title }
+                  { this.currentMode.name === mode.name ? `➜ ${mode.title}` : mode.title }
               </li>
             );
         });
