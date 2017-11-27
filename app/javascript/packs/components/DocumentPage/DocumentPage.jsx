@@ -152,19 +152,29 @@ export default class DocumentPage extends React.Component {
         console.log("OnDeselected!");
     }
 
+    @computed
+    get page1Rotate() {
+        return this.graphemes && Math.random() * (2 - -2) + -2;
+    }
+
+    @computed
+    get page2Rotate() {
+        return this.graphemes && Math.random() * (3 - -3) + -3;
+    }
+
     render() {
         let page1Style = {
             width: this.width,
             height: this.documentMaxHeight,
             backgroundSize: 'cover',
-            transform: `rotate(${Math.random() * (2 - -2) + -2}deg)`
+            transform: `rotate(${this.page1Rotate}deg)`
         };
 
         let page2Style = {
             width: this.width,
             top: this.props.mainPageTop,
             height: Math.floor(this.surfaceHeight * this.ratio),
-            transform: `rotate(${Math.random() * (3 - -3) + -3}deg)`
+            transform: `rotate(${this.page2Rotate}deg)`
         };
 
         let pageStyle = {
