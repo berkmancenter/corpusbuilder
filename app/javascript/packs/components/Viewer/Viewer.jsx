@@ -281,7 +281,9 @@ export default class Viewer extends React.Component {
         };
 
         return (
-            <div ref={ this.reportElement.bind(this) } className="corpusbuilder-viewer" style={ viewerStyle }>
+            <div ref={ this.reportElement.bind(this) }
+                 className={ `corpusbuilder-viewer ${ this.editing ? 'corpusbuilder-viewer-editing' : '' }` }
+                 style={ viewerStyle }>
                 <MouseManager>
                     { content }
                 </MouseManager>

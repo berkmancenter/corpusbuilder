@@ -1,4 +1,11 @@
 .corpusbuilder {
+  &-viewer-editing {
+    .corpusbuilder-document-page {
+      box-shadow: none;
+      border: 2px dashed #ccc;
+    }
+  }
+
   &-document-page {
     font-family: Helvetica;
     color: transparent;
