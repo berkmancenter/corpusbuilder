@@ -87,7 +87,7 @@ export default class Highlight extends React.Component {
 
         let lines = this.lineCoords.map((lineCoords) => {
             let lineStyles = {
-                top: lineCoords.top,
+                top: lineCoords.top + this.props.mainPageTop,
                 left: lineCoords.left,
                 height: lineCoords.bottom - lineCoords.top,
                 width: lineCoords.right - lineCoords.left

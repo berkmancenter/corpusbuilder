@@ -229,6 +229,7 @@ export default class Viewer extends React.Component {
                     <DocumentPage document={ doc }
                                   page={ page }
                                   width={ width }
+                                  editing={ this.editing }
                                   mainPageTop={ mainPageTop }
                                   documentMaxHeight={ this.documentMaxHeight }
                                   showCertainties={ this.showCertainties }
@@ -237,6 +238,22 @@ export default class Viewer extends React.Component {
                                   >
                     </DocumentPage>
                   </div>
+                  <AnnotationEditor visible={ this.showAnnotationEditor }
+                                    document={ doc }
+                                    page={ page }
+                                    width={ width }
+                                    graphemes={ this.lastSelectedGraphemes }
+                                    mainPageTop={ mainPageTop }
+                                    onCloseRequested={ this.hideAnnotationEditor.bind(this) }
+                                    onSaveRequested={ this.saveAnnotation.bind(this) }
+                                    />
+                  <Annotations visible={ this.showAnnotations }
+                              document={ doc }
+                              branchName={ this.currentBranch }
+                              page={ page }
+                              width={ width }
+                              mainPageTop={ mainPageTop }
+                              />
                   { otherContent }
                 </div>
                 <div className="corpusbuilder-options bottom">
@@ -255,20 +272,6 @@ export default class Viewer extends React.Component {
                     { '#' }
                   </Button>
                 </PopupMenu>
-                <AnnotationEditor visible={ this.showAnnotationEditor }
-                                  document={ doc }
-                                  page={ page }
-                                  width={ width }
-                                  graphemes={ this.lastSelectedGraphemes }
-                                  onCloseRequested={ this.hideAnnotationEditor.bind(this) }
-                                  onSaveRequested={ this.saveAnnotation.bind(this) }
-                                  />
-                <Annotations visible={ this.showAnnotations }
-                             document={ doc }
-                             branchName={ this.currentBranch }
-                             page={ page }
-                             width={ width }
-                             />
               </div>
             );
         }

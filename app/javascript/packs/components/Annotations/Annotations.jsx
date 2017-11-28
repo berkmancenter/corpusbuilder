@@ -79,6 +79,7 @@ export default class Annotations extends React.Component {
                             <Highlight key={ `annotation-${index}` }
                                        graphemes={ this.annotationGraphemes(annotation.graphemeIds) }
                                        document={ this.props.document }
+                                       mainPageTop={ this.props.mainPageTop }
                                        page={ this.props.page }
                                        width={ this.props.width }
                                        content={ annotation.text }

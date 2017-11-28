@@ -98,6 +98,7 @@ export default class AnnotationEditor extends React.Component {
                        document={ this.props.document }
                        page={ this.props.page }
                        width={ this.props.width }
+                       mainPageTop={ this.props.mainPageTop }
                        />
           </OutsideClicksHandler>
         );
