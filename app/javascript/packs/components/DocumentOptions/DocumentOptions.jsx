@@ -44,7 +44,7 @@ export default class DocumentOptions extends React.Component {
                     <DropdownTrigger>
                         <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
                         &nbsp;
-                        Branch: <b>{ this.props.currentBranch }</b>
+                        <b>{ this.props.currentBranch }</b>
                     </DropdownTrigger>
                     <DropdownContent>
                         <ul>

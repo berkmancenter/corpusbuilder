@@ -118,6 +118,10 @@ export default class DocumentPage extends React.Component {
         return document.getElementById(this.rulerId);
     }
 
+    onLineClick(line, text, number, editing) {
+        return this.props.onLineClick(line, text, number, editing);
+    }
+
     onMeasureTextRequested(text, fontSize) {
         if(window._count === undefined) {
             window._count = 1;
@@ -217,7 +221,9 @@ export default class DocumentPage extends React.Component {
                                                line={ line }
                                                number={ index + 1 }
                                                ratio={ this.ratio }
+                                               editing={ this.props.editing }
                                                showCertainties={ this.showCertainties }
+                                               onClick={ this.onLineClick.bind(this) }
                                                onMeasureTextRequested={ this.onMeasureTextRequested.bind(this) }
                                                />
                       }

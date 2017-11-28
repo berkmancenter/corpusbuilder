@@ -325,6 +325,10 @@ export default class DocumentLine extends React.Component {
         return this.props.onMeasureTextRequested(text, this.fontSize);
     }
 
+    onClick() {
+        return this.props.onClick(this.props.line, this.text, this.props.number, this.props.editing);
+    }
+
     @computed
     get elementId() {
         return `corpusbuilder-document-line-${this.props.number}`;
@@ -346,10 +350,11 @@ export default class DocumentLine extends React.Component {
         }
 
         return (
-            <div className="corpusbuilder-document-line"
+            <div className={ `corpusbuilder-document-line ${ this.props.editing ? 'corpusbuilder-document-line-editing' : '' }` }
                  key={ this.text }
                  style={ dynamicStyles }
                  id={ this.elementId }
+                 onClick={ this.onClick.bind(this) }
                  >
                { this.text }
             </div>

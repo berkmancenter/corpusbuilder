@@ -16,6 +16,7 @@ import { Annotations } from '../Annotations'
 import { DocumentPage } from '../DocumentPage'
 import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
 import { DocumentOptions } from '../DocumentOptions'
+import { InlineEditor } from '../InlineEditor'
 import { Button } from '../Button';
 
 import s from './Viewer.scss'
@@ -46,6 +47,12 @@ export default class Viewer extends React.Component {
     lastSelectedGraphemes = null;
 
     @observable
+    editingLine = null;
+
+    @observable
+    editingText = null;
+
+    @observable
     showCertainties = false;
 
     @observable
@@ -53,6 +60,9 @@ export default class Viewer extends React.Component {
 
     @observable
     showAnnotationEditor = false;
+
+    @observable
+    showInlineEditor = false;
 
     @observable
     showAnnotations = false;
@@ -161,13 +171,29 @@ export default class Viewer extends React.Component {
         );
     }
 
+    saveLine(line) {
+      console.log("Requesting save on ", line);
+    }
+
     hideAnnotationEditor() {
         this.showAnnotationEditor = false;
+    }
+
+    hideInlineEditor() {
+        this.showInlineEditor = false;
     }
 
     editTags() {
         this.showPopup = false;
         this.showTagsEditor = true;
+    }
+
+    onLineClick(line, text, number, editing) {
+        if(editing) {
+            this.showInlineEditor = true;
+            this.editingLine = line;
+            this.editingText = text;
+        }
     }
 
     onSelected(graphemes) {
@@ -235,9 +261,18 @@ export default class Viewer extends React.Component {
                                   showCertainties={ this.showCertainties }
                                   showImage={ this.showImage }
                                   onSelected={ this.onSelected.bind(this) }
+                                  onLineClick={ this.onLineClick.bind(this) }
                                   >
                     </DocumentPage>
                   </div>
+                  <InlineEditor visible={ this.showInlineEditor }
+                                document={ doc }
+                                line={ this.editingLine }
+                                text={ this.editingText }
+                                mainPageTop={ mainPageTop }
+                                onCloseRequested={ this.hideInlineEditor.bind(this) }
+                                onSaveRequested={ this.saveLine.bind(this) }
+                                />
                   <AnnotationEditor visible={ this.showAnnotationEditor }
                                     document={ doc }
                                     page={ page }

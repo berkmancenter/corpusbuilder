@@ -4,4 +4,14 @@
     white-space: pre;
     unicode-bidi: plaintext;
   }
+
+  &-document-line-editing {
+    cursor: pointer;
+  }
+
+  &-document-line-editing:hover {
+    background-image: none !important;
+    background-color: rgba(167, 196, 229, 1.00);
+    height: auto !important;
+  }
 }
