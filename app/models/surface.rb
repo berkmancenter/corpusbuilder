@@ -13,7 +13,7 @@ class Surface < ApplicationRecord
     expose :number
     expose :area, with: Area::Tree
     expose :image_url do |surface, options|
-      surface.image.image_scan_url
+      surface.image.processed_image_url
     end
     expose :graphemes do |surface, options|
       _graphemes = if options.key? :revision_id

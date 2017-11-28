@@ -19,8 +19,8 @@ class Image < ApplicationRecord
     hocr.present?
   end
 
-  def image_scan_url
-    "#{base_url}#{image_scan.url(:web)}"
+  def processed_image_url
+    "#{base_url}#{processed_image.url(:web)}"
   end
 
   class Short < Grape::Entity
