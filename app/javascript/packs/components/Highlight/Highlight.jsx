@@ -39,7 +39,7 @@ export default class Highlight extends React.Component {
     get lineCoords() {
         let special = [ 0x202c, 0x200e, 0x200f ];
 
-        return this.lines.map((graphemes) => {
+        return this.lines.filter((gs) => { return gs.length > 0 }).map((graphemes) => {
             let concrete = graphemes.filter((grapheme) => {
                 return special.indexOf(grapheme.value.codePointAt(0)) === -1;
             });

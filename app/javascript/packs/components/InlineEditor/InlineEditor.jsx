@@ -3,15 +3,106 @@ import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
+import { Highlight } from '../Highlight';
 
 import styles from './InlineEditor.scss'
 
 export default class InlineEditor extends React.Component {
 
-    input = null;
+    @observable
+    rootElement = null;
 
     @observable
     editedText = "";
+
+    @computed
+    get line() {
+        return this.props.line;
+    }
+
+    @computed
+    get lineY() {
+        return this.line.reduce((min, grapheme) => {
+            return Math.min(min, grapheme.area.uly);
+        }, this.line[0].area.uly) * this.previewToSurfaceRatio;
+    }
+
+    @computed
+    get lineBottomY() {
+        return this.line.reduce((min, grapheme) => {
+            return Math.min(min, grapheme.area.lry);
+        }, this.line[0].area.lry) * this.previewToSurfaceRatio;
+    }
+
+    @computed
+    get previewImageWidth() {
+        return this.image.naturalWidth;
+    }
+
+    @computed
+    get lineHeight() {
+        return this.lineBottomY - this.lineY;
+    }
+
+    @computed
+    get previewToSurfaceRatio() {
+        let surface = this.props.document.surfaces[0];
+
+        return this.previewImageWidth / (surface.area.lrx - surface.area.ulx);
+    }
+
+    @computed
+    get scaledLineHeight() {
+        let ratio = this.input.offsetWidth / this.image.naturalWidth;
+
+        return this.lineHeight * ratio;
+    }
+
+    @computed
+    get dir() {
+        return this.props.text.codePointAt(0) === 0x200f ? "rtl" : "ltr";
+    }
+
+    @computed
+    get pageImageUrl() {
+        return this.props.document.surfaces[0].image_url;
+    }
+
+    @computed
+    get canvas() {
+        if(this.rootElement === null) {
+            return null;
+        }
+        else {
+            return this.rootElement.getElementsByClassName('corpusbuilder-inline-editor-preview')[0];
+        }
+    }
+
+    @computed
+    get image() {
+        if(this.rootElement === null) {
+            return null;
+        }
+        else {
+            return this.rootElement.getElementsByClassName('corpusbuilder-inline-editor-preview-source')[0];
+        }
+    }
+
+    @computed
+    get input() {
+        if(this.rootElement === null) {
+            return null;
+        }
+        else {
+            return this.rootElement.getElementsByClassName('corpusbuilder-inline-editor-input')[0];
+        }
+    }
+
+    captureRoot(div) {
+        this.rootElement = div;
+
+        this.renderPreview();
+    }
 
     onTextChanged(e) {
         this.editedText = e.target.value;
@@ -53,36 +144,61 @@ export default class InlineEditor extends React.Component {
         this.editedText = this.props.text;
     }
 
+    renderPreview() {
+        if(this.canvas !== null) {
+            let context = this.canvas.getContext('2d');
+
+            this.canvas.width = this.input.offsetWidth;
+            this.canvas.height = this.scaledLineHeight * 2;
+
+            context.drawImage(
+                this.image,
+                0,
+                this.lineY - (this.lineHeight / 2),
+                this.previewImageWidth,
+                this.lineHeight * 2,
+                0,
+                0,
+                this.canvas.width,
+                this.scaledLineHeight * 2
+            );
+        }
+    }
+
     render() {
         if(this.props.visible) {
-            let previewStyles = {
-                height: 30,
-                width: '100%',
-                backgroundImage: 'url(http://46.shariasource.berkman.temphost.net:7946/uploads/web_dewarped-bf6942db-336f-417c-b590-c24731f21519)',
-                backgroundSize: 'cover',
-                backgroundPositionY: -25
-            };
-
             return (
-              <FloatingWindow visible={ this.props.visible }
-                              offsetTop={ 20 }
-                              onCloseRequested={ this.onCloseRequested.bind(this) }
-                              >
-                    <div className="corpusbuilder-inline-editor-preview"
-                         style={ previewStyles }
-                         />
-                    <input onChange={ this.onTextChanged.bind(this) }
-                           onKeyUp={ this.onEditorKeyUp.bind(this) }
-                           value={ this.editedText }
-                           ref={ (input) => this.input = input  }
-                           />
-                    <Button onClick={ this.resetText.bind(this) }>
-                      Reset
-                    </Button>
-                    <Button onClick={ this.requestSave.bind(this) }>
-                      Save
-                    </Button>
-              </FloatingWindow>
+                <div ref={ this.captureRoot.bind(this) }>
+                  <FloatingWindow visible={ this.props.visible }
+                                  offsetTop={ 20 }
+                                  onCloseRequested={ this.onCloseRequested.bind(this) }
+                                  >
+                        <img className="corpusbuilder-inline-editor-preview-source"
+                             src={ this.pageImageUrl }
+                             />
+                        <canvas className="corpusbuilder-inline-editor-preview" />
+                        <input onChange={ this.onTextChanged.bind(this) }
+                               onKeyUp={ this.onEditorKeyUp.bind(this) }
+                               value={ this.editedText }
+                               dir={ this.dir }
+                               className="corpusbuilder-inline-editor-input"
+                               />
+                        <div className="corpusbuilder-inline-editor-buttons">
+                            <Button onClick={ this.resetText.bind(this) }>
+                              Reset
+                            </Button>
+                            <Button onClick={ this.requestSave.bind(this) }>
+                              Save
+                            </Button>
+                        </div>
+                  </FloatingWindow>
+                  <Highlight graphemes={ this.props.line }
+                             document={ this.props.document }
+                             page={ this.props.page }
+                             width={ this.props.width }
+                             mainPageTop={ this.props.mainPageTop }
+                             />
+                </div>
             );
         }
         else {

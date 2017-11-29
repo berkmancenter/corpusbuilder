@@ -269,6 +269,8 @@ export default class Viewer extends React.Component {
                                 document={ doc }
                                 line={ this.editingLine }
                                 text={ this.editingText }
+                                page={ page }
+                                width={ width }
                                 mainPageTop={ mainPageTop }
                                 onCloseRequested={ this.hideInlineEditor.bind(this) }
                                 onSaveRequested={ this.saveLine.bind(this) }

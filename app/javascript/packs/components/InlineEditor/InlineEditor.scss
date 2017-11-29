@@ -1,0 +1,15 @@
+.corpusbuilder {
+  &-inline-editor {
+    &-buttons {
+      margin-top: 10px;
+      float: right;
+    }
+
+    &-preview {
+      &-source {
+        display: none;
+      }
+
+    }
+  }
+}
