@@ -7,6 +7,7 @@ import { Highlight } from '../Highlight';
 
 import styles from './InlineEditor.scss'
 
+@observer
 export default class InlineEditor extends React.Component {
 
     @observable
@@ -125,7 +126,9 @@ export default class InlineEditor extends React.Component {
     }
 
     componentWillUpdate(props) {
-        this.editedText = props.text;
+        if(this.props.visible !== props.visible) {
+            this.editedText = props.text;
+        }
     }
 
     requestClose() {

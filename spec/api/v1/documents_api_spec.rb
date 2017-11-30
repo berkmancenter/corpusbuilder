@@ -582,6 +582,41 @@ describe V1::DocumentsAPI, type: :request do
       let(:grapheme2) { master_graphemes.drop(1).first }
       let(:grapheme3) { master_graphemes.drop(2).first }
 
+      context "giving the edit_spec of grapheme ids along with the line text" do
+        let(:minimal_valid_params) do
+          {
+            edit_spec: {
+              grapheme_ids: graphemes.map(&:id),
+              text: 'a test'
+            }.to_json
+          }
+        end
+
+        let(:valid_request) do
+          master_branch
+          development_branch
+          surfaces
+          graphemes
+
+          put url(document.id),
+            headers: headers,
+            params: minimal_valid_params
+        end
+
+        it "calls the Documents::CompileCorrections" do
+          expect(Documents::CompileCorrections).to receive(:run!).with(grapheme_ids: graphemes.map(&:id), text: 'a test').and_call_original
+          expect_any_instance_of(Documents::CompileCorrections).to receive(:execute).and_call_original
+
+          valid_request
+        end
+
+        it "calls Documents::Correct correctly" do
+          expect_any_instance_of(Documents::Correct).to receive(:execute).and_call_original
+
+          valid_request
+        end
+      end
+
       context "pointing at existing graphemes" do
         let(:given_graphemes) do
           [

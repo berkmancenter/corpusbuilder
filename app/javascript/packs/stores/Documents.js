@@ -97,4 +97,8 @@ export default class Documents {
 
         return documentRevisions.get(branchName)
     }
+
+    correct(doc, line, text) {
+        console.log(text);
+    }
 }

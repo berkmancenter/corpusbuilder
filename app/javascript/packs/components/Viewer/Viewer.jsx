@@ -171,8 +171,8 @@ export default class Viewer extends React.Component {
         );
     }
 
-    saveLine(line) {
-      console.log("Requesting save on ", line);
+    saveLine(doc, line, editedText) {
+      this.documents.correct(doc, line, editedText);
     }
 
     hideAnnotationEditor() {

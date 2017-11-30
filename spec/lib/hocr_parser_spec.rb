@@ -54,7 +54,7 @@ describe HocrParser do
       end
 
       it "contains proper number of pop-directionality graphemes" do
-        expect(graphemes.select { |el| el.value == 0x200c.chr }.count).to eq(zones.count - 1)
+        expect(graphemes.select { |el| el.value == 0x202c.chr }.count).to eq(zones.count - 1)
       end
 
       it "contains proper number of rtl-directionality graphemes" do

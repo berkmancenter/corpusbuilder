@@ -170,7 +170,11 @@ class V1::DocumentsAPI < Grape::API
 
       desc 'Adds corrections on a given revision'
       params do
-        requires :graphemes, type: Array do
+        optional :edit_spec, type: JSON do
+          requires :grapheme_ids, type: Array
+          requires :text, type: String
+        end
+        optional :graphemes, type: Array do
           optional :id, type: String
           optional :value, type: String
           optional :surface_number, type: Integer
@@ -187,9 +191,20 @@ class V1::DocumentsAPI < Grape::API
       put ':revision/tree' do
         infer_revision!
 
+        graphemes = if params.has_key?(:graphemes)
+                      params[:graphemes]
+                    else
+                      return error!("Either graphemes or edit_spec must be specified") if !params.has_key?(:edit_spec)
+
+                      Documents::CompileCorrections.run!(
+                        grapheme_ids: params[:edit_spec][:grapheme_ids],
+                        text: params[:edit_spec][:text]
+                      ).result
+                    end
+
         action! Documents::Correct, @revision_options.merge(
           document: @document,
-          graphemes: params[:graphemes]
+          graphemes: graphemes
         )
       end
 
