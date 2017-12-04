@@ -4,6 +4,7 @@ import { inject, observer } from 'mobx-react'
 import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
 import { Highlight } from '../Highlight';
+import { BoxesEditor } from '../BoxesEditor';
 
 import styles from './InlineEditor.scss'
 
@@ -109,6 +110,10 @@ export default class InlineEditor extends React.Component {
         this.editedText = e.target.value;
     }
 
+    onBoxesUpdated(e) {
+      console.log("Boxes updated!");
+    }
+
     onEditorKeyUp(e) {
         if(e.ctrlKey && e.keyCode == 13) {
         }
@@ -176,10 +181,16 @@ export default class InlineEditor extends React.Component {
                                   offsetTop={ 20 }
                                   onCloseRequested={ this.onCloseRequested.bind(this) }
                                   >
-                        <img className="corpusbuilder-inline-editor-preview-source"
-                             src={ this.pageImageUrl }
-                             />
-                        <canvas className="corpusbuilder-inline-editor-preview" />
+                        <div className="corpusbuilder-inline-editor-preview-wrapper">
+                            <img className="corpusbuilder-inline-editor-preview-source"
+                                src={ this.pageImageUrl }
+                                />
+                            <canvas className="corpusbuilder-inline-editor-preview" />
+                            <BoxesEditor line={ this.props.line }
+                                         document={ this.props.document }
+                                         onBoxesUpdated={ this.onBoxesUpdated.bind(this) }
+                                         />
+                        </div>
                         <input onChange={ this.onTextChanged.bind(this) }
                                onKeyUp={ this.onEditorKeyUp.bind(this) }
                                value={ this.editedText }

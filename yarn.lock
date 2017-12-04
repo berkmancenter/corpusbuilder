@@ -2512,6 +2512,10 @@ ini@~1.3.0:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.4.tgz#0537cb79daf59b59a1a517dff706c86ec039162e"
 
+interactjs@^1.2.9:
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/interactjs/-/interactjs-1.2.9.tgz#ae5a3e5bc4b174b7fe2a432df9ef4ef9cbacbdb6"
+
 internal-ip@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/internal-ip/-/internal-ip-1.2.0.tgz#ae9fbf93b984878785d50a8de1b356956058cf5c"

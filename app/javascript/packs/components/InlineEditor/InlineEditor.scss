@@ -6,6 +6,10 @@
     }
 
     &-preview {
+      &-wrapper {
+        position: relative;
+      }
+
       &-source {
         display: none;
       }
