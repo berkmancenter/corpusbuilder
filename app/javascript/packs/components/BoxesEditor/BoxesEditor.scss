@@ -7,16 +7,9 @@
       position: absolute;
 
       &-item {
-        transform: translate(100px, 10px);
         background: rgba(0, 0, 255, 0.2);
         border: 2px solid rgba(0, 0, 255, 0.2);
-        height: 10px;
-        width: 25px;
-
-        &-move-handle {
-          cursor: move;
-          height: 100%;
-        }
+        cursor: 'auto';
       }
     }
 }

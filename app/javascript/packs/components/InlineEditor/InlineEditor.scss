@@ -13,7 +13,10 @@
       &-source {
         display: none;
       }
+    }
 
+    &-canvas-area {
+      position: relative;
     }
   }
 }

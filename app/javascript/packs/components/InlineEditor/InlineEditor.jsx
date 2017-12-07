@@ -81,6 +81,16 @@ export default class InlineEditor extends React.Component {
     }
 
     @computed
+    get canvasArea() {
+        if(this.rootElement === null) {
+            return null;
+        }
+        else {
+            return this.rootElement.getElementsByClassName('corpusbuilder-inline-editor-canvas-area')[0];
+        }
+    }
+
+    @computed
     get image() {
         if(this.rootElement === null) {
             return null;
@@ -110,8 +120,8 @@ export default class InlineEditor extends React.Component {
         this.editedText = e.target.value;
     }
 
-    onBoxesUpdated(e) {
-      console.log("Boxes updated!");
+    onBoxChanged(box) {
+      console.log("Box updated to: ", box);
     }
 
     onEditorKeyUp(e) {
@@ -158,6 +168,7 @@ export default class InlineEditor extends React.Component {
 
             this.canvas.width = this.input.offsetWidth;
             this.canvas.height = this.scaledLineHeight * 2;
+            this.canvasArea.style.height = `${this.scaledLineHeight * 2}px`;
 
             context.drawImage(
                 this.image,
@@ -185,11 +196,13 @@ export default class InlineEditor extends React.Component {
                             <img className="corpusbuilder-inline-editor-preview-source"
                                 src={ this.pageImageUrl }
                                 />
-                            <canvas className="corpusbuilder-inline-editor-preview" />
-                            <BoxesEditor line={ this.props.line }
-                                         document={ this.props.document }
-                                         onBoxesUpdated={ this.onBoxesUpdated.bind(this) }
-                                         />
+                            <div className="corpusbuilder-inline-editor-canvas-area">
+                                <canvas className="corpusbuilder-inline-editor-preview" />
+                                <BoxesEditor line={ this.props.line }
+                                             document={ this.props.document }
+                                             onBoxChanged={ this.onBoxChanged.bind(this) }
+                                             />
+                            </div>
                         </div>
                         <input onChange={ this.onTextChanged.bind(this) }
                                onKeyUp={ this.onEditorKeyUp.bind(this) }
