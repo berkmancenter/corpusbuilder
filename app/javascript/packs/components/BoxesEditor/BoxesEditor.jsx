@@ -32,6 +32,12 @@ export default class BoxesEditor extends React.Component {
           .on('resizeend', this.onBoxEdited.bind(this));
     }
 
+    componentWillUpdate(props) {
+        if(!props.visible) {
+            this.rootElement = null;
+        }
+    }
+
     scaleBoxDown(box) {
         return {
             ulx: box.ulx * this.ratio,
@@ -48,7 +54,7 @@ export default class BoxesEditor extends React.Component {
     }
 
     setRoot(div) {
-        if(this.rootElement === null) {
+        if(this.rootElement === null && div !== null) {
             this.rootElement = div;
         }
     }
@@ -186,12 +192,16 @@ export default class BoxesEditor extends React.Component {
     }
 
     render() {
-        return (
-            <div className="corpusbuilder-boxes-editor"
-                 ref={ this.setRoot.bind(this) }
-                 >
-                { this.renderBoxes() }
-            </div>
-        );
+        if(this.props.visible) {
+            return (
+                <div className="corpusbuilder-boxes-editor"
+                    ref={ this.setRoot.bind(this) }
+                    >
+                    { this.renderBoxes() }
+                </div>
+            );
+        }
+
+        return null;
     }
 }

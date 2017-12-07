@@ -16,6 +16,9 @@ export default class InlineEditor extends React.Component {
     @observable
     editedText = "";
 
+    @observable
+    showBoxes = false;
+
     @computed
     get line() {
         return this.props.line;
@@ -164,6 +167,10 @@ export default class InlineEditor extends React.Component {
         this.editedText = this.props.text;
     }
 
+    onToggleBoxes(show) {
+        this.showBoxes = show;
+    }
+
     renderPreview() {
         if(this.canvas !== null) {
             let context = this.canvas.getContext('2d');
@@ -201,6 +208,7 @@ export default class InlineEditor extends React.Component {
                             <div className="corpusbuilder-inline-editor-canvas-area">
                                 <canvas className="corpusbuilder-inline-editor-preview" />
                                 <BoxesEditor line={ this.props.line }
+                                             visible={ this.showBoxes }
                                              document={ this.props.document }
                                              onBoxChanged={ this.onBoxChanged.bind(this) }
                                              />
@@ -213,6 +221,9 @@ export default class InlineEditor extends React.Component {
                                className="corpusbuilder-inline-editor-input"
                                />
                         <div className="corpusbuilder-inline-editor-buttons">
+                            <Button onToggle={ this.onToggleBoxes.bind(this) } toggles={ true }>
+                              Boxes
+                            </Button>
                             <Button onClick={ this.resetText.bind(this) }>
                               Reset
                             </Button>
