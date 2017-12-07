@@ -11,7 +11,6 @@ import styles from './InlineEditor.scss'
 @observer
 export default class InlineEditor extends React.Component {
 
-    @observable
     rootElement = null;
 
     @observable
@@ -70,7 +69,6 @@ export default class InlineEditor extends React.Component {
         return this.props.document.surfaces[0].image_url;
     }
 
-    @computed
     get canvas() {
         if(this.rootElement === null) {
             return null;
@@ -80,7 +78,6 @@ export default class InlineEditor extends React.Component {
         }
     }
 
-    @computed
     get canvasArea() {
         if(this.rootElement === null) {
             return null;
@@ -90,7 +87,6 @@ export default class InlineEditor extends React.Component {
         }
     }
 
-    @computed
     get image() {
         if(this.rootElement === null) {
             return null;
@@ -100,7 +96,6 @@ export default class InlineEditor extends React.Component {
         }
     }
 
-    @computed
     get input() {
         if(this.rootElement === null) {
             return null;
@@ -111,9 +106,13 @@ export default class InlineEditor extends React.Component {
     }
 
     captureRoot(div) {
-        this.rootElement = div;
+        if(this.rootElement === null) {
+            this.rootElement = div;
 
-        this.renderPreview();
+            setTimeout(() => {
+                this.renderPreview();
+            });
+        }
     }
 
     onTextChanged(e) {
@@ -143,6 +142,9 @@ export default class InlineEditor extends React.Component {
     componentWillUpdate(props) {
         if(this.props.visible !== props.visible) {
             this.editedText = props.text;
+        }
+        else {
+            this.rootElement = null;
         }
     }
 

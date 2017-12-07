@@ -1,45 +1,13 @@
 import React from 'react';
 import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
+import GraphemesUtils from '../../lib/GraphemesUtils';
 import { interact } from 'interactjs';
 
 import styles from './BoxesEditor.scss';
 
 @observer
 export default class BoxesEditor extends React.Component {
-
-    @observable
-    boxes = [
-      { ulx: 10, uly: 2, lrx: 30, lry: 22 }
-    ];
-
-    @observable
-    rootElement = null;
-
-    @computed
-    get surface() {
-        return this.props.document.surfaces[0];
-    }
-
-    @computed
-    get surfaceWidth() {
-        return this.surface.area.lrx - this.surface.area.ulx;
-    }
-
-    @computed
-    get editorWidth() {
-        if(this.rootElement !== null && this.rootElement !== undefined) {
-            return this.rootElement.offsetWidth;
-        }
-        else {
-            return 1;
-        }
-    }
-
-    @computed
-    get ratio() {
-        return this.editorWidth / this.surfaceWidth;
-    }
 
     componentDidMount() {
         interact('.corpusbuilder-boxes-editor-item')
@@ -62,6 +30,74 @@ export default class BoxesEditor extends React.Component {
           .on('resizemove', this.onBoxMove.bind(this))
           .on('dragend', this.onBoxEdited.bind(this))
           .on('resizeend', this.onBoxEdited.bind(this));
+    }
+
+    scaleBoxDown(box) {
+        return {
+            ulx: box.ulx * this.ratio,
+            uly: box.uly * this.ratio,
+            lrx: box.lrx * this.ratio,
+            lry: box.lry * this.ratio
+        };
+    }
+
+    @computed
+    get boxes() {
+        return GraphemesUtils.wordBoxes(this.props.line)
+                             .map(this.scaleBoxDown.bind(this));
+    }
+
+    setRoot(div) {
+        if(this.rootElement === null) {
+            this.rootElement = div;
+        }
+    }
+
+    @observable
+    rootElement = null;
+
+    @computed
+    get surfaceWidth() {
+        return this.surface.area.lrx - this.surface.area.ulx;
+    }
+
+    @computed
+    get surface() {
+        return this.props.document.surfaces[0];
+    }
+
+    @computed
+    get editorWidth() {
+        if(this.rootElement !== null && this.rootElement !== undefined) {
+            return this.rootElement.offsetWidth;
+        }
+        else {
+            return 1;
+        }
+    }
+
+    @computed
+    get ratio() {
+        return this.editorWidth / this.surfaceWidth;
+    }
+
+    @computed
+    get origLineY() {
+        return this.props.line.reduce((min, grapheme) => {
+            return Math.min(min, grapheme.area.uly);
+        }, this.props.line[0].area.uly);
+    }
+
+    @computed
+    get origLineBottomY() {
+        return this.props.line.reduce((min, grapheme) => {
+            return Math.min(min, grapheme.area.lry);
+        }, this.props.line[0].area.lry);
+    }
+
+    @computed
+    get origLineHeight() {
+        return this.origLineBottomY - this.origLineY;
     }
 
     onBoxMove(event) {
@@ -120,11 +156,19 @@ export default class BoxesEditor extends React.Component {
         }
     }
 
+    translatedUly(box) {
+        return (
+          this.translateBox(box).uly - this.origLineY + this.origLineHeight * 0.5
+        ) * this.ratio;
+    }
+
     renderBoxes() {
         return this.boxes.map(
           (box, index) => {
+              let translatedUly = this.translatedUly(box);
+
               let boxStyles = {
-                  transform: `translate(${ box.ulx }px, ${ box.uly }px)`,
+                  transform: `translate(${ box.ulx }px, ${ translatedUly }px)`,
                   width: (box.lrx - box.ulx),
                   height: (box.lry - box.uly)
               };
@@ -144,7 +188,7 @@ export default class BoxesEditor extends React.Component {
     render() {
         return (
             <div className="corpusbuilder-boxes-editor"
-                 ref={ (div) => { this.rootElement = div } }
+                 ref={ this.setRoot.bind(this) }
                  >
                 { this.renderBoxes() }
             </div>

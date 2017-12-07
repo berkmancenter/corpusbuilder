@@ -160,6 +160,8 @@
   "fontawesome-webfont.ttf": "/packs/fontawesome-webfont.ttf",
   "fontawesome-webfont.woff": "/packs/fontawesome-webfont.woff",
   "fontawesome-webfont.woff2": "/packs/fontawesome-webfont.woff2",
+  "lib/GraphemesUtils.js": "/packs/lib/GraphemesUtils.js",
+  "lib/GraphemesUtils.js.map": "/packs/lib/GraphemesUtils.js.map",
   "lib/ImageUtils.js": "/packs/lib/ImageUtils.js",
   "lib/ImageUtils.js.map": "/packs/lib/ImageUtils.js.map",
   "lib/MathUtils.js": "/packs/lib/MathUtils.js",
