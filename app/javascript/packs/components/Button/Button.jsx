@@ -5,8 +5,17 @@ import styles from './Button.scss';
 
 export default class Button extends React.Component {
 
+    @observable
+    visible = true;
+
     componentWillMount() {
         this.toggled = this.props.toggled || false;
+        this.visible = this.props.visible === undefined ? true : this.props.visible;
+    }
+
+    componentWillUpdate(props) {
+        this.toggled = props.toggled || false;
+        this.visible = props.visible === undefined ? true : props.visible;
     }
 
     @computed
@@ -32,10 +41,14 @@ export default class Button extends React.Component {
     }
 
     render() {
-        return (
-            <button className={ `corpusbuilder-button ${ this.toggles && this.toggled ? 'corpusbuilder-button-toggled' : '' }` } onClick={ this.onClick.bind(this) }>
-                { this.props.children }
-            </button>
-        );
+        if(this.visible) {
+            return (
+                <button className={ `corpusbuilder-button ${ this.toggles && this.toggled ? 'corpusbuilder-button-toggled' : '' }` } onClick={ this.onClick.bind(this) }>
+                    { this.props.children }
+                </button>
+            );
+        }
+
+        return null;
     }
 }

@@ -14,6 +14,9 @@ export default class BoxesEditor extends React.Component {
     @observable
     newBox = null;
 
+    @observable
+    boxSelected = null;
+
     componentDidMount() {
         this.inferBoxes();
 
@@ -50,7 +53,7 @@ export default class BoxesEditor extends React.Component {
             this.boxes = [];
         }
         else {
-            if(this.boxes.length === 0) {
+            if(this.boxes.length === 0 || this.boxes.length !== this.props.boxes.length) {
                 this.inferBoxes();
             }
         }
@@ -74,6 +77,19 @@ export default class BoxesEditor extends React.Component {
         }
         else {
             this.boxes = this.props.boxes.map(this.scaleBoxDown.bind(this));
+
+            if(this.boxSelected !== null) {
+                let found = this.boxes.filter((b) => {
+                    return b.ulx !== this.boxSelected.ulx &&
+                          b.uly !== this.boxSelected.uly &&
+                          b.lrx !== this.boxSelected.lrx &&
+                          b.lry !== this.boxSelected.lry;
+                });
+
+                if(found === null || found === undefined) {
+                    this.boxSelected = null;
+                }
+            }
         }
     }
 
@@ -175,10 +191,34 @@ export default class BoxesEditor extends React.Component {
         this.broadcastBoxes();
     }
 
+    onBoxClick(event) {
+        if(event.ctrlKey || event.metaKey) {
+            let target = event.target;
+            let boxIndex = target.getAttribute('data-index');
+            let box = this.boxes[boxIndex];
+
+            if(this.boxSelected !== box) {
+                this.boxSelected = box;
+                this.props.onBoxSelectionChanged(
+                  this.translateBox(box)
+                );
+            }
+            else {
+                this.boxSelected = null;
+                this.props.onBoxSelectionChanged(null);
+            }
+        }
+    }
+
     onBoxMouseMove(event) {
         let target = event.target;
 
-        target.style.cursor = document.documentElement.style.cursor;
+        if(event.buttons === 0 && (event.ctrlKey || event.metaKey)) {
+            target.style.cursor = 'pointer';
+        }
+        else {
+            target.style.cursor = document.documentElement.style.cursor;
+        }
 
         event.stopPropagation();
     }
@@ -202,6 +242,12 @@ export default class BoxesEditor extends React.Component {
             if(this.newBox !== null) {
                 this.endDraw();
             }
+        }
+    }
+
+    onEditorMouseUp(event) {
+        if(this.newBox !== null) {
+            this.endDraw();
         }
     }
 
@@ -229,8 +275,11 @@ export default class BoxesEditor extends React.Component {
     }
 
     endDraw() {
-        this.boxes.push(this.newBox);
-        this.newBox = null;
+        if(this.newBox !== null) {
+            this.boxes.push(this.newBox);
+            this.newBox = null;
+            this.broadcastBoxes();
+        }
     }
 
     broadcastBoxes() {
@@ -268,10 +317,11 @@ export default class BoxesEditor extends React.Component {
                   height: (box.lry - box.uly)
               };
 
-              return <div className="corpusbuilder-boxes-editor-item"
+              return <div className={ `corpusbuilder-boxes-editor-item ${ box === this.boxSelected ? 'corpusbuilder-boxes-editor-item-selected' : '' }` }
                    data-index={ index }
                    key={ index }
                    style={ boxStyles }
+                   onClick={ this.onBoxClick.bind(this) }
                    onMouseMove={ this.onBoxMouseMove.bind(this) }
                    >
                   &nbsp;
@@ -286,6 +336,7 @@ export default class BoxesEditor extends React.Component {
                 <div className="corpusbuilder-boxes-editor"
                     ref={ this.setRoot.bind(this) }
                     onMouseMove={ this.onEditorMouseMove.bind(this) }
+                    onMouseUp={ this.onEditorMouseUp.bind(this) }
                     >
                     { this.renderBoxes() }
                 </div>
