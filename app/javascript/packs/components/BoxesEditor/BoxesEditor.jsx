@@ -196,8 +196,6 @@ export default class BoxesEditor extends React.Component {
             let x = event.clientX - rect.x;
             let y = event.clientY - rect.y;
 
-            console.log("Drawing at", x, y);
-
             this.draw(x, y);
         }
         else {

@@ -27,6 +27,16 @@ export default class InlineEditor extends React.Component {
     }
 
     @computed
+    get specialKeyName() {
+        if ( navigator.appVersion.indexOf("Mac") !== -1) {
+            return 'Meta';
+        }
+        else {
+            return 'Ctrl';
+        }
+    }
+
+    @computed
     get lineY() {
         return this.line.reduce((min, grapheme) => {
             return Math.min(min, grapheme.area.uly);
@@ -199,6 +209,12 @@ export default class InlineEditor extends React.Component {
 
     render() {
         if(this.props.visible) {
+            let boxesHelp = null;
+            if(this.showBoxes) {
+                boxesHelp = <div className="corpusbuilder-inline-editor-help">
+                  Hold { this.specialKeyName } to start drawing
+                </div>
+            }
             return (
                 <div ref={ this.captureRoot.bind(this) }>
                   <FloatingWindow visible={ this.props.visible }
@@ -225,6 +241,9 @@ export default class InlineEditor extends React.Component {
                                dir={ this.dir }
                                className="corpusbuilder-inline-editor-input"
                                />
+                        {
+                            boxesHelp
+                        }
                         <div className="corpusbuilder-inline-editor-buttons">
                             <Button onToggle={ this.onToggleBoxes.bind(this) }
                               toggles={ true }

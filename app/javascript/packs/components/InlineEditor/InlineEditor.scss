@@ -18,5 +18,17 @@
     &-canvas-area {
       position: relative;
     }
+
+    &-help {
+      font-size: 12px;
+      float: left;
+      margin-right: 5px;
+      margin-top: 14px;
+      padding: 2px;
+      border-radius: 2px;
+      background-color: #bbb;
+      color: white;
+      font-weight: normal;
+    }
   }
 }
