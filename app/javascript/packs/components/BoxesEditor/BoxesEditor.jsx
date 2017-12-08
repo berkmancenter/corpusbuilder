@@ -11,6 +11,9 @@ export default class BoxesEditor extends React.Component {
 
     interactable = null;
 
+    @observable
+    newBox = null;
+
     componentDidMount() {
         this.inferBoxes();
 
@@ -76,6 +79,16 @@ export default class BoxesEditor extends React.Component {
 
     @observable
     boxes = [ ];
+
+    @computed
+    get allBoxes() {
+        if(this.newBox !== null) {
+            return this.boxes.concat([ this.newBox ]);
+        }
+        else {
+            return this.boxes;
+        }
+    }
 
     setRoot(div) {
         if(this.rootElement === null && div !== null) {
@@ -162,10 +175,64 @@ export default class BoxesEditor extends React.Component {
         this.broadcastBoxes();
     }
 
-    onMouseMove(event) {
+    onBoxMouseMove(event) {
         let target = event.target;
 
         target.style.cursor = document.documentElement.style.cursor;
+
+        event.stopPropagation();
+    }
+
+    onEditorMouseMove(event) {
+        if(event.ctrlKey || event.metaKey) {
+            event.target.style.cursor = 'crosshair';
+        }
+        else {
+            event.target.style.cursor = 'auto';
+        }
+
+        if(event.buttons === 1 && (event.ctrlKey || event.metaKey)) {
+            let rect = event.target.getBoundingClientRect();
+            let x = event.clientX - rect.x;
+            let y = event.clientY - rect.y;
+
+            console.log("Drawing at", x, y);
+
+            this.draw(x, y);
+        }
+        else {
+            if(this.newBox !== null) {
+                this.endDraw();
+            }
+        }
+    }
+
+    draw(x, y) {
+        let adjustedY = (this.origLineY - this.origLineHeight * 0.5) * this.ratio + y;
+
+        if(this.newBox === null) {
+            this.newBox = { ulx: x, uly: adjustedY, lrx: x, lry: adjustedY, startX: x, startY: adjustedY };
+        }
+        else {
+            if(x < this.newBox.startX) {
+                this.newBox.ulx = x;
+            }
+            else {
+                this.newBox.lrx = x;
+            }
+
+            if(adjustedY < this.newBox.startY) {
+                this.newBox.uly = adjustedY;
+            }
+            else {
+                this.newBox.lry = adjustedY;
+            }
+        }
+    }
+
+    endDraw() {
+        this.boxes.push(this.newBox);
+        this.newBox = null;
     }
 
     broadcastBoxes() {
@@ -192,12 +259,13 @@ export default class BoxesEditor extends React.Component {
     }
 
     renderBoxes() {
-        return this.boxes.map(
+        return this.allBoxes.map(
           (box, index) => {
               let translatedUly = this.translatedUly(box);
 
               let boxStyles = {
-                  transform: `translate(${ box.ulx }px, ${ translatedUly }px)`,
+                  top: translatedUly,
+                  left: box.ulx,
                   width: (box.lrx - box.ulx),
                   height: (box.lry - box.uly)
               };
@@ -206,7 +274,7 @@ export default class BoxesEditor extends React.Component {
                    data-index={ index }
                    key={ index }
                    style={ boxStyles }
-                   onMouseMove={ this.onMouseMove.bind(this) }
+                   onMouseMove={ this.onBoxMouseMove.bind(this) }
                    >
                   &nbsp;
               </div>
@@ -219,6 +287,7 @@ export default class BoxesEditor extends React.Component {
             return (
                 <div className="corpusbuilder-boxes-editor"
                     ref={ this.setRoot.bind(this) }
+                    onMouseMove={ this.onEditorMouseMove.bind(this) }
                     >
                     { this.renderBoxes() }
                 </div>
