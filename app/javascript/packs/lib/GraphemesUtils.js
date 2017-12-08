@@ -25,7 +25,8 @@ export default class GraphemesUtils {
             ulx: minUlx,
             uly: minUly,
             lrx: maxLrx,
-            lry: maxLry
+            lry: maxLry,
+            graphemes: word
         }
     }
 

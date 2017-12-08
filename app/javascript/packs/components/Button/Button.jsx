@@ -5,6 +5,10 @@ import styles from './Button.scss';
 
 export default class Button extends React.Component {
 
+    componentWillMount() {
+        this.toggled = this.props.toggled || false;
+    }
+
     @computed
     get toggles() {
         return this.props.toggles;

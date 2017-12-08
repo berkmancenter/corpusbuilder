@@ -19,6 +19,8 @@ export default class InlineEditor extends React.Component {
     @observable
     showBoxes = false;
 
+    boxes = [ ];
+
     @computed
     get line() {
         return this.props.line;
@@ -122,8 +124,8 @@ export default class InlineEditor extends React.Component {
         this.editedText = e.target.value;
     }
 
-    onBoxChanged(box) {
-      console.log("Box updated to: ", box);
+    onBoxesReported(boxes) {
+        this.boxes = boxes;
     }
 
     onEditorKeyUp(e) {
@@ -146,8 +148,10 @@ export default class InlineEditor extends React.Component {
         if(this.props.visible !== props.visible) {
             this.editedText = props.text;
         }
-        else {
+
+        if(this.props.visible === false) {
             this.rootElement = null;
+            this.boxes =  [];
         }
     }
 
@@ -210,7 +214,8 @@ export default class InlineEditor extends React.Component {
                                 <BoxesEditor line={ this.props.line }
                                              visible={ this.showBoxes }
                                              document={ this.props.document }
-                                             onBoxChanged={ this.onBoxChanged.bind(this) }
+                                             boxes={ this.boxes }
+                                             onBoxesReported={ this.onBoxesReported.bind(this) }
                                              />
                             </div>
                         </div>
@@ -221,7 +226,10 @@ export default class InlineEditor extends React.Component {
                                className="corpusbuilder-inline-editor-input"
                                />
                         <div className="corpusbuilder-inline-editor-buttons">
-                            <Button onToggle={ this.onToggleBoxes.bind(this) } toggles={ true }>
+                            <Button onToggle={ this.onToggleBoxes.bind(this) }
+                              toggles={ true }
+                              toggled={ this.showBoxes }
+                              >
                               Boxes
                             </Button>
                             <Button onClick={ this.resetText.bind(this) }>

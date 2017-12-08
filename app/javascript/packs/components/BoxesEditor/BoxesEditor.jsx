@@ -9,8 +9,12 @@ import styles from './BoxesEditor.scss';
 @observer
 export default class BoxesEditor extends React.Component {
 
+    interactable = null;
+
     componentDidMount() {
-        interact('.corpusbuilder-boxes-editor-item')
+        this.inferBoxes();
+
+        this.interactable = interact('.corpusbuilder-boxes-editor-item')
           .draggable({
               onmove: this.onBoxMove.bind(this),
               restrict: {
@@ -32,9 +36,20 @@ export default class BoxesEditor extends React.Component {
           .on('resizeend', this.onBoxEdited.bind(this));
     }
 
+    componentWillUnmount() {
+        this.interactable.unset();
+        delete this.interactable;
+    }
+
     componentWillUpdate(props) {
         if(!props.visible) {
             this.rootElement = null;
+            this.boxes = [];
+        }
+        else {
+            if(this.boxes.length === 0) {
+                this.inferBoxes();
+            }
         }
     }
 
@@ -47,27 +62,35 @@ export default class BoxesEditor extends React.Component {
         };
     }
 
-    @computed
-    get boxes() {
-        return GraphemesUtils.wordBoxes(this.props.line)
-                             .map(this.scaleBoxDown.bind(this));
+    inferBoxes() {
+        if(this.props.boxes === null || this.props.boxes === undefined ||
+           this.props.boxes.length === 0) {
+            this.boxes = GraphemesUtils.wordBoxes(this.props.line)
+                                      .map(this.scaleBoxDown.bind(this));
+            this.broadcastBoxes();
+        }
+        else {
+            this.boxes = this.props.boxes.map(this.scaleBoxDown.bind(this));
+        }
     }
+
+    @observable
+    boxes = [ ];
 
     setRoot(div) {
         if(this.rootElement === null && div !== null) {
             this.rootElement = div;
+            this.inferBoxes();
         }
     }
 
     @observable
     rootElement = null;
 
-    @computed
     get surfaceWidth() {
         return this.surface.area.lrx - this.surface.area.ulx;
     }
 
-    @computed
     get surface() {
         return this.props.document.surfaces[0];
     }
@@ -136,7 +159,7 @@ export default class BoxesEditor extends React.Component {
         let boxIndex = target.getAttribute('data-index');
         let box = this.boxes[boxIndex];
 
-        this.broadcastBoxChange(box, boxIndex);
+        this.broadcastBoxes();
     }
 
     onMouseMove(event) {
@@ -145,9 +168,9 @@ export default class BoxesEditor extends React.Component {
         target.style.cursor = document.documentElement.style.cursor;
     }
 
-    broadcastBoxChange(box, index) {
-        this.props.onBoxChanged(
-            this.translateBox(box)
+    broadcastBoxes() {
+        this.props.onBoxesReported(
+            this.boxes.map(this.translateBox.bind(this))
         );
     }
 
