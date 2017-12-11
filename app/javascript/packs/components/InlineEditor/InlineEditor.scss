@@ -5,6 +5,16 @@
       float: right;
     }
 
+    &-messages {
+      font-size: 12px;
+      padding: 2px;
+      text-align: center;
+      background: rgba(200, 30, 30, 0.5);
+      color: rgba(120, 0, 0, 1);
+      border: 1px solid rgba(200, 30, 30, 0.5);
+      margin-bottom: 10px;
+    }
+
     &-preview {
       &-wrapper {
         position: relative;

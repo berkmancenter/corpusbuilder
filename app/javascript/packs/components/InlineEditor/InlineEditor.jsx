@@ -5,6 +5,7 @@ import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
 import { Highlight } from '../Highlight';
 import { BoxesEditor } from '../BoxesEditor';
+import GraphemeUtils from '../../lib/GraphemesUtils';
 
 import styles from './InlineEditor.scss'
 
@@ -24,6 +25,8 @@ export default class InlineEditor extends React.Component {
 
     @observable
     boxes = [ ];
+
+    originalBoxes = [ ];
 
     @computed
     get line() {
@@ -86,6 +89,26 @@ export default class InlineEditor extends React.Component {
     @computed
     get pageImageUrl() {
         return this.props.document.surfaces[0].image_url;
+    }
+
+    @computed
+    get wordsMatchBoxes() {
+        let editedWords = this.editedText.trim().split(/\s+/g).filter((word) => {
+            return word.length > 1 || (word.length > 0 && !GraphemeUtils.isCharSpecial(word[0]));
+        });
+
+        return editedWords.length === this.boxes.length;
+    }
+
+    @computed
+    get messages() {
+        let result = [];
+
+        if(!this.wordsMatchBoxes) {
+            result.push("You must provide the same number of boxes as there are words in the provided text");
+        }
+
+        return result;
     }
 
     get canvas() {
@@ -156,6 +179,9 @@ export default class InlineEditor extends React.Component {
     }
 
     onBoxesReported(boxes) {
+        if(this.boxes.length === 0) {
+            this.originalBoxes = boxes;
+        }
         this.boxes.replace(boxes);
     }
 
@@ -203,6 +229,7 @@ export default class InlineEditor extends React.Component {
     }
 
     resetText() {
+        this.boxes.replace(this.originalBoxes);
         this.editedText = this.props.text;
     }
 
@@ -240,12 +267,26 @@ export default class InlineEditor extends React.Component {
                   Hold { this.specialKeyName } to start drawing or select
                 </div>
             }
+            let messageBox = null;
+            if(this.messages.length > 0) {
+                messageBox = (
+                            <div className="corpusbuilder-inline-editor-messages"
+                                >
+                                {
+                                    this.messages.map((msg) => {
+                                        return <div key={ msg }>{ msg }</div>;
+                                    })
+                                }
+                            </div>
+                );
+            }
             return (
                 <div ref={ this.captureRoot.bind(this) }>
                   <FloatingWindow visible={ this.props.visible }
                                   offsetTop={ 20 }
                                   onCloseRequested={ this.onCloseRequested.bind(this) }
                                   >
+                        { messageBox }
                         <div className="corpusbuilder-inline-editor-preview-wrapper">
                             <img className="corpusbuilder-inline-editor-preview-source"
                                 src={ this.pageImageUrl }
@@ -283,7 +324,7 @@ export default class InlineEditor extends React.Component {
                             <Button onClick={ this.resetText.bind(this) }>
                               Reset
                             </Button>
-                            <Button onClick={ this.requestSave.bind(this) }>
+                            <Button onClick={ this.requestSave.bind(this) } disabled={ !this.wordsMatchBoxes }>
                               Save
                             </Button>
                         </div>

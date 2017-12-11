@@ -35,11 +35,11 @@ export default class GraphemesUtils {
         let lastUlx = null;
         let lastLrx = null;
 
-        for(let grapheme of this.asReadingOrder(graphemes)) {
+        for(let grapheme of this.asReadingOrder(graphemes.filter(this.isRegular.bind(this)))) {
             if(!this.isSpecial(grapheme)) {
                 let graphemeWidth = grapheme.area.lrx - grapheme.area.ulx;
 
-                if(lastUlx === null || lastLrx === null || grapheme.area.ulx - lastLrx > 0.1 * graphemeWidth) {
+                if(lastUlx === null || lastLrx === null || grapheme.area.ulx > lastLrx) {
                     results.push([ grapheme ]);
                 }
                 else {
@@ -67,8 +67,16 @@ export default class GraphemesUtils {
         });
     }
 
+    static isRegular(grapheme) {
+        return !this.isSpecial(grapheme);
+    }
+
     static isSpecial(grapheme) {
-        return this.specialCodePoints.indexOf(grapheme.value.codePointAt(0)) !== -1;
+        return this.isCharSpecial(grapheme.value);
+    }
+
+    static isCharSpecial(value) {
+        return this.specialCodePoints.indexOf(value.codePointAt(0)) !== -1;
     }
 
     static get specialCodePoints() {

@@ -8,12 +8,18 @@ export default class Button extends React.Component {
     @observable
     visible = true;
 
+    @observable
+    toggled = false;
+
     componentWillMount() {
-        this.toggled = this.props.toggled || false;
-        this.visible = this.props.visible === undefined ? true : this.props.visible;
+        this.initProps(this.props);
     }
 
     componentWillUpdate(props) {
+        this.initProps(props);
+    }
+
+    initProps(props) {
         this.toggled = props.toggled || false;
         this.visible = props.visible === undefined ? true : props.visible;
     }
@@ -23,8 +29,10 @@ export default class Button extends React.Component {
         return this.props.toggles;
     }
 
-    @observable
-    toggled = false;
+    @computed
+    get disabled() {
+        return this.props.disabled;
+    }
 
     onClick(e) {
         if(this.props.onClick !== undefined && this.props.onClick !== null) {
@@ -42,8 +50,14 @@ export default class Button extends React.Component {
 
     render() {
         if(this.visible) {
+            let toggledClassName = this.toggles && this.toggled ? 'corpusbuilder-button-toggled' : '';
+            let className = `corpusbuilder-button ${ toggledClassName }`;
+
             return (
-                <button className={ `corpusbuilder-button ${ this.toggles && this.toggled ? 'corpusbuilder-button-toggled' : '' }` } onClick={ this.onClick.bind(this) }>
+                <button className={ className }
+                        onClick={ this.onClick.bind(this) }
+                        disabled={ this.disabled ? 'disabled' : '' }
+                        >
                     { this.props.children }
                 </button>
             );
