@@ -505,6 +505,8 @@ describe V1::DocumentsAPI, type: :request do
         create :app
       end
 
+      let(:omit_revision) { true }
+
       let(:bad_branch_request) do
         master_branch
         development_branch
@@ -516,17 +518,6 @@ describe V1::DocumentsAPI, type: :request do
           params: minimal_valid_params
       end
 
-      let(:bad_revision_request) do
-        master_branch
-        development_branch
-        surfaces
-        graphemes
-
-        put url(document.id, Grapheme.first.id),
-          headers: headers,
-          params: minimal_valid_params
-      end
-
       let(:good_branch_request) do
         master_branch
         development_branch
@@ -534,17 +525,6 @@ describe V1::DocumentsAPI, type: :request do
         graphemes
 
         put url(document.id, master_branch.name),
-          headers: headers,
-          params: minimal_valid_params
-      end
-
-      let(:good_revision_request) do
-        master_branch
-        development_branch
-        surfaces
-        graphemes
-
-        put url(document.id, master_branch.working.id),
           headers: headers,
           params: minimal_valid_params
       end
@@ -587,9 +567,17 @@ describe V1::DocumentsAPI, type: :request do
           {
             edit_spec: {
               grapheme_ids: graphemes.map(&:id),
+              boxes: boxes,
               text: 'a test'
-            }.to_json
+            }
           }
+        end
+
+        let(:boxes) do
+          [
+            { ulx: "0", uly: "0", lrx: "100", lry: "100" },
+            { ulx: "110", uly: "110", lrx: "200", lry: "200" }
+          ]
         end
 
         let(:valid_request) do
@@ -604,7 +592,8 @@ describe V1::DocumentsAPI, type: :request do
         end
 
         it "calls the Documents::CompileCorrections" do
-          expect(Documents::CompileCorrections).to receive(:run!).with(grapheme_ids: graphemes.map(&:id), text: 'a test').and_call_original
+          expect(Documents::CompileCorrections).to receive(:run!).
+            with(grapheme_ids: graphemes.map(&:id), text: 'a test', boxes: boxes).and_call_original
           expect_any_instance_of(Documents::CompileCorrections).to receive(:execute).and_call_original
 
           valid_request
@@ -1014,47 +1003,6 @@ describe V1::DocumentsAPI, type: :request do
           headers: headers
       end
 
-      context "when applying changes added on top of the given revision" do
-        let(:corrections) do
-          topic_branch.revision.graphemes << master_graphemes.uniq
-          topic_branch.working.graphemes << master_graphemes.uniq
-
-          Documents::Correct.run! document: document,
-            revision_id: topic_branch.working.id,
-            graphemes: [
-              {
-                id: master_graphemes.first.id,
-                value: 'a'
-              },
-              {
-                id: master_graphemes[1].id,
-                delete: true
-              },
-              {
-                id: master_graphemes[4].id,
-                delete: true
-              },
-              {
-                value: 'b',
-                surface_number: 1,
-                position_weight: 3.5,
-                area: {
-                  ulx: 60,
-                  uly: 0,
-                  lrx: 70, lry: 10
-                }
-              }
-            ]
-        end
-
-        it "makes current revision point at exactly the same graphemes" do
-          corrections
-          valid_request
-
-          expect(current_revision.reload.grapheme_ids).to eq(other_revision.reload.grapheme_ids)
-        end
-      end
-
       context "when applying changes with current revision changed but without conflicts" do
         let(:corrections) do
           development_branch.revision.graphemes << master_graphemes.uniq
@@ -1063,7 +1011,7 @@ describe V1::DocumentsAPI, type: :request do
           topic_branch.working.graphemes << master_graphemes.uniq
 
           Documents::Correct.run! document: document,
-            revision_id: topic_branch.working.id,
+            branch_name: topic_branch.name,
             graphemes: [
               {
                 id: master_graphemes.first.id,
@@ -1092,7 +1040,7 @@ describe V1::DocumentsAPI, type: :request do
           Branches::Commit.run! branch: topic_branch
 
           Documents::Correct.run! document: document,
-            revision_id: development_branch.working.id,
+            branch_name: development_branch.name,
             graphemes: [
               {
                 id: master_graphemes[2].id,
@@ -1143,7 +1091,7 @@ describe V1::DocumentsAPI, type: :request do
           topic_branch.working.graphemes << master_graphemes.uniq
 
           Documents::Correct.run! document: document,
-            revision_id: topic_branch.working.id,
+            branch_name: topic_branch.name,
             graphemes: [
               {
                 id: master_graphemes.first.id,
@@ -1158,7 +1106,7 @@ describe V1::DocumentsAPI, type: :request do
           Branches::Commit.run! branch: topic_branch
 
           Documents::Correct.run! document: document,
-            revision_id: development_branch.working.id,
+            branch_name: development_branch.name,
             graphemes: [
               {
                 id: master_graphemes.first.id,

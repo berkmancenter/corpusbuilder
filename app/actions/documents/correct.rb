@@ -1,6 +1,6 @@
 module Documents
   class Correct < Action::Base
-    attr_accessor :document, :graphemes, :revision_id, :branch_name
+    attr_accessor :document, :graphemes, :branch_name
 
     validate :revision_is_in_working_state
 
@@ -44,13 +44,9 @@ module Documents
     end
 
     def revision
-      @_revision ||= if @revision_id.present?
-        Revision.find(@revision_id)
-      else
-        Revision.working.where(
+      @_revision ||= Revision.working.where(
           parent_id: @document.branches.where(name: @branch_name).select("branches.revision_id")
-        ).first
-      end
+      ).first
     end
 
     def revision_is_in_working_state

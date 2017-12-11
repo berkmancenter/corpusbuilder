@@ -171,8 +171,8 @@ export default class Viewer extends React.Component {
         );
     }
 
-    saveLine(doc, line, editedText) {
-      this.documents.correct(doc, line, editedText);
+    saveLine(doc, line, editedText, boxes) {
+      this.props.documents.correct(doc, this.page, line, this.currentBranch, editedText, boxes);
     }
 
     hideAnnotationEditor() {

@@ -1,3 +1,6 @@
+require 'term/ansicolor'
+include Term::ANSIColor
+
 module Action
 
   # A thin service object abstraction
@@ -29,9 +32,14 @@ module Action
 
       begin
         run!(params, instance)
-      rescue
-        Rails.logger.error "Error: #{$!.message}\n#{$!.backtrace}"
-        instance.add_error($!)
+      rescue => e
+        Rails.logger.error "Error!: #{e.message}"
+        Rails.logger.error "Backtrace:"
+        e.backtrace.each do |trace|
+          inner = !trace[/#{Rails.root}/].nil?
+          Rails.logger.error "    | #{ inner ? magenta(trace) : trace }"
+        end
+        instance.add_error(e)
       end
 
       instance

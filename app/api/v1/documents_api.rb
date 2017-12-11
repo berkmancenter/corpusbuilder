@@ -170,8 +170,14 @@ class V1::DocumentsAPI < Grape::API
 
       desc 'Adds corrections on a given revision'
       params do
-        optional :edit_spec, type: JSON do
+        optional :edit_spec, type: Hash do
           requires :grapheme_ids, type: Array
+          requires :boxes, type: Array do
+            requires :ulx, type: String
+            requires :uly, type: String
+            requires :lrx, type: String
+            requires :lry, type: String
+          end
           requires :text, type: String
         end
         optional :graphemes, type: Array do
@@ -198,6 +204,7 @@ class V1::DocumentsAPI < Grape::API
 
                       Documents::CompileCorrections.run!(
                         grapheme_ids: params[:edit_spec][:grapheme_ids],
+                        boxes: params[:edit_spec][:boxes],
                         text: params[:edit_spec][:text]
                       ).result
                     end

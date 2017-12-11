@@ -224,7 +224,7 @@ export default class InlineEditor extends React.Component {
 
     requestSave() {
         if(this.props.onSaveRequested !== undefined && this.props.onSaveRequested !== null) {
-            this.props.onSaveRequested(this.props.document, this.props.line, this.editedText);
+            this.props.onSaveRequested(this.props.document, this.props.line, this.editedText, this.boxes);
         }
     }
 

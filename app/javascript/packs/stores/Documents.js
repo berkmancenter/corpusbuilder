@@ -7,7 +7,7 @@ export default class Documents {
         this.baseUrl = baseUrl;
     }
 
-    tree(documentId, branchName = 'master', page = 1, preloadNext = 1, preloadPrev = 1) {
+    tree(documentId, branchName = 'master', page = 1, preloadNext = 1, preloadPrev = 1, force = false) {
         let key = `${branchName}-${page}`
         if( !this.state.trees.has(key)) {
             Request
@@ -98,7 +98,31 @@ export default class Documents {
         return documentRevisions.get(branchName)
     }
 
-    correct(doc, line, text) {
-        console.log(text);
+    correct(doc, page, line, branchName, text, boxes) {
+        let payload = {
+            edit_spec: {
+                grapheme_ids: line.map((g) => { return g.id; }),
+                text: text,
+                boxes: boxes.map((box) => {
+                      return {
+                          ulx: box.ulx,
+                          uly: box.uly,
+                          lrx: box.lrx,
+                          lry: box.lry
+                      }
+                  }
+                )
+            }
+        };
+
+        Request
+            .put(`${this.baseUrl}/api/documents/${doc.id}/${branchName}/tree`, payload)
+            .then(
+                action(
+                    ( _ ) => {
+                        this.tree(doc.id, branchName, page);
+                    }
+                )
+            );
     }
 }

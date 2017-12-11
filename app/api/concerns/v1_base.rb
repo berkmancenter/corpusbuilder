@@ -1,3 +1,6 @@
+require 'term/ansicolor'
+include Term::ANSIColor
+
 module V1Base
   extend ActiveSupport::Concern
 
@@ -22,7 +25,12 @@ module V1Base
 
     rescue_from :all do |e|
       if !e.is_a? Grape::Exceptions::Base
-        Rails.logger.error "Error inside action: #{e.message}\nBacktrace:\n#{e.backtrace.join('\n')}"
+        Rails.logger.error "Error inside action: #{e.message}"
+        Rails.logger.error "Backtrace:"
+        e.backtrace.each do |trace|
+          inner = !trace[/#{Rails.root}/].nil?
+          Rails.logger.error "    | #{ inner ? magenta(trace) : trace }"
+        end
         error!("Oops! Something went wrong", 500)
       else
         error!(e.message, e.status)
@@ -74,8 +82,13 @@ module V1Base
           action.errors
         end
       rescue Exception => e
-        Rails.logger.error "Error inside action: #{e.message}\nBacktrace:\n#{e.backtrace.join('\n')}"
-        error!('Oops! Something went wrong', 500)
+        Rails.logger.error "Error inside action: #{e.message}"
+        Rails.logger.error "Backtrace:"
+        e.backtrace.each do |trace|
+          inner = !trace[/#{Rails.root}/].nil?
+          Rails.logger.error "    | #{ inner ? magenta(trace) : trace }"
+        end
+        error!("Oops! Something went wrong", 500)
       end
     end
   end
