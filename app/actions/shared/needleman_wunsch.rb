@@ -20,15 +20,16 @@ module Shared
         transition_matrix[row][0] = :up
       end
 
+
       # 2. compute matrices values preparing for path inference:
       for row in 1..to.count
         for column in 1..from.count
-          score = score_fn.call(from[ column - 1 ], to[ row - 1 ])
+          score = score_fn.call(from[ column - 2 ], to[ row - 2 ])
 
           values = [
-            [ :diag, score_matrix[row - 1 ][ column - 1] + score ],
-            [ :up, score_matrix[ row - 1 ][ column ] + gap(from) ],
-            [ :left, score_matrix[ row ][ column - 1 ] +  gap(to) ]
+            [ :diag, score_matrix[ row - 1  ][ column - 1 ] + score    ],
+            [ :up,   score_matrix[ row - 1 ][ column     ] + gap(from) ],
+            [ :left, score_matrix[ row     ][ column - 1 ] + gap(to)   ]
           ]
 
           choice = values.max_by { |value| value.last }
