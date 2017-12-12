@@ -12,6 +12,10 @@ module Documents
       with_positioning compare_items
     end
 
+    def surface_number
+      @_surface_number ||= source_graphemes.first.zone.surface.number
+    end
+
     def addition(target)
       {
         value: target.value,
@@ -29,7 +33,7 @@ module Documents
 
     def modification(source, target)
       {
-        old_id: from.id,
+        old_id: source.id,
         value: target.value,
         area: target.area,
         surface_number: surface_number
@@ -131,18 +135,20 @@ module Documents
       }
 
       # 1. prepare the score and transition matrices:
-      score_matrix = (1..to.count + 1).inject([]) { |all, row| all << [0] * from.count; all }
-      transition_matrix = (1..to.count + 1).inject([]) { |all, row| all << [nil] * from.count; all }
+      score_matrix = (1..to.count + 1).inject([]) { |all, row| all << [0] * (from.count + 1); all }
+      transition_matrix = (1..to.count + 1).inject([]) { |all, row| all << [nil] * (from.count + 1); all }
 
       score_matrix[0][0] = 0
       transition_matrix[0][0] = :done
 
       for column in 1..from.count
         score_matrix[0][column] = column * gap.call(from)
+        transition_matrix[0][column] = :left
       end
 
       for row in 1..to.count
         score_matrix[row][0] = row * gap.call(to)
+        transition_matrix[row][0] = :up
       end
 
       # 2. compute matrices values preparing for path inference:
@@ -151,15 +157,15 @@ module Documents
           score = block.call(from[ column - 1 ], to[ row - 1 ])
 
           values = [
-            [ :diag, score_matrix[row - 1, column - 1] + score ],
-            [ :up, score_matrix[ row - 1, column ] + gap.call(from) ],
-            [ :left, score_matrix[ row, column - 1 ] +  gap.call(to) ]
+            [ :diag, score_matrix[row - 1 ][ column - 1] + score ],
+            [ :up, score_matrix[ row - 1 ][ column ] + gap.call(from) ],
+            [ :left, score_matrix[ row ][ column - 1 ] +  gap.call(to) ]
           ]
 
           choice = values.max_by { |value| value.last }
 
-          score_matrix[ row, column ] = choice.last
-          transition_matrix[ row, column ] = choice.first
+          score_matrix[ row ][ column ] = choice.last
+          transition_matrix[ row ][ column ] = choice.first
         end
       end
 
@@ -168,7 +174,7 @@ module Documents
       to_alignment = [ ]
 
       row = to.count
-      column = from.column
+      column = from.count
 
       while row > 0 || column > 0
         direction = transition_matrix[ row ][ column ]
@@ -233,18 +239,18 @@ module Documents
         end
 
         gap = -> (word) {
-          word.count
+          -1 * word.count
         }
 
         needleman_wunsch(sorted_source_words, candidates, gap_penalty: gap) do |left, right|
-          levenshtein(left, right)
+          -1 * levenshtein(left, right)
         end
       }.call
     end
 
     # Thank you wikibooks :)
     # https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Ruby
-    def levenshtein(first:, second:)
+    def levenshtein(first, second)
       matrix = [(0..first.length).to_a]
       (1..second.length).each do |j|
         matrix << [j] + [0] * (first.length)
