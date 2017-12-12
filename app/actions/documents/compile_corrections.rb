@@ -124,85 +124,12 @@ module Documents
 
     # [ <Object>, ... ] -> [ <Object>, ... ] -> [ [ <Object | nil>, ... ], [ <Object | nil>, ... ] ]
     def needleman_wunsch(from, to, options = {}, &block)
-      gap_penalty = options.fetch(:gap_penalty, -1)
-
-      gap = -> (a) {
-        if gap_penalty.is_a? Proc
-          gap_penalty.call(a)
-        else
-          gap_penalty
-        end
-      }
-
-      # 1. prepare the score and transition matrices:
-      score_matrix = (1..to.count + 1).inject([]) { |all, row| all << [0] * (from.count + 1); all }
-      transition_matrix = (1..to.count + 1).inject([]) { |all, row| all << [nil] * (from.count + 1); all }
-
-      score_matrix[0][0] = 0
-      transition_matrix[0][0] = :done
-
-      for column in 1..from.count
-        score_matrix[0][column] = column * gap.call(from)
-        transition_matrix[0][column] = :left
-      end
-
-      for row in 1..to.count
-        score_matrix[row][0] = row * gap.call(to)
-        transition_matrix[row][0] = :up
-      end
-
-      # 2. compute matrices values preparing for path inference:
-      for row in 1..to.count
-        for column in 1..from.count
-          score = block.call(from[ column - 1 ], to[ row - 1 ])
-
-          values = [
-            [ :diag, score_matrix[row - 1 ][ column - 1] + score ],
-            [ :up, score_matrix[ row - 1 ][ column ] + gap.call(from) ],
-            [ :left, score_matrix[ row ][ column - 1 ] +  gap.call(to) ]
-          ]
-
-          choice = values.max_by { |value| value.last }
-
-          score_matrix[ row ][ column ] = choice.last
-          transition_matrix[ row ][ column ] = choice.first
-        end
-      end
-
-      # 3. walk the path filling the alignment arrays:
-      from_alignment = [ ]
-      to_alignment = [ ]
-
-      row = to.count
-      column = from.count
-
-      while row > 0 || column > 0
-        direction = transition_matrix[ row ][ column ]
-
-        case direction
-        when :diag
-          from_alignment.push from[ column - 1 ]
-          to_alignment.push to[ row - 1 ]
-
-          row -= 1
-          column -= 1
-        when :left
-          from_alignment.push from[ column - 1 ]
-          to_alignment.push nil
-
-          column -= 1
-        when :up
-          from_alignment.push nil
-          to_alignment.push to[ row - 1 ]
-
-          row -= 1
-        end
-      end
-
-      [
-        from_alignment.reverse,
-        to_alignment.reverse
-      ]
+      Shared::NeedlemanWunsch.run!(
+        from: from,
+        to: to,
+        gap_penalty: options.fetch(:gap_penalty, -1),
+        score_fn: block
+      ).result
     end
 
     def graphemes_need_change(from, to)
@@ -248,28 +175,11 @@ module Documents
       }.call
     end
 
-    # Thank you wikibooks :)
-    # https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Ruby
     def levenshtein(first, second)
-      matrix = [(0..first.length).to_a]
-      (1..second.length).each do |j|
-        matrix << [j] + [0] * (first.length)
-      end
-
-      (1..second.length).each do |i|
-        (1..first.length).each do |j|
-          if first[j-1] == second[i-1]
-            matrix[i][j] = matrix[i-1][j-1]
-          else
-            matrix[i][j] = [
-              matrix[i-1][j],
-              matrix[i][j-1],
-              matrix[i-1][j-1],
-            ].min + 1
-          end
-        end
-      end
-      return matrix.last.last
+      Shared::Levenshtein.run!(
+        first: first,
+        second: second
+      ).result
     end
 
     def paragraph_direction
