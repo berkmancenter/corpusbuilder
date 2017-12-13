@@ -3,6 +3,7 @@ module Shared
     attr_accessor :from, :to, :gap_penalty, :score_fn
 
     def execute
+      #byebug if from.is_a? Array
       # 1. prepare the score and transition matrices:
       score_matrix = (1..to.count + 1).inject([]) { |all, row| all << [0] * (from.count + 1); all }
       transition_matrix = (1..to.count + 1).inject([]) { |all, row| all << [nil] * (from.count + 1); all }
@@ -24,7 +25,7 @@ module Shared
       # 2. compute matrices values preparing for path inference:
       for row in 1..to.count
         for column in 1..from.count
-          score = score_fn.call(from[ column - 2 ], to[ row - 2 ])
+          score = score_fn.call(from[ column - 1 ], to[ row - 1 ])
 
           values = [
             [ :diag, score_matrix[ row - 1  ][ column - 1 ] + score    ],

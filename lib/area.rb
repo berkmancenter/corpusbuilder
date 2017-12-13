@@ -18,13 +18,13 @@ class Area
     end
   end
 
-  def <=>(other)
-    return nil if other.nil?
+  def ==(other)
+    return false if other.nil?
 
-    @lrx <=> other.lrx &&
-      @lry <=> other.lry &&
-      @ulx <=> other.ulx &&
-      @uly <=> other.uly
+    @lrx == other.lrx &&
+      @lry == other.lry &&
+      @ulx == other.ulx &&
+      @uly == other.uly
   end
 
   def to_s

@@ -3,5 +3,144 @@ require 'rails_helper'
 describe Documents::CompileCorrections do
   include ActiveJob::TestHelper
 
+  let(:document) do
+    create :document
+  end
+
+  let(:surface) do
+    create(
+      :surface,
+      document_id: document.id,
+      area: Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20),
+      number: 1,
+      image_id: image1.id
+    )
+  end
+
+  let(:image1) do
+    create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
+      name: "file_1.png",
+      order: 1
+  end
+
+  let(:first_line) do
+    create :zone, surface_id: surface.id, area: Area.new(ulx: 0, uly: 0, lrx: 100, lry: 20)
+  end
+
+  def create_grapheme(char, box, index, pos, count)
+      box_width = box[:lrx] - box[:ulx]
+      delta_x = (box_width / (1.0 * count)) * index
+      delta_x_end = (box_width / (1.0 * count)) * (index + 1)
+
+      create(
+        :grapheme,
+        value: char,
+        zone_id: first_line.id,
+        position_weight: pos,
+        area: Area.new(
+          ulx: box[:ulx] + delta_x,
+          uly: box[:uly],
+          lrx: box[:ulx] + delta_x_end,
+          lry: box[:lry]
+        ),
+        certainty: 0.5
+      ).id
+  end
+
+  def create_graphemes(spec)
+    text = spec.keys.first
+    boxes = spec.values.first
+    ids = [ ]
+    words = text.split(/\s+/)
+
+    ids << create_grapheme([0x200e].pack("U"), boxes[0], 0, 0, 1)
+    words.each_with_index.each do |word, index|
+      word.chars.each_with_index do |char, char_index|
+        ids << create_grapheme(char, boxes[ index ], char_index, ids.count, word.chars.count)
+      end
+    end
+    ids << create_grapheme([0x202c].pack("U"), boxes[boxes.count-1], text.chars.count, ids.count, text.chars.count)
+
+    ids
+  end
+
+  def run_example(spec)
+    from_spec = spec.slice(spec.keys.first)
+    to_spec = spec.slice(spec.keys.last)
+
+    ids = create_graphemes(from_spec)
+
+    corrections = Documents::CompileCorrections.run!(
+      grapheme_ids: ids,
+      text: to_spec.keys.first,
+      boxes: to_spec.values.first
+    ).result
+
+    corrections.inject([[], [], []]) do |state, correction|
+      index = if correction.has_key?(:delete)
+                2
+              elsif correction.has_key?(:old_id)
+                1
+              else
+                0
+              end
+      state[ index ] << correction
+      state
+    end
+  end
+
+  it 'adds words correctly' do
+    additions, _, _ = run_example(
+      "two three" => [
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+      ],
+      "one two three" => [
+        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+      ]
+    )
+
+    expect(additions.count).to eq(3)
+    expect(additions.map { |a| a[:value] }.join).to eq("one")
+  end
+
+  it 'removes words correctly' do
+    _, _, removals = run_example(
+      "one two three" => [
+        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+      ],
+      "two three" => [
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+      ]
+    )
+
+    expect(removals.count).to eq(3)
+    expect(Grapheme.where(id: removals.map { |a| a[:id] }).map(&:value).join).to eq("one")
+  end
+
+  it 'modifies correct words' do
+    additions, modifications, _ = run_example(
+      "one two three" => [
+        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+      ],
+      "jeden two three" => [
+        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+      ]
+    )
+
+    expect(additions.count).to eq(2)
+    expect(modifications.count).to eq(3)
+    expect(additions.map { |a| a[:value] }.join).to eq("je")
+    expect(modifications.map { |a| a[:value] }.join).to eq("den")
+  end
 end
 

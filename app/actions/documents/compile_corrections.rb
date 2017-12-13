@@ -41,7 +41,7 @@ module Documents
     end
 
     def compare_items
-      compare_pairs.map do |word_pair|
+      @_compare_items ||= compare_pairs.first.zip(compare_pairs.last).map do |word_pair|
         # word_pairs :: [ [ <Grapheme>, ... ], [ <Grapheme>, ... ] ]
         old_word, new_word = word_pair
 
@@ -155,8 +155,11 @@ module Documents
           sorted_chars.zip(word.chars).each_with_index.map do |chars, index|
             _, char = chars
 
-            area = Area.new ulx: ((width / (1.0 * word.chars.count)) * index),
-              lrx: ((width / (1.0 * word.chars.count)) * (index + 1)),
+            delta_x = ((width / (1.0 * word.chars.count)) * index)
+            delta_x_end = ((width / (1.0 * word.chars.count)) * (index + 1))
+
+            area = Area.new ulx: box[:ulx] + delta_x,
+              lrx: box[:ulx] + delta_x_end,
               uly: box[:uly],
               lry: box[:lry]
 
@@ -170,16 +173,26 @@ module Documents
         }
 
         needleman_wunsch(sorted_source_words, candidates, gap_penalty: gap) do |left, right|
-          -1 * levenshtein(left, right)
+          if left.count != right.count
+            -1 * [ left.count, right.count ].max
+          elsif left.zip(right).any? { |l, r| graphemes_need_change(l, r) }
+            -1 * levenshtein(left, right)
+          else
+            left.count
+          end
         end
       }.call
     end
 
     def levenshtein(first, second)
-      Shared::Levenshtein.run!(
-        first: first,
-        second: second
-      ).result
+      if first.count == second.count
+        Shared::Levenshtein.run!(
+          first: first,
+          second: second
+        ).result
+      else
+        second.count
+      end
     end
 
     def paragraph_direction
@@ -200,8 +213,10 @@ module Documents
         # and may end with the pop directionality:
 
         graphemes = source_graphemes.each_with_index.select do |grapheme, index|
-          index != 0 && !( grapheme.value != 0x202c && index != source_graphemes.count - 1 )
-        end.map(&:first)
+          index != 0 && !( grapheme.value.codepoints.first == 0x202c && index == source_graphemes.count - 1 )
+        end
+
+        graphemes = graphemes.map(&:first)
 
         init_state = OpenStruct.new({
           result: [ ],
@@ -244,7 +259,7 @@ module Documents
 
     def box_for_each_word
       if words.count != boxes.count
-        errors.add(:boxes, "must match in count (#{ boxes.count }) with the number of words in text (#{ words.count })")
+        errors.add(:boxes, "must match in count (given: #{ boxes.count }) with the number of words in text (given: #{ words.count })")
       end
     end
   end
