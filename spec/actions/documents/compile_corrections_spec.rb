@@ -28,22 +28,22 @@ describe Documents::CompileCorrections do
   end
 
   def create_grapheme(char, box, index, pos, count)
-      box_width = box[:lrx] - box[:ulx]
-      delta_x = (box_width / (1.0 * count)) * index
-      delta_x_end = (box_width / (1.0 * count)) * (index + 1)
+    box_width = box[:lrx] - box[:ulx]
+    delta_x = (box_width / (1.0 * count)) * index
+    delta_x_end = (box_width / (1.0 * count)) * (index + 1)
 
-      create(
-        :grapheme,
-        value: char,
-        zone_id: first_line.id,
-        position_weight: pos,
-        area: Area.new(
-          ulx: box[:ulx] + delta_x,
-          uly: box[:uly],
-          lrx: box[:ulx] + delta_x_end,
-          lry: box[:lry]
-        ),
-        certainty: 0.5
+    create(
+      :grapheme,
+      value: char,
+      zone_id: first_line.id,
+      position_weight: pos,
+      area: Area.new(
+        ulx: box[:ulx] + delta_x,
+        uly: box[:uly],
+        lrx: box[:ulx] + delta_x_end,
+        lry: box[:lry]
+      ),
+      certainty: 0.5
       ).id
   end
 
@@ -79,7 +79,7 @@ describe Documents::CompileCorrections do
     corrections.inject([[], [], []]) do |state, correction|
       index = if correction.has_key?(:delete)
                 2
-              elsif correction.has_key?(:old_id)
+              elsif correction.has_key?(:id)
                 1
               else
                 0
@@ -141,6 +141,47 @@ describe Documents::CompileCorrections do
     expect(modifications.count).to eq(3)
     expect(additions.map { |a| a[:value] }.join).to eq("je")
     expect(modifications.map { |a| a[:value] }.join).to eq("den")
+  end
+
+  it 'provides proper additions in the RTL scenario' do
+    additions, modifications, removals = run_example(
+      "سلطة أمير البلد" => [
+        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+      ],
+      "سلطة أمير البلد 1234567" => [
+        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 },
+        { ulx: 130, uly: 0, lrx: 150, lry: 20 }
+      ]
+    )
+
+    expect(additions.count).to eq(7)
+    expect(additions.map { |a| a[:value] }.join).to eq("1234567")
+
+    expect(modifications.count).to eq(0)
+    expect(removals.count).to eq(0)
+  end
+
+  it 'doesnt change the grapheme for which the box value changes are less than 1' do
+    additions, modifications, removals = run_example(
+      "سلطة أمير البلد" => [
+        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+      ],
+      "سلطة أمير البلد " => [
+        { ulx:  88.4, uly: 0, lrx:  97, lry: 20 },
+        { ulx: 100, uly: 0.9, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 0, lrx: 123.7, lry: 20 }
+      ]
+    )
+
+    expect(additions.count).to eq(0)
+    expect(modifications.count).to eq(0)
+    expect(removals.count).to eq(0)
   end
 end
 

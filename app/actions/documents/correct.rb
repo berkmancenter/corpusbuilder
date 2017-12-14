@@ -7,29 +7,44 @@ module Documents
     def execute
       @graphemes.each do |spec|
         if spec.fetch(:delete, false)
-          Graphemes::Remove.run! revision: revision,
+          Revisions::RemoveGrapheme.run!(
+            revision_id: revision.id,
             grapheme_id: spec[:id]
+          )
         else
-          Graphemes::Create.run! revision: revision,
+          Graphemes::Create.run!(
+            revision: revision,
             area: area(spec),
             value: spec[:value],
             old_id: spec[:id],
             position_weight: spec[:position_weight],
             surface_number: spec[:surface_number]
+          )
         end
       end
 
-      revision.grapheme_ids = revision.grapheme_ids - existing_ids
+      existing_ids.each do |grapheme_id|
+        Revisions::RemoveGrapheme.run!(
+          revision_id: revision.id,
+          grapheme_id: grapheme_id
+        )
+      end
+
+      @graphemes
     end
 
     private
 
     def area(spec)
       if spec.has_key? :area
-      Area.new(ulx: spec[:area][:ulx],
-               uly: spec[:area][:uly],
-               lrx: spec[:area][:lrx],
-               lry: spec[:area][:lry])
+        if spec[:area].is_a? Area
+          spec[:area]
+        else
+          Area.new(ulx: spec[:area][:ulx],
+                  uly: spec[:area][:uly],
+                  lrx: spec[:area][:lrx],
+                  lry: spec[:area][:lry])
+        end
       else
         if spec.has_key? :id
           Grapheme.find(spec[:id]).area

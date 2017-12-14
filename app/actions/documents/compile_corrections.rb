@@ -33,7 +33,7 @@ module Documents
 
     def modification(source, target)
       {
-        old_id: source.id,
+        id: source.id,
         value: target.value,
         area: target.area,
         surface_number: surface_number
@@ -133,7 +133,12 @@ module Documents
     end
 
     def graphemes_need_change(from, to)
-      from.value != to.value || from.area != to.area
+      from.value != to.value || [
+        from.area.ulx - to.area.ulx,
+        from.area.uly - to.area.uly,
+        from.area.lrx - to.area.lrx,
+        from.area.lry - to.area.lry
+      ].any? { |diff| diff.abs >= 1 }
     end
 
     # an array of arrays of graphemes
@@ -146,7 +151,7 @@ module Documents
       @_compare_pairs ||= -> {
         bidi = Bidi.new
 
-        candidates = sorted_words.zip(sorted_boxes).map do |pair|
+        candidates = words.zip(sorted_boxes).map do |pair|
           word, box = pair
           width = box[:lrx] - box[:ulx]
 
@@ -238,10 +243,6 @@ module Documents
       }.call
     end
 
-    def sorted_words
-      @_sorted_words ||= is_rtl ? words.reverse : words
-    end
-
     def sorted_boxes
       @_sorted_boxes ||= boxes.sort_by { |box| box[:ulx] }.map do |box|
         {
@@ -254,7 +255,12 @@ module Documents
     end
 
     def words
-      @_words ||= text.split(/\s+/)
+      @_words ||= text.chars.each_with_index.select do |char, index|
+        codepoint = char.codepoints.first
+
+        !(index == 0 && (codepoint == 0x200e || codepoint == 0x200f)) &&
+          !(index == text.chars.count - 1 && codepoint == 0x202c)
+      end.map(&:first).join.split(/\s+/).reject(&:empty?)
     end
 
     def box_for_each_word

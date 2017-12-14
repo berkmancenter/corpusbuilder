@@ -9,7 +9,18 @@ module Graphemes
     validate :is_given_position_when_needed
 
     def execute
-      revision.graphemes << Grapheme.create!(
+      Revisions::AddGrapheme.run!(
+        revision_id: revision.id,
+        grapheme_id: grapheme.id
+      )
+
+      grapheme
+    end
+
+    private
+
+    def grapheme
+      @_grapheme ||= Grapheme.create!(
         area: area,
         value: value,
         zone_id: zone_id,
@@ -17,8 +28,6 @@ module Graphemes
         position_weight: position
       )
     end
-
-    private
 
     def zone_id
       @_zone_id ||= (existing_zone_id || new_zone_id)

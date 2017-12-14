@@ -4,10 +4,10 @@ class Area
   attr_accessor :lrx, :lry, :ulx, :uly
 
   def initialize(options)
-    @lrx = options[:lrx].to_i
-    @lry = options[:lry].to_i
-    @ulx = options[:ulx].to_i
-    @uly = options[:uly].to_i
+    @lrx = options[:lrx].to_f
+    @lry = options[:lry].to_f
+    @ulx = options[:ulx].to_f
+    @uly = options[:uly].to_f
 
     if @lry < @uly
       raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards (lry = #{@lry} and uly = #{@uly})"
@@ -29,7 +29,6 @@ class Area
 
   def to_s
     Serializer.dump(self)
-    #"<area lrx=#{@lrx} lry=#{@lry} ulx=#{@ulx} uly=#{@uly} />"
   end
 
   class Tree < Grape::Entity
@@ -43,7 +42,7 @@ class Area
     def self.load(value)
       return nil if value.nil?
 
-      lrx, lry, ulx, uly = value.gsub(/(\(|\))/, '').split(',').map(&:to_i)
+      lrx, lry, ulx, uly = value.gsub(/(\(|\))/, '').split(',').map(&:to_f)
 
       Area.new lrx: lrx, lry: lry, ulx: ulx, uly: uly
     end

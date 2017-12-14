@@ -3,7 +3,6 @@ module Shared
     attr_accessor :from, :to, :gap_penalty, :score_fn
 
     def execute
-      #byebug if from.is_a? Array
       # 1. prepare the score and transition matrices:
       score_matrix = (1..to.count + 1).inject([]) { |all, row| all << [0] * (from.count + 1); all }
       transition_matrix = (1..to.count + 1).inject([]) { |all, row| all << [nil] * (from.count + 1); all }
