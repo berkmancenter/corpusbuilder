@@ -28,7 +28,7 @@ describe Documents::CompileCorrections do
   end
 
   def create_grapheme(char, box, index, pos, count)
-    box_width = box[:lrx] - box[:ulx]
+    box_width = 1.0 * (box[:lrx] - box[:ulx])
     delta_x = (box_width / (1.0 * count)) * index
     delta_x_end = (box_width / (1.0 * count)) * (index + 1)
 
@@ -47,11 +47,11 @@ describe Documents::CompileCorrections do
       ).id
   end
 
-  def create_graphemes(spec)
+  def create_graphemes(spec, dir)
     text = spec.keys.first
     boxes = spec.values.first
     ids = [ ]
-    words = text.split(/\s+/)
+    words = Bidi.to_visual(text, dir).split(/\s+/)
 
     ids << create_grapheme([0x200e].pack("U"), boxes[0], 0, 0, 1)
     words.each_with_index.each do |word, index|
@@ -64,11 +64,11 @@ describe Documents::CompileCorrections do
     ids
   end
 
-  def run_example(spec)
+  def run_example(spec, dir = :ltr)
     from_spec = spec.slice(spec.keys.first)
     to_spec = spec.slice(spec.keys.last)
 
-    ids = create_graphemes(from_spec)
+    ids = create_graphemes(from_spec, dir)
 
     corrections = Documents::CompileCorrections.run!(
       grapheme_ids: ids,
@@ -151,10 +151,10 @@ describe Documents::CompileCorrections do
         { ulx: 112, uly: 0, lrx: 124, lry: 20 }
       ],
       "سلطة أمير البلد 1234567" => [
+        { ulx:  50, uly: 0, lrx:  80, lry: 20 },
         { ulx:  88, uly: 0, lrx:  97, lry: 20 },
         { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 },
-        { ulx: 130, uly: 0, lrx: 150, lry: 20 }
+        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
       ]
     )
 
@@ -168,14 +168,14 @@ describe Documents::CompileCorrections do
   it 'doesnt change the grapheme for which the box value changes are less than 1' do
     additions, modifications, removals = run_example(
       "سلطة أمير البلد" => [
-        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+        { ulx:  88.0, uly: 1, lrx:  97.0, lry: 20 },
+        { ulx: 100, uly: 1, lrx: 109, lry: 20 },
+        { ulx: 112, uly: 1, lrx: 124, lry: 20 }
       ],
       "سلطة أمير البلد " => [
-        { ulx:  88.4, uly: 0, lrx:  97, lry: 20 },
+        { ulx:  88.4, uly: 1.1, lrx:  97.0, lry: 20 },
         { ulx: 100, uly: 0.9, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 123.7, lry: 20 }
+        { ulx: 112, uly: 0.6, lrx: 123.7, lry: 20 }
       ]
     )
 

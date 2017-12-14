@@ -2,7 +2,7 @@
 # Doesn't work with streams as is turned out the "traditional" approach is
 # sufficiently performant and didn't eat that lot of memory
 class HocrParser < Parser
-  attr_accessor :element_parser, :hocr_string, :yielder, :bidi
+  attr_accessor :element_parser, :hocr_string, :yielder
 
   def self.parse(hocr_string)
     new(hocr_string.gsub(/\<\?.*$/, ''))
@@ -163,12 +163,15 @@ class HocrParser < Parser
     Rails.logger.debug "Node text: #{xml_node.text}"
 
     unordered = xml_node.text.chars
-    ordered = bidi.to_visual(xml_node.text, direction(xml_node)).chars
+    ordered = Bidi.to_visual(xml_node.text, direction(xml_node)).chars
     ordered_codepoints = ordered.map(&:codepoints).flatten
     count_all = ordered.count
 
     Rails.logger.debug "Unordered list of graphemes: #{unordered.try(:inspect)}"
     Rails.logger.debug "Ordered list of graphemes: #{ordered.try(:inspect)}"
+
+    Rails.logger.debug "Unordered list of codepoints: #{unordered.join.codepoints}"
+    Rails.logger.debug "Ordered list of codepoints: #{ordered_codepoints}"
 
     used_indexes = Set.new
 
@@ -191,13 +194,14 @@ class HocrParser < Parser
         Rails.logger.debug "StopIteration for the grapheme: ( #{char.codepoints.first} ) with depth: #{depth} for the unordered list being #{unordered} the ordered being #{ordered} and the used_indexes being #{used_indexes.inspect}"
         Rails.logger.debug "The indexes map for the grapheme: #{indexes_map.call(char).to_a}"
         Rails.logger.debug "The ordered codepoints: #{ordered.map(&:codepoints).flatten}"
-        mirrored_codepoints = $mirrorMap[char.codepoints.first]
+        byebug
+        #mirrored_codepoints = $mirrorMap[char.codepoints.first]
 
-        if mirrored_codepoints.present?
-          mirrored_char = mirrored_codepoints.first.chr
+       #if mirrored_codepoints.present?
+       #  mirrored_char = mirrored_codepoints.first.chr
 
-          ordered_index.call(mirrored_char, depth + 1)
-        end
+       #  ordered_index.call(mirrored_char, depth + 1)
+       #end
       end
 
       used_indexes << index
@@ -228,6 +232,7 @@ class HocrParser < Parser
 
     if index.present? and count_all.present?
       width = lrx - ulx
+      #byebug if ulx.is_a?(TrueClass) || index.is_a?(TrueClass)
       lrx = ulx + (index + 1) * width * 1.0 / count_all
       ulx = ulx + index       * width * 1.0 / count_all
     end
@@ -252,6 +257,5 @@ class HocrParser < Parser
 
   def initialize(hocr_string)
     @hocr_string = hocr_string
-    @bidi = Bidi.new
   end
 end

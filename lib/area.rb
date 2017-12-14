@@ -4,10 +4,10 @@ class Area
   attr_accessor :lrx, :lry, :ulx, :uly
 
   def initialize(options)
-    @lrx = options[:lrx].to_f
-    @lry = options[:lry].to_f
-    @ulx = options[:ulx].to_f
-    @uly = options[:uly].to_f
+    @lrx = options[:lrx].to_f.round
+    @lry = options[:lry].to_f.round
+    @ulx = options[:ulx].to_f.round
+    @uly = options[:uly].to_f.round
 
     if @lry < @uly
       raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards (lry = #{@lry} and uly = #{@uly})"
@@ -42,7 +42,7 @@ class Area
     def self.load(value)
       return nil if value.nil?
 
-      lrx, lry, ulx, uly = value.gsub(/(\(|\))/, '').split(',').map(&:to_f)
+      lrx, lry, ulx, uly = value.gsub(/(\(|\))/, '').split(',').map(&:to_f).map(&:round)
 
       Area.new lrx: lrx, lry: lry, ulx: ulx, uly: uly
     end

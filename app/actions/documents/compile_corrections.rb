@@ -149,13 +149,15 @@ module Documents
     # [ [ <Grapheme>, ... ], [ <Grapheme>, ... ] ]
     def compare_pairs
       @_compare_pairs ||= -> {
-        bidi = Bidi.new
+        words.each do |word|
+          Rails.logger.info "==> WORD | #{ word }"
+        end
 
         candidates = words.zip(sorted_boxes).map do |pair|
           word, box = pair
           width = box[:lrx] - box[:ulx]
 
-          sorted_chars = bidi.to_visual(word, paragraph_direction).chars
+          sorted_chars = word.chars # bidi.to_visual(word, paragraph_direction).chars
 
           sorted_chars.zip(word.chars).each_with_index.map do |chars, index|
             _, char = chars
@@ -246,16 +248,22 @@ module Documents
     def sorted_boxes
       @_sorted_boxes ||= boxes.sort_by { |box| box[:ulx] }.map do |box|
         {
-          ulx: box[:ulx].to_f,
-          uly: box[:uly].to_f,
-          lrx: box[:lrx].to_f,
-          lry: box[:lry].to_f
+          ulx: box[:ulx].to_f.round,
+          uly: box[:uly].to_f.round,
+          lrx: box[:lrx].to_f.round,
+          lry: box[:lry].to_f.round
         }
       end
     end
 
+    def sorted_text
+      @_sorted_text ||= -> {
+        Bidi.to_visual(text, paragraph_direction)
+      }.call
+    end
+
     def words
-      @_words ||= text.chars.each_with_index.select do |char, index|
+      @_words ||= sorted_text.chars.each_with_index.select do |char, index|
         codepoint = char.codepoints.first
 
         !(index == 0 && (codepoint == 0x200e || codepoint == 0x200f)) &&
