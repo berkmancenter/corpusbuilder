@@ -48,7 +48,6 @@ module Graphemes
     end
 
     def existing_zone_id
-
       Zone.where("area @> ?", @area.to_s).
            where(surface_id: surface_id).
            take(1).
@@ -57,8 +56,10 @@ module Graphemes
     end
 
     def new_zone_id
-      Zone.create! area: area,
+      Zone.create!(
+        area: area,
         surface_id: surface_id
+      ).id
     end
 
     def surface_id

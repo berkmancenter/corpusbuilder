@@ -258,17 +258,20 @@ module Documents
 
     def sorted_text
       @_sorted_text ||= -> {
-        Bidi.to_visual(text, paragraph_direction)
+        normalized = text.codepoints.each_with_index.select do |codepoint, index|
+          !(index == 0 && (codepoint == 0x200e || codepoint == 0x200f)) &&
+            !(index == text.chars.count - 1 && codepoint == 0x202c)
+        end.map(&:first).pack("U*")
+        sorted = Bidi.to_visual(normalized, paragraph_direction)
+        Rails.logger.debug "Before visually sorting: #{normalized}"
+        Rails.logger.debug "After visually sorting (#{paragraph_direction}): #{sorted}"
+        Rails.logger.debug "After visually sorting (codepoints:): #{sorted.codepoints.inspect}"
+        sorted.strip
       }.call
     end
 
     def words
-      @_words ||= sorted_text.chars.each_with_index.select do |char, index|
-        codepoint = char.codepoints.first
-
-        !(index == 0 && (codepoint == 0x200e || codepoint == 0x200f)) &&
-          !(index == text.chars.count - 1 && codepoint == 0x202c)
-      end.map(&:first).join.split(/\s+/).reject(&:empty?)
+      @_words ||= sorted_text.split(/\s+/).reject(&:empty?)
     end
 
     def box_for_each_word
