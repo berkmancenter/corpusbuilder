@@ -16,6 +16,20 @@ module Action
         instance.send "#{name}=", value
       end
 
+      if Rails.env.development? && instance.create_development_dumps?
+        marshalled = Marshal.dump(instance)
+
+        path = File.join(Rails.root, "tmp", instance.dump_path)
+
+        if File.exist?(path)
+          FileUtils.rm path
+        end
+
+        File.open(path, "wb") do |file|
+          file.write marshalled
+        end
+      end
+
       if instance.valid?
         App.connection.transaction do
           instance.instance_variable_set "@_result", instance.execute
@@ -45,12 +59,26 @@ module Action
       instance
     end
 
+    def self.load_last_dump
+      path = File.join(Rails.root, "tmp", new.dump_path)
+
+      Marshal.load(File.read(path))
+    end
+
     def self.has_setters?(instance)
       instance.methods.select { |m| m.to_s[/^[^!=]*=$/] }.present?
     end
 
     def result
       @_result
+    end
+
+    def create_development_dumps?
+      false
+    end
+
+    def dump_path
+      self.class.to_s.downcase.gsub('::', '_').gsub(/$/, '.dump')
     end
 
     def fail(description)

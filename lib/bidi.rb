@@ -8,6 +8,14 @@ module Bidi
   end
 
   def self.to_visual(text, direction)
+    positions = to_visual_indices(text, direction)
+
+    positions.map do |index|
+      text[index]
+    end.join
+  end
+
+  def self.to_visual_indices(text, direction)
     null = FFI::Pointer::NULL
 
     t = FFI::MemoryPointer.new(:uint32, text.codepoints.count)
@@ -21,13 +29,9 @@ module Bidi
     success = Lib.fribidi_log2vis(t, text.codepoints.count, dir_spec, null, null, pos, null)
 
     if success
-      positions = pos.read_array_of_int(text.codepoints.count)
-
-      positions.map do |index|
-        text[index]
-      end.join
+      return pos.read_array_of_int(text.codepoints.count)
     else
-      raise StandardError, "Failed to infer the visual ordering for the text"
+      raise StandardError, "Failed to infer the visual ordering of the text"
     end
   end
 end

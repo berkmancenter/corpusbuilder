@@ -49,16 +49,21 @@ describe Documents::CompileCorrections do
 
   def create_graphemes(spec, dir)
     text = spec.keys.first
-    boxes = spec.values.first
+    boxes = dir == :rtl ? spec.values.first.reverse : spec.values.first
     ids = [ ]
-    words = Bidi.to_visual(text, dir).split(/\s+/)
 
-    ids << create_grapheme([0x200e].pack("U"), boxes[0], 0, 0, 1)
+    words = text.split(/\s+/)
+
+    ids << create_grapheme([dir == :rtl ? 0x200f : 0x200e].pack("U*"), boxes[0], 0, 0, 1)
+
     words.each_with_index.each do |word, index|
+      visual_positions = Bidi.to_visual_indices(word, dir)
+
       word.chars.each_with_index do |char, char_index|
-        ids << create_grapheme(char, boxes[ index ], char_index, ids.count, word.chars.count)
+        ids << create_grapheme(char, boxes[ index ], visual_positions[char_index], ids.count, word.chars.count)
       end
     end
+
     ids << create_grapheme([0x202c].pack("U"), boxes[boxes.count-1], text.chars.count, ids.count, text.chars.count)
 
     ids
@@ -139,23 +144,26 @@ describe Documents::CompileCorrections do
 
     expect(additions.count).to eq(2)
     expect(modifications.count).to eq(3)
-    expect(additions.map { |a| a[:value] }.join).to eq("je")
-    expect(modifications.map { |a| a[:value] }.join).to eq("den")
+    expect(additions.sort_by { |a| a[:position_weight] }.map { |a| a[:value] }.join).to eq("je")
+    expect(modifications.sort_by { |a| a[:position_weight] }.map { |a| a[:value] }.join).to eq("den")
   end
 
   it 'provides proper additions in the RTL scenario' do
     additions, modifications, removals = run_example(
-      "سلطة أمير البلد" => [
-        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-      ],
-      "سلطة أمير البلد 1234567" => [
-        { ulx:  50, uly: 0, lrx:  80, lry: 20 },
-        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-      ]
+      {
+        "سلطة أمير البلد" => [
+          { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+          { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+          { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+        ],
+        "سلطة أمير البلد 1234567" => [
+          { ulx:  50, uly: 0, lrx:  80, lry: 20 },
+          { ulx:  88, uly: 0, lrx:  97, lry: 20 },
+          { ulx: 100, uly: 0, lrx: 109, lry: 20 },
+          { ulx: 112, uly: 0, lrx: 124, lry: 20 }
+        ]
+      },
+      :rtl
     )
 
     expect(additions.count).to eq(7)
@@ -165,18 +173,59 @@ describe Documents::CompileCorrections do
     expect(removals.count).to eq(0)
   end
 
+  it 'makes the resulting, emerging line read exactly the same as the one given in params' do
+    additions, modifications, removals = run_example(
+      {
+        "سلطة أمير      البلد" => [
+          { ulx:  38, uly: 0, lrx:  57, lry: 20 },
+          { ulx: 100, uly: 0, lrx: 119, lry: 20 },
+          { ulx: 122, uly: 0, lrx: 134, lry: 20 }
+        ],
+        "سلطة أمير 12345 البلد" => [
+          { ulx:  38, uly: 0, lrx:  57, lry: 20 },
+          { ulx:  68, uly: 0, lrx:  97, lry: 20 },
+          { ulx: 100, uly: 0, lrx: 119, lry: 20 },
+          { ulx: 122, uly: 0, lrx: 134, lry: 20 }
+        ]
+      },
+      :rtl
+    )
+
+    expect(additions.count).to eq(5)
+    expect(additions.map { |a| a[:value] }.join).to eq("12345")
+
+    expect(modifications.count).to eq(0)
+    expect(removals.count).to eq(0)
+
+    sorted_resulting_line = Grapheme.all.map { |g| { value: g.value, position_weight: g.position_weight } }.
+      concat(additions).
+      sort_by { |g| g[:position_weight] }
+
+    resulting_line = sorted_resulting_line.map { |g| g[:value] }.select do |v|
+        codepoint = v.codepoints.first
+        codepoint != 0x200f && codepoint != 0x200e && codepoint != 0x202c
+      end.join
+
+    expect(
+      resulting_line.codepoints
+    ).to eq([1587, 1604, 1591, 1577, 1571, 1605, 1610, 1585, 49, 50, 51, 52, 53, 1575, 1604, 1576, 1604, 1583])
+  end
+
   it 'doesnt change the grapheme for which the box value changes are less than 1' do
     additions, modifications, removals = run_example(
-      "سلطة أمير البلد" => [
-        { ulx:  88.0, uly: 1, lrx:  97.0, lry: 20 },
-        { ulx: 100, uly: 1, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 1, lrx: 124, lry: 20 }
-      ],
-      "سلطة أمير البلد " => [
-        { ulx:  88.4, uly: 1.1, lrx:  97.0, lry: 20 },
-        { ulx: 100, uly: 0.9, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0.6, lrx: 123.7, lry: 20 }
-      ]
+      {
+        "سلطة أمير البلد" => [
+          { ulx:  88.0, uly: 1, lrx:  97.0, lry: 20 },
+          { ulx: 100, uly: 1, lrx: 109, lry: 20 },
+          { ulx: 112, uly: 1, lrx: 124, lry: 20 }
+        ],
+        "سلطة أمير البلد " => [
+          { ulx:  88.4, uly: 1.1, lrx:  97.0, lry: 20 },
+          { ulx: 100, uly: 0.9, lrx: 109, lry: 20 },
+          { ulx: 112, uly: 0.6, lrx: 123.7, lry: 20 }
+        ]
+      },
+      :rtl
     )
 
     expect(additions.count).to eq(0)

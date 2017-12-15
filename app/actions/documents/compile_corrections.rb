@@ -16,24 +16,30 @@ module Documents
       @_surface_number ||= source_graphemes.first.zone.surface.number
     end
 
-    def addition(target)
+    def addition(target, index)
       {
         value: target.value,
+        word_id: index,
         area: target.area,
-        surface_number: surface_number
+        surface_number: surface_number,
+        position_weight: target.position_weight
       }
     end
 
-    def deletion(source)
+    def deletion(source, index)
       {
         id: source.id,
+        word_id: index,
+        grapheme: source,
         delete: true
       }
     end
 
-    def modification(source, target)
+    def modification(source, target, index)
       {
         id: source.id,
+        word_id: index,
+        grapheme: source,
         value: target.value,
         area: target.area,
         surface_number: surface_number
@@ -41,17 +47,17 @@ module Documents
     end
 
     def compare_items
-      @_compare_items ||= compare_pairs.first.zip(compare_pairs.last).map do |word_pair|
+      @_compare_items ||= compare_pairs.first.zip(compare_pairs.last).each_with_index.map do |word_pair, index|
         # word_pairs :: [ [ <Grapheme>, ... ], [ <Grapheme>, ... ] ]
         old_word, new_word = word_pair
 
         if old_word.nil?
           new_word.map do |target|
-            addition(target)
+            addition(target, index)
           end
         elsif new_word.nil?
           old_word.map do |source|
-            deletion(source)
+            deletion(source, index)
           end
         else
           from, to = needleman_wunsch(old_word, new_word, gap_penalty: -1) do |left, right|
@@ -68,14 +74,15 @@ module Documents
             source, target = pair
 
             if source.nil?
-              addition(target)
+              addition(target, index)
             elsif target.nil?
-              deletion(source)
+              deletion(source, index)
             elsif graphemes_need_change(source, target)
-              modification(source, target)
+              modification(source, target, index)
             else
               {
                 same: true,
+                word_id: index,
                 grapheme: source
               }
             end
@@ -93,7 +100,17 @@ module Documents
         result: [ ]
       })
 
-      items.concat([ nil ]).inject(initial_state) do |state, item|
+      by_words = items.group_by { |i| i[:word_id] }
+      word_ids = (0..words.count-1).to_a
+      word_ids.reverse! if paragraph_direction == :rtl
+
+      sorted = word_ids.map do |word_index|
+        word = by_words[word_index]
+
+        word.sort_by { |i| i.has_key?(:grapheme) ? i[:grapheme].position_weight : i[:position_weight] }
+      end.flatten
+
+      sorted.concat([ nil ]).inject(initial_state) do |state, item|
         if item.nil? || item.has_key?(:same)
           # now compute position weights for the items
           # gathered in the current span:
@@ -108,7 +125,8 @@ module Documents
           end
 
           state.span = [ ]
-          state.last_position = end_weight
+          #state.last_position = end_weight
+          state.prev_position = end_weight
         elsif !item.has_key?(:delete)
           # we have either addition or modification
           # adding to the current span:
@@ -171,7 +189,8 @@ module Documents
               lry: box[:lry]
 
             Grapheme.new value: char,
-              area: area
+              area: area,
+              position_weight: index
           end
         end
 
@@ -220,7 +239,9 @@ module Documents
         # and may end with the pop directionality:
 
         graphemes = source_graphemes.each_with_index.select do |grapheme, index|
-          index != 0 && !( grapheme.value.codepoints.first == 0x202c && index == source_graphemes.count - 1 )
+          codepoint = grapheme.value.codepoints.first
+
+          codepoint != 0x202c && codepoint != 0x200f && codepoint != 0x200e
         end
 
         graphemes = graphemes.map(&:first)
@@ -246,38 +267,47 @@ module Documents
     end
 
     def sorted_boxes
-      @_sorted_boxes ||= boxes.sort_by { |box| box[:ulx] }.map do |box|
+      @_sorted_boxes ||= boxes.map do |box|
         {
           ulx: box[:ulx].to_f.round,
           uly: box[:uly].to_f.round,
           lrx: box[:lrx].to_f.round,
           lry: box[:lry].to_f.round
         }
-      end
+      end.sort_by { |box| box[:ulx] }
     end
 
-    def sorted_text
-      @_sorted_text ||= -> {
-        normalized = text.codepoints.each_with_index.select do |codepoint, index|
-          !(index == 0 && (codepoint == 0x200e || codepoint == 0x200f)) &&
-            !(index == text.chars.count - 1 && codepoint == 0x202c)
-        end.map(&:first).pack("U*")
-        sorted = Bidi.to_visual(normalized, paragraph_direction)
-        Rails.logger.debug "Before visually sorting: #{normalized}"
-        Rails.logger.debug "After visually sorting (#{paragraph_direction}): #{sorted}"
-        Rails.logger.debug "After visually sorting (codepoints:): #{sorted.codepoints.inspect}"
-        sorted.strip
+    def normalized_text
+      @_normalized_text ||= -> {
+        text.codepoints.each_with_index.select do |codepoint, index|
+          codepoint != 0x200e && codepoint != 0x200f && codepoint != 0x202c
+        end.map(&:first).pack("U*").strip
       }.call
     end
 
     def words
-      @_words ||= sorted_text.split(/\s+/).reject(&:empty?)
+      @_words ||= -> {
+        words = normalized_text.split(/\s+/).reject(&:empty?)
+        sorted_words = paragraph_direction == :rtl ? words.reverse : words
+
+        sorted_words.map do |word|
+          if paragraph_direction == :rtl
+            Bidi.to_visual word, :rtl
+          else
+            word
+          end
+        end
+      }.call
     end
 
     def box_for_each_word
       if words.count != boxes.count
-        errors.add(:boxes, "must match in count (given: #{ boxes.count }) with the number of words in text (given: #{ words.count })")
+        errors.add(:boxes, "must match in count (given: #{ boxes.count }) with the number of words in text (given: #{ words.count } - #{words.inspect})")
       end
+    end
+
+    def create_development_dumps?
+      true
     end
   end
 end
