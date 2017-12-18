@@ -8,7 +8,6 @@ export default class Documents {
     }
 
     tree(documentId, branchName = 'master', page = 1, preloadNext = 1, preloadPrev = 1, force = false) {
-        branchName = 'f8b4334f-82d0-4a7b-a481-c4fd82457f60';
         let key = `${branchName}-${page}`
         if( !this.state.trees.has(key)) {
             Request

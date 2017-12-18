@@ -243,6 +243,9 @@ export default class Viewer extends React.Component {
                                    branches={ this.branches }
                                    currentBranch={ this.currentBranch }
                                    editing={ this.editing }
+                                   showCertainties={ this.showCertainties }
+                                   showAnnotations={ this.showAnnotations }
+                                   showBackground={ this.showImage }
                                    onBranchSwitch={ this.chooseBranch.bind(this) }
                                    onBranchModeToggle={ this.toggleBranchMode.bind(this) }
                                    onToggleCertainties={ this.toggleCertainties.bind(this) }

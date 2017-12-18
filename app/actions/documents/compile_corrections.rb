@@ -110,6 +110,8 @@ module Documents
         word.sort_by { |i| i.has_key?(:grapheme) ? i[:grapheme].position_weight : i[:position_weight] }
       end.flatten
 
+      #byebug
+
       sorted.concat([ nil ]).inject(initial_state) do |state, item|
         if item.nil? || item.has_key?(:same)
           # now compute position weights for the items
@@ -151,12 +153,15 @@ module Documents
     end
 
     def graphemes_need_change(from, to)
-      from.value != to.value || [
+      value_differs = from.value != to.value
+      area_differs = [
         from.area.ulx - to.area.ulx,
         from.area.uly - to.area.uly,
         from.area.lrx - to.area.lrx,
         from.area.lry - to.area.lry
       ].any? { |diff| diff.abs >= 1 }
+
+      value_differs || area_differs
     end
 
     # an array of arrays of graphemes
@@ -171,6 +176,7 @@ module Documents
           Rails.logger.info "==> WORD | #{ word }"
         end
 
+        # candidate word boxes with graphemes from left to right
         candidates = words.zip(sorted_boxes).map do |pair|
           word, box = pair
           width = box[:lrx] - box[:ulx]
@@ -193,6 +199,8 @@ module Documents
               position_weight: index
           end
         end
+
+        #byebug
 
         gap = -> (word) {
           -1 * word.count

@@ -154,7 +154,7 @@ export default class DocumentLine extends React.Component {
             if([ 0x200e, 0x200f, 0x202c ].indexOf(codePoint) === -1) {
                 let graphemeWidth = grapheme.area.lrx - grapheme.area.ulx;
 
-                if(lastUlx === null || lastLrx === null || grapheme.area.ulx - lastLrx > 0.1 * graphemeWidth) {
+                if(lastUlx === null || lastLrx === null || grapheme.area.ulx > lastLrx) {
                     results.push([ grapheme ]);
                     currentWordIndex++;
                 }
@@ -290,7 +290,7 @@ export default class DocumentLine extends React.Component {
             let unscaledWidth = this.firstWord[ countChars - 1 ].area.lrx - this.firstWord[ 0 ].area.ulx;
             let scaledWidth = unscaledWidth * this.props.ratio;
 
-            return ( scaledWidth - measuredWidth ) / ( countChars - 1 );
+            return ( scaledWidth - measuredWidth ) / ( countChars - ( this.firstWord.length > 1 ? 1 : 0) );
         }
         return null;
     }

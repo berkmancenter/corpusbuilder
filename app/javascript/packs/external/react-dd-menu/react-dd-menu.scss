@@ -1,0 +1,239 @@
+$dd-menu-z-index: 7 !default;
+$dd-menu-margin: 0.5em 0 0 0 !default;
+$dd-menu-upwards-margin: 0 0 .5em !default;
+$dd-menu-item-padding: 0.75em 0.75em !default;
+
+$dd-menu-sm-width: 150px !default;
+$dd-menu-md-width: 300px !default;
+$dd-menu-lg-width: 450px !default;
+$dd-menu-xl-width: 600px !default;
+
+$dd-menu-sizes: ('sm' $dd-menu-sm-width), ('md' $dd-menu-md-width), ('lg' $dd-menu-lg-width), ('xl' $dd-menu-xl-width) !default;
+
+
+$dd-font: Lato, Helvetica, Arial, sans-serif !default;
+
+$dd-text-color: #777 !default;
+$dd-inverse-text-color: #fff !default;
+$dd-list-hover-text-color: #000 !default;
+$dd-inverse-list-hover-text-color: #fff !default;
+
+$dd-list-color: #fefefe !default;
+$dd-inverse-list-color: #2c3e50 !default; // midnight blue
+
+$dd-list-hover-color: #bdc3c7 !default; // silver
+$dd-inverse-list-hover-color: #34495e !default; // wet-asphalt
+
+$dd-menu-box-shadow: 0 0 4px rgba(0, 0, 0, .15), 0 2px 4px rgba(0, 0, 0, .29) !default;
+
+$dd-transition-time: 0.15s !default;
+$dd-transition-in: cubic-bezier(0.5, 1.8, 0.9, 0.8) !default;
+$dd-transition-out: ease-out !default;
+$dd-transitions: (
+  ('left' '0 0')
+  ('right' '100% 0')
+  ('center' '50% 0')
+  ('up-left' '0 100%')
+  ('up-center' '50% 100%')
+  ('up-right' '100% 100%')
+) !default;
+
+$dd-separator-height: 2px !default;
+$dd-separator-color: rgba(0, 0, 0, .15) !default;
+$dd-inverse-separator-color: #45595e !default;
+$dd-separator-margin-top: .5em !default;
+$dd-separator-margin-right: 0 !default;
+$dd-separator-margin-bottom: .5em !default;
+$dd-separator-margin-left: 0 !default;
+
+/* Not really sure why, but the inverse version has a bigger gap */
+$nested-dd-padding: .5em !default;
+$nested-dd-inverse-padding: .3em !default;
+@mixin nested-position($dir, $padding) {
+  @if $dir != 'center' {
+    $swapped: if($dir == 'left', 'right', 'left');
+
+    [class^='nested-']:not(.nested-reverse) > span {
+      #{$swapped}: 100%;
+      padding-#{$swapped}: $padding;
+    }
+
+    .nested-reverse > span {
+      #{$dir}: 100%;
+      padding-#{$dir}: $padding;
+    }
+  }
+}
+
+@mixin dd-position($dir) {
+  &.dd-menu-#{$dir} .dd-menu-items {
+    #{$dir}: 0;
+
+    @include nested-position($dir, $nested-dd-padding);
+  }
+
+  &.dd-menu-#{$dir}.dd-menu-inverse .dd-menu-items {
+    @include nested-position($dir, $nested-dd-inverse-padding);
+  }
+}
+
+@mixin dd-size($size, $width) {
+  &.dd-menu-#{$size} .dd-menu-items {
+    width: $width;
+  }
+}
+
+@mixin dd-sizes() {
+  @each $size in $dd-menu-sizes {
+    @include dd-size(nth($size, 1), nth($size, 2));
+  }
+}
+
+@mixin dd-transition($dir, $origin) {
+  .grow-from-#{$dir}-enter {
+    transform: scale(0);
+    transform-origin: unquote($origin);
+    transition: transform $dd-transition-time $dd-transition-in;
+
+    &.grow-from-#{$dir}-enter-active {
+      transform: scale(1);
+    }
+  }
+
+  .grow-from-#{$dir}-leave {
+    transform: scale(1);
+    transform-origin: unquote($origin);
+    transition: transform $dd-transition-time $dd-transition-out;
+
+    &.grow-from-#{$dir}-leave-active {
+      transform: scale(0);
+    }
+  }
+}
+@each $transition in $dd-transitions {
+  @include dd-transition(nth($transition, 1), nth($transition, 2));
+}
+
+.dd-menu {
+  display: inline-block;
+  position: relative;
+
+  &.dd-menu-center .dd-menu-items {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  @include dd-position(left);
+  @include dd-position(right);
+  @include dd-sizes();
+
+  .dd-menu-items {
+    position: absolute;
+    z-index: $dd-menu-z-index;
+    margin: $dd-menu-margin;
+
+    &.dd-items-upwards {
+      bottom: 100%;
+      margin: $dd-menu-upwards-margin;
+    }
+
+    ul, ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      color: $dd-text-color;
+      background-color: $dd-list-color;
+
+      box-shadow: $dd-menu-box-shadow;
+
+      &.dd-items-right li > * {
+        text-align: right;
+      }
+
+      &.dd-items-left li > * {
+        text-align: left;
+      }
+
+      &.dd-items-center li > * {
+        text-align: center;
+      }
+
+      li {
+        &:hover:not([role="separator"]):not(.separator),
+        > *:focus {
+          color: $dd-list-hover-text-color;
+          background-color: $dd-list-hover-color;
+          outline: none;
+        }
+
+        > *:not(.dd-item-ignore) {
+          display: block;
+          width: auto;
+          min-width: 100%;
+          padding: $dd-menu-item-padding;
+
+          font-family: $dd-font;
+          font-size: 14px !important;
+          height: auto !important;
+          line-height: auto !important;
+          margin: 0px;
+          white-space: pre;
+          color: inherit;
+          text-decoration: none;
+          font-size: inherit;
+        }
+
+        > button {
+          border: none;
+          background: transparent;
+        }
+      }
+    }
+  }
+
+  &.dd-menu-inverse {
+    .dd-menu-items {
+      ul, ol {
+        color: $dd-inverse-text-color;
+        background-color: $dd-inverse-list-color;
+
+        li {
+
+          &:hover:not([role="separator"]):not(.separator),
+          > *:focus {
+            color: $dd-inverse-list-hover-text-color;
+            background-color: $dd-inverse-list-hover-color;
+          }
+        }
+      }
+    }
+
+    [role="separator"], .separator {
+      background-color: $dd-inverse-separator-color;
+    }
+  }
+
+  [role="separator"], .separator {
+    content: '';
+    display: block;
+    height: $dd-separator-height;
+    background-color: $dd-separator-color;
+    margin: $dd-separator-margin-top $dd-separator-margin-right $dd-separator-margin-bottom $dd-separator-margin-left;
+  }
+
+  .dd-items-upwards {
+    li.nested-dd-menu > span {
+      bottom: 0;
+      top: initial;
+    }
+  }
+
+  li.nested-dd-menu {
+    position: relative;
+
+    > span {
+      position: absolute;
+      top: 0;
+    }
+  }
+}

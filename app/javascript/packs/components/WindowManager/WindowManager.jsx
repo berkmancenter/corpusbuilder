@@ -155,6 +155,8 @@ export default class WindowManager extends React.Component {
 
     renderNavigation() {
 
+        return null;
+
         return (
             <div className="corpusbuilder-global-options">
               <div className={ 'corpusbuilder-tabs' }>

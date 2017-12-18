@@ -19,6 +19,9 @@ class Branch < ApplicationRecord
 
     expose :name
     expose :revision_id
+    expose :working_id do |branch, _|
+      branch.working.id
+    end
     expose :editor, with: Editor::Simple
   end
 end

@@ -25,3 +25,29 @@
       color: #777;
     }
 }
+
+.dd-menu {
+  .corpusbuilder {
+    &-button {
+      margin: 0px;
+    }
+
+    &-button:after {
+      content: '\25BE';
+      font-size: 10px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+  }
+}
+
+.nested-dd-menu {
+  .corpusbuilder {
+    &-button:after {
+      content: '\25B8';
+      font-size: 10px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+  }
+}
