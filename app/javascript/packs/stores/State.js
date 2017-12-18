@@ -11,6 +11,9 @@ class State {
     branches = observable.map();
 
     @observable
+    versions = observable.map();
+
+    @observable
     infos = observable.map();
 
     @observable

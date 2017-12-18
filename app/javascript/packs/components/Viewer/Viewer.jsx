@@ -29,7 +29,7 @@ export default class Viewer extends React.Component {
     div = null;
 
     @observable
-    currentBranch = null;
+    currentVersion = null;
 
     @observable
     editing = false;
@@ -72,11 +72,16 @@ export default class Viewer extends React.Component {
 
     @computed
     get tree() {
-        return this.props.documents.tree(
-          this.documentId,
-          this.currentBranch,
-          this.page
-        );
+        if(this.currentVersion === null) {
+            return null;
+        }
+        else {
+            return this.props.documents.tree(
+              this.documentId,
+              this.currentVersion,
+              this.page
+            );
+        }
     }
 
     @computed
@@ -114,7 +119,10 @@ export default class Viewer extends React.Component {
         super(props);
 
         this.documentId = this.props.documentId;
-        this.currentBranch = this.props.branchName || 'master';
+        this.currentVersion = this.props.documents.getVersion({
+            documentId: this.documentId,
+            name: this.props.branchName || 'master'
+        });
         this.showImage = this.props.showImage;
     }
 
@@ -135,11 +143,23 @@ export default class Viewer extends React.Component {
     }
 
     chooseBranch(branch) {
-        this.currentBranch = branch.name;
+        this.currentVersion = this.props.documents.getVersion({
+            documentId: this.documentId,
+            branchName: branch.name
+        });
     }
 
     toggleBranchMode(isOn) {
-      this.editing = isOn;
+        if(this.editing == isOn) return;
+
+        this.editing = isOn;
+
+        if(isOn) {
+            this.currentVersion = this.currentVersion.workingVersion;
+        }
+        else {
+            this.currentVersion = this.currentVersion.branchVersion;
+        }
     }
 
     toggleCertainties(isOn) {
@@ -165,14 +185,14 @@ export default class Viewer extends React.Component {
     saveAnnotation(annotation) {
         this.props.metadata.saveAnnotation(
             this.documentId,
-            this.currentBranch,
+            this.currentVersion,
             annotation,
             this.lastSelectedGraphemes
         );
     }
 
     saveLine(doc, line, editedText, boxes) {
-      this.props.documents.correct(doc, this.page, line, this.currentBranch, editedText, boxes);
+      this.props.documents.correct(doc, this.page, line, this.currentVersion, editedText, boxes);
     }
 
     hideAnnotationEditor() {
@@ -223,7 +243,6 @@ export default class Viewer extends React.Component {
     render() {
         let doc = this.tree;
         let width = this.width;
-        let branchName = this.currentBranch;
         let content;
 
         if(doc !== undefined && doc !== null && doc.surfaces.length > 0) {
@@ -241,7 +260,7 @@ export default class Viewer extends React.Component {
                 <div className="corpusbuilder-options top">
                   <DocumentOptions document={ doc }
                                    branches={ this.branches }
-                                   currentBranch={ this.currentBranch }
+                                   currentVersion={ this.currentVersion }
                                    editing={ this.editing }
                                    showCertainties={ this.showCertainties }
                                    showAnnotations={ this.showAnnotations }
@@ -289,7 +308,7 @@ export default class Viewer extends React.Component {
                                     />
                   <Annotations visible={ this.showAnnotations }
                               document={ doc }
-                              branchName={ this.currentBranch }
+                              version={ this.currentVersion }
                               page={ page }
                               width={ width }
                               mainPageTop={ mainPageTop }

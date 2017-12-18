@@ -53,15 +53,6 @@ export default class WindowManager extends React.Component {
     }
 
     @computed
-    get document() {
-        return this.sharedContext.documents.tree(
-          this.props.documentId,
-          'master',
-          1
-        );
-    }
-
-    @computed
     get sharedContext() {
         return {
             documents: new Documents(this.props.baseUrl, state),
@@ -153,39 +144,6 @@ export default class WindowManager extends React.Component {
         this.maxViewerHeight = Math.max(this.maxViewerHeight, el.offsetHeight);
     }
 
-    renderNavigation() {
-
-        return null;
-
-        return (
-            <div className="corpusbuilder-global-options">
-              <div className={ 'corpusbuilder-tabs' }>
-                <Button onClick={ this.navigatePages.bind(this) }>
-                    <div className={ this.currentTab.name === 'pages' ? 'corpusbuilder-tabs-active' : '' }>
-                        <i className={ 'fa fa-book' } aria-hidden="true"></i>
-                          &nbsp;
-                        Pages
-                    </div>
-                </Button>
-                <Button onClick={ this.navigateInfo.bind(this) }>
-                    <div className={ this.currentTab.name === 'info' ? 'corpusbuilder-tabs-active' : '' }>
-                        <i className={ 'fa fa-info-circle' } aria-hidden="true"></i>
-                          &nbsp;
-                        Document Info
-                    </div>
-                </Button>
-                <Button onClick={ this.navigateVersions.bind(this) }>
-                    <div className={ this.currentTab.name === 'versions' ? 'corpusbuilder-tabs-active' : '' }>
-                        <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
-                          &nbsp;
-                        Versions
-                    </div>
-                </Button>
-              </div>
-            </div>
-        );
-    }
-
     renderDocumentPanes() {
         return (
             [
@@ -228,36 +186,17 @@ export default class WindowManager extends React.Component {
         );
     }
 
-    renderInfo() {
-        return <DocumentInfo height={ this.maxViewerHeight } document={ this.document } />;
-    }
-
-    renderVersions() {
-        return <DocumentRevisionsBrowser height={ this.maxViewerHeight }
-                                         document={ this.document }
-                                         branchName={ 'master' } />;
-    }
-
     renderContent() {
-        if(this.currentTab.name === 'pages') {
-            return [
-                this.renderDocumentPanes(),
-                this.renderPanesOptions()
-            ];
-        }
-        else if(this.currentTab.name === 'info') {
-            return this.renderInfo();
-        }
-        else {
-            return this.renderVersions();
-        }
+        return [
+            this.renderDocumentPanes(),
+            this.renderPanesOptions()
+        ];
     }
 
     render() {
         return <div className="corpusbuilder-window-manager">
             <Provider {...this.sharedContext}>
                 <div>
-                    { this.renderNavigation() }
                     { this.renderContent() }
                 </div>
             </Provider>

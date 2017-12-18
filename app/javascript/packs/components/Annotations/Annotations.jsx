@@ -18,7 +18,7 @@ export default class Annotations extends React.Component {
     get annotations() {
         return this.props.metadata.annotations(
             this.props.document.id,
-            this.props.branchName
+            this.props.version
         );
     }
 

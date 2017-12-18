@@ -176,6 +176,8 @@
   "lib/Request.js.map": "/packs/lib/Request.js.map",
   "master-tree-example.js": "/packs/master-tree-example.js",
   "master-tree-example.js.map": "/packs/master-tree-example.js.map",
+  "models/Version.js": "/packs/models/Version.js",
+  "models/Version.js.map": "/packs/models/Version.js.map",
   "stores/Documents.js": "/packs/stores/Documents.js",
   "stores/Documents.js.map": "/packs/stores/Documents.js.map",
   "stores/Metadata.js": "/packs/stores/Metadata.js",

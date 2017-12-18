@@ -1,6 +1,8 @@
 import * as qwest from 'qwest';
 
 export default class Request {
+    static getRequests = new Map();
+
     static get(url, params) {
         // todo: implement smart tracking of requests not to ask for the same
         // resource twice in a very short space of time

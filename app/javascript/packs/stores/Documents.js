@@ -1,5 +1,6 @@
-import { action, observable } from 'mobx';
+import { action, autorun, observable } from 'mobx';
 import Request from '../lib/Request';
+import Version from '../models/Version';
 
 export default class Documents {
     constructor(baseUrl, state) {
@@ -7,12 +8,13 @@ export default class Documents {
         this.baseUrl = baseUrl;
     }
 
-    tree(documentId, branchName = 'master', page = 1, preloadNext = 1, preloadPrev = 1, force = false) {
-        let key = `${branchName}-${page}`
+    tree(documentId, version, page = 1, preloadNext = 1, preloadPrev = 1, force = false) {
+        let key = `${version.identifier}-${page}`
+
         if( !this.state.trees.has(key)) {
             Request
                 .get(
-                  `${this.baseUrl}/api/documents/${documentId}/${branchName}/tree`,
+                  `${this.baseUrl}/api/documents/${documentId}/${version.identifier}/tree`,
                   {
                       surface_number: page
                   }
@@ -20,7 +22,7 @@ export default class Documents {
                 .then(
                     action(
                         ( tree ) => {
-                            this.state.surfaceCounts.set(`${documentId}-${branchName}`, tree.global.surfaces_count);
+                            this.state.surfaceCounts.set(`${documentId}-${version.identifier}`, tree.global.surfaces_count);
                             this.state.trees.set(key, tree);
                         }
                     )
@@ -28,14 +30,14 @@ export default class Documents {
         }
 
         if(preloadNext > 0 || preloadPrev > 0) {
-            let count = this.state.surfaceCounts.get(`${documentId}-${branchName}`);
+            let count = this.state.surfaceCounts.get(`${documentId}-${version.identifier}`);
 
             if(count !== null && count !== undefined) {
                 if(preloadNext > 0 && page + 1 <= count) {
-                    this.tree(documentId, branchName, page + 1, preloadNext - 1, 0);
+                    this.tree(documentId, version, page + 1, preloadNext - 1, 0);
                 }
                 if(preloadPrev > 0 && page > 1) {
-                    this.tree(documentId, branchName, page - 1, 0, preloadPrev - 1);
+                    this.tree(documentId, version, page - 1, 0, preloadPrev - 1);
                 }
             }
         }
@@ -75,6 +77,77 @@ export default class Documents {
         return this.state.branches.get(documentId);
     }
 
+    getVersion(options) {
+        if(options.name !== undefined) {
+            return this.getBranch(options.name, options.documentId);
+        }
+        else {
+            return this.getRevision(options.revisionId, options.documentId);
+        }
+    }
+
+    getBranch(name, documentId) {
+        if( !this.state.branches.has(documentId)) {
+            let version = Version.branch(name);
+
+            let stopObserving = autorun(() => {
+                if(this.state.branches.has(documentId)) {
+                    let branches = this.state.branches.get(documentId);
+
+                    let branch = branches.find((branch) => {
+                        return branch.name == name;
+                    });
+
+                    version.update(branch);
+                    stopObserving();
+                }
+            });
+            this.branches( documentId );
+
+            return version;
+        }
+        else {
+            let branches = this.state.branches.get(documentId);
+
+            let branch = branches.find((branch) => {
+                return branch.name == name;
+            });
+
+            return Version.branch(branch);
+        }
+    }
+
+    getRevision(id, documentId) {
+    }
+
+    createBranch(documentId, parentVersion) {
+       //let payload = {
+       //    edit_spec: {
+       //        grapheme_ids: line.map((g) => { return g.id; }),
+       //        text: text,
+       //        boxes: boxes.map((box) => {
+       //              return {
+       //                  ulx: box.ulx,
+       //                  uly: box.uly,
+       //                  lrx: box.lrx,
+       //                  lry: box.lry
+       //              }
+       //          }
+       //        )
+       //    }
+       //};
+
+       //Request
+       //    .put(`${this.baseUrl}/api/documents/${doc.id}/${branchName}/tree`, payload)
+       //    .then(
+       //        action(
+       //            ( _ ) => {
+       //                this.tree(doc.id, branchName, page);
+       //            }
+       //        )
+       //    );
+    }
+
     revisions(documentId, branchName) {
         let documentRevisions = this.state.revisions.get(documentId);
 
@@ -98,7 +171,7 @@ export default class Documents {
         return documentRevisions.get(branchName)
     }
 
-    correct(doc, page, line, branchName, text, boxes) {
+    correct(doc, page, line, version, text, boxes) {
         let payload = {
             edit_spec: {
                 grapheme_ids: line.map((g) => { return g.id; }),
@@ -116,11 +189,11 @@ export default class Documents {
         };
 
         Request
-            .put(`${this.baseUrl}/api/documents/${doc.id}/${branchName}/tree`, payload)
+            .put(`${this.baseUrl}/api/documents/${doc.id}/${version.branchName}/tree`, payload)
             .then(
                 action(
                     ( _ ) => {
-                        this.tree(doc.id, branchName, page);
+                        this.tree(doc.id, version.identifier, page);
                     }
                 )
             );
