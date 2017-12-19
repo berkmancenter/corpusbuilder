@@ -182,6 +182,17 @@ export default class Viewer extends React.Component {
         this.props.documents.reset(this.documentId, this.currentVersion);
     }
 
+    commitChanges() {
+        this.props.documents.commit(this.documentId, this.currentVersion)
+            .then((_) => {
+                this.editing = false;
+                this.currentVersion = this.props.documents.getBranch(
+                  this.currentVersion.branchVersion.branchName,
+                  this.documentId
+                );
+            });
+    }
+
     editAnnotation() {
         // make sure the mouse event bubbling comes first
         setTimeout(() => {
@@ -282,6 +293,7 @@ export default class Viewer extends React.Component {
                                    onToggleAnnotations={ this.toggleAnnotations.bind(this) }
                                    onToggleBackground={ this.toggleBackground.bind(this) }
                                    onResetChangesRequest={ this.resetChanges.bind(this) }
+                                   onCommitRequest={ this.commitChanges.bind(this) }
                                    />
                 </div>
                 <div className="corpusbuilder-viewer-contents" style={ contentStyles }>

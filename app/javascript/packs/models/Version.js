@@ -44,7 +44,12 @@ export default class Version {
     }
 
     get branchVersion() {
-        return Version.branch(this.object.branch);
+        if(this.isBranch) {
+            return this;
+        }
+        else {
+            return Version.branch(this.object.branch);
+        }
     }
 
     update(object) {

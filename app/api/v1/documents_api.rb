@@ -175,6 +175,13 @@ class V1::DocumentsAPI < Grape::API
         action! Revisions::PointAtSameGraphemes, source: branch.revision, target: branch.working
       end
 
+      desc 'Commits changes from the working tree into the branch'
+      put ':branch/commit' do
+        branch = @document.branches.where(name: params[:branch]).first
+
+        action! Branches::Commit, branch: branch
+      end
+
       desc 'Adds corrections on a given revision'
       params do
         optional :edit_spec, type: Hash do

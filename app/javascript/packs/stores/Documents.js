@@ -186,6 +186,23 @@ export default class Documents {
             );
     }
 
+    commit(documentId, version) {
+        let branch = version.isBranch ? version : version.branchVersion;
+
+        return Request
+            .put(`${ this.baseUrl }/api/documents/${ documentId }/${ branch.branchName }/commit`)
+            .then(
+                action(
+                    ( _ ) => {
+                        this.state.trees.clear();
+                        this.state.branches.clear();
+                        this.state.versions.clear();
+                        this.state.revisions.clear();
+                    }
+                )
+            );
+    }
+
     correct(doc, page, line, version, text, boxes) {
         let payload = {
             edit_spec: {

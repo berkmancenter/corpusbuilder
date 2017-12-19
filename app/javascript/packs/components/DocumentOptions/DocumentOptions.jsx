@@ -112,12 +112,12 @@ export default class DocumentOptions extends React.Component {
         return (
           <DropdownMenu {...this.menus.version}>
               <li>
-                  <button type="button" onClick={ this.onNewBranchRequest }>
+                  <button type="button" onClick={ this.props.onNewBranchRequest }>
                       New Branch
                   </button>
               </li>
               <li>
-                  <button type="button" onClick={ this.onCommitRequest }>
+                  <button type="button" onClick={ this.props.onCommitRequest }>
                       Commit
                   </button>
               </li>
