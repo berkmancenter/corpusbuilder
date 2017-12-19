@@ -20,10 +20,7 @@ class Surface < ApplicationRecord
         surface.graphemes.joins(:revisions).where(revisions: { id: options[:revision_id] })
       elsif options.key? :branch_name
         branches_query = Branch.joins(:revision).where(revisions: { document_id: surface.document_id })
-        working_query = Revision.working.where(
-          parent_id: branches_query.where(name: options[:branch_name]).select(:revision_id)
-        )
-        surface.graphemes.joins(:revisions).where(revisions: { id: working_query })
+        surface.graphemes.joins(:revisions).where(revisions: { id: branches_query.select(:revision_id) })
       else
         surface.graphemes
       end

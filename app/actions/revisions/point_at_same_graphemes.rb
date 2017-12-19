@@ -4,6 +4,8 @@ module Revisions
 
     def execute
       pg_result = Revision.connection.execute <<-SQL
+        delete from graphemes_revisions where revision_id = '#{target.id}';
+
         insert into graphemes_revisions(revision_id, grapheme_id)
         select '#{target.id}' :: uuid,
                joined.grapheme_id

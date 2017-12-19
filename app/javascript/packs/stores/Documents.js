@@ -172,6 +172,20 @@ export default class Documents {
         return documentRevisions.get(branchName)
     }
 
+    reset(documentId, version) {
+        let branch = version.isBranch ? version : version.branchVersion;
+
+        return Request
+            .put(`${ this.baseUrl }/api/documents/${ documentId }/${ branch.branchName }/reset`)
+            .then(
+                action(
+                    ( _ ) => {
+                        this.state.trees.clear();
+                    }
+                )
+            );
+    }
+
     correct(doc, page, line, version, text, boxes) {
         let payload = {
             edit_spec: {

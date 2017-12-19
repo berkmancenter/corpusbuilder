@@ -168,6 +168,13 @@ class V1::DocumentsAPI < Grape::API
         end
       end
 
+      desc 'Resets the working revision for a given branch'
+      put ':branch/reset' do
+        branch = @document.branches.where(name: params[:branch]).first
+
+        action! Revisions::PointAtSameGraphemes, source: branch.revision, target: branch.working
+      end
+
       desc 'Adds corrections on a given revision'
       params do
         optional :edit_spec, type: Hash do

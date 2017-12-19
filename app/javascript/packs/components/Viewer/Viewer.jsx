@@ -178,6 +178,10 @@ export default class Viewer extends React.Component {
         this.showImage = isOn;
     }
 
+    resetChanges() {
+        this.props.documents.reset(this.documentId, this.currentVersion);
+    }
+
     editAnnotation() {
         // make sure the mouse event bubbling comes first
         setTimeout(() => {
@@ -277,6 +281,7 @@ export default class Viewer extends React.Component {
                                    onToggleCertainties={ this.toggleCertainties.bind(this) }
                                    onToggleAnnotations={ this.toggleAnnotations.bind(this) }
                                    onToggleBackground={ this.toggleBackground.bind(this) }
+                                   onResetChangesRequest={ this.resetChanges.bind(this) }
                                    />
                 </div>
                 <div className="corpusbuilder-viewer-contents" style={ contentStyles }>

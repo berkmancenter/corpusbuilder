@@ -19,7 +19,19 @@ export default class DocumentOptions extends React.Component {
 
     @computed
     get currentBranch() {
-        return this.props.currentBranch;
+        let version = this.props.currentVersion;
+
+        if(version.isBranch) {
+            return version;
+        }
+        else {
+            if(version.knowsParentBranch) {
+                return version.branchVersion;
+            }
+            else {
+                return null;
+            }
+        }
     }
 
     @observable
@@ -27,7 +39,12 @@ export default class DocumentOptions extends React.Component {
         view: this.generateMenu('view', 'View'),
         version: this.generateMenu('version', 'Version'),
         branches: this.generateMenu('branches', (() => {
-            return `Branch: ${ this.currentBranch }`;
+            if(this.currentBranch !== null) {
+                return `Branch: ${ this.currentBranch.branchName }`;
+            }
+            else {
+                return 'Branch';
+            }
         }).bind(this))
     };
 
@@ -95,13 +112,18 @@ export default class DocumentOptions extends React.Component {
         return (
           <DropdownMenu {...this.menus.version}>
               <li>
-                  <button type="button">
+                  <button type="button" onClick={ this.onNewBranchRequest }>
                       New Branch
                   </button>
               </li>
               <li>
-                  <button type="button">
+                  <button type="button" onClick={ this.onCommitRequest }>
                       Commit
+                  </button>
+              </li>
+              <li>
+                  <button type="button" onClick={ this.props.onResetChangesRequest }>
+                      Reset Changes
                   </button>
               </li>
               <NestedDropdownMenu {...this.menus.branches}>
@@ -124,37 +146,4 @@ export default class DocumentOptions extends React.Component {
             </div>
         );
     }
-
-   //oldRender() {
-   //    return (
-   //        <div>
-   //            <Button toggles={ true } onToggle={ this.props.onBranchModeToggle.bind(this) } >
-   //                <i className={ 'fa fa-pencil' }>&nbsp;</i>
-   //            </Button>
-   //            <div className={ 'corpusbuilder-options-separator' }>&nbsp;</div>
-   //            <Dropdown>
-   //                <DropdownTrigger>
-   //                    <i className={ 'fa fa-code-fork' } aria-hidden="true"></i>
-   //                    &nbsp;
-   //                    <b>{ this.props.currentBranch }</b>
-   //                </DropdownTrigger>
-   //                <DropdownContent>
-   //                    <ul>
-   //                      { renderBranchesOptions() }
-   //                    </ul>
-   //                </DropdownContent>
-   //            </Dropdown>
-   //            <div className={ 'corpusbuilder-options-separator' }>&nbsp;</div>
-   //            <Button toggles={ true } onToggle={ this.props.onToggleCertainties.bind(this) } >
-   //                <i className={ 'fa fa-map-o' }>&nbsp;</i>
-   //            </Button>
-   //            <Button toggles={ true } onToggle={ this.props.onToggleAnnotations.bind(this) } >
-   //                <i className={ 'fa fa-commenting' }>&nbsp;</i>
-   //            </Button>
-   //            <Button toggles={ true } onToggle={ this.props.onToggleBackground.bind(this) } >
-   //                <i className={ 'fa fa-file-image-o' }>&nbsp;</i>
-   //            </Button>
-   //        </div>
-   //    );
-   //}
 }

@@ -39,6 +39,10 @@ export default class Version {
         });
     }
 
+    get knowsParentBranch() {
+        return this.object.branch !== undefined;
+    }
+
     get branchVersion() {
         return Version.branch(this.object.branch);
     }

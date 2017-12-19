@@ -15,16 +15,16 @@ $dd-font: Lato, Helvetica, Arial, sans-serif !default;
 
 $dd-text-color: #777 !default;
 $dd-inverse-text-color: #fff !default;
-$dd-list-hover-text-color: #000 !default;
+$dd-list-hover-text-color: #777 !default;
 $dd-inverse-list-hover-text-color: #fff !default;
 
 $dd-list-color: #fefefe !default;
 $dd-inverse-list-color: #2c3e50 !default; // midnight blue
 
-$dd-list-hover-color: #bdc3c7 !default; // silver
+$dd-list-hover-color: #ddd !default; // silver
 $dd-inverse-list-hover-color: #34495e !default; // wet-asphalt
 
-$dd-menu-box-shadow: 0 0 4px rgba(0, 0, 0, .15), 0 2px 4px rgba(0, 0, 0, .29) !default;
+$dd-menu-box-shadow: 0 0 2px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .29) !default;
 
 $dd-transition-time: 0.15s !default;
 $dd-transition-in: cubic-bezier(0.5, 1.8, 0.9, 0.8) !default;
