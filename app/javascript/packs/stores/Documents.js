@@ -11,7 +11,8 @@ export default class Documents {
     tree(documentId, version, page = 1, preloadNext = 1, preloadPrev = 1, force = false) {
         let key = `${version.identifier}-${page}`
 
-        if( !this.state.trees.has(key)) {
+        if( force || !this.state.trees.has(key)) {
+            console.log(`Fetching for ${key}`);
             Request
                 .get(
                   `${this.baseUrl}/api/documents/${documentId}/${version.identifier}/tree`,
@@ -188,12 +189,14 @@ export default class Documents {
             }
         };
 
-        Request
-            .put(`${this.baseUrl}/api/documents/${doc.id}/${version.branchName}/tree`, payload)
+        let branchVersion = version.isRevision ? version.branchVersion : version;;
+
+        return Request
+            .put(`${this.baseUrl}/api/documents/${doc.id}/${branchVersion.branchName}/tree`, payload)
             .then(
                 action(
                     ( _ ) => {
-                        this.tree(doc.id, version.identifier, page);
+                        this.tree(doc.id, version, page, 0, 0, true);
                     }
                 )
             );

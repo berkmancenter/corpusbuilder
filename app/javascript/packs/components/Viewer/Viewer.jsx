@@ -72,7 +72,11 @@ export default class Viewer extends React.Component {
 
     @computed
     get tree() {
-        if(this.currentVersion === null) {
+        // note: checks for all nulls are to make this computed dependent on all
+        // three observables - not just the version
+        if(this.documentId === null ||
+           this.page === null ||
+           this.currentVersion === null) {
             return null;
         }
         else {
@@ -192,7 +196,10 @@ export default class Viewer extends React.Component {
     }
 
     saveLine(doc, line, editedText, boxes) {
-      this.props.documents.correct(doc, this.page, line, this.currentVersion, editedText, boxes);
+      this.props.documents.correct(doc, this.page, line, this.currentVersion, editedText, boxes)
+          .finally((_) => {
+              this.showInlineEditor = false;
+          });
     }
 
     hideAnnotationEditor() {
