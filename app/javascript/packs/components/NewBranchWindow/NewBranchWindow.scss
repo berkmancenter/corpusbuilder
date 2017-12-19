@@ -1,0 +1,17 @@
+.corpusbuilder {
+  &-new-branch-window {
+    &-info {
+      font-size: 14px;
+    }
+
+    &-buttons {
+      margin-top: 10px;
+      float: right;
+    }
+
+    b {
+      float: none;
+      font-weight: bold;
+    }
+  }
+}

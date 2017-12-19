@@ -17,6 +17,7 @@ import { DocumentPage } from '../DocumentPage'
 import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
 import { DocumentOptions } from '../DocumentOptions'
 import { InlineEditor } from '../InlineEditor'
+import { NewBranchWindow } from '../NewBranchWindow'
 import { Button } from '../Button';
 
 import s from './Viewer.scss'
@@ -63,6 +64,9 @@ export default class Viewer extends React.Component {
 
     @observable
     showInlineEditor = false;
+
+    @observable
+    showNewBranchWindow = false;
 
     @observable
     showAnnotations = false;
@@ -193,6 +197,10 @@ export default class Viewer extends React.Component {
             });
     }
 
+    onNewBranchRequested() {
+        this.showNewBranchWindow = true;
+    }
+
     editAnnotation() {
         // make sure the mouse event bubbling comes first
         setTimeout(() => {
@@ -223,6 +231,10 @@ export default class Viewer extends React.Component {
 
     hideInlineEditor() {
         this.showInlineEditor = false;
+    }
+
+    hideNewBranchWindow() {
+        this.showNewBranchWindow = false;
     }
 
     editTags() {
@@ -294,6 +306,7 @@ export default class Viewer extends React.Component {
                                    onToggleBackground={ this.toggleBackground.bind(this) }
                                    onResetChangesRequest={ this.resetChanges.bind(this) }
                                    onCommitRequest={ this.commitChanges.bind(this) }
+                                   onNewBranchRequest={ this.onNewBranchRequested.bind(this) }
                                    />
                 </div>
                 <div className="corpusbuilder-viewer-contents" style={ contentStyles }>
@@ -321,6 +334,11 @@ export default class Viewer extends React.Component {
                                 onCloseRequested={ this.hideInlineEditor.bind(this) }
                                 onSaveRequested={ this.saveLine.bind(this) }
                                 />
+                  <NewBranchWindow visible={ this.showNewBranchWindow }
+                                   document={ doc }
+                                   currentVersion={ this.currentVersion }
+                                   onCloseRequested={ this.hideNewBranchWindow.bind(this) }
+                                   />
                   <AnnotationEditor visible={ this.showAnnotationEditor }
                                     document={ doc }
                                     page={ page }
