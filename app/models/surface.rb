@@ -19,7 +19,10 @@ class Surface < ApplicationRecord
       _graphemes = if options.key? :revision_id
         surface.graphemes.joins(:revisions).where(revisions: { id: options[:revision_id] })
       elsif options.key? :branch_name
-        branches_query = Branch.joins(:revision).where(revisions: { document_id: surface.document_id })
+        branches_query = Branch.joins(:revision).where(
+          revisions: { document_id: surface.document_id },
+          name: options[:branch_name]
+        )
         surface.graphemes.joins(:revisions).where(revisions: { id: branches_query.select(:revision_id) }).uniq
       else
         surface.graphemes

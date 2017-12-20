@@ -37,7 +37,14 @@ export default class DocumentOptions extends React.Component {
     @observable
     menus = {
         view: this.generateMenu('view', 'View'),
-        version: this.generateMenu('version', 'Version'),
+        version: this.generateMenu('version', (() => {
+            if(this.currentBranch !== null) {
+                return `Version (${ this.currentBranch.branchName })`;
+            }
+            else {
+                return 'Version';
+            }
+        }).bind(this)),
         branches: this.generateMenu('branches', (() => {
             if(this.currentBranch !== null) {
                 return `Branch: ${ this.currentBranch.branchName }`;
@@ -70,9 +77,7 @@ export default class DocumentOptions extends React.Component {
     }
 
     renderBranchesOptions() {
-        let branchVersion = this.props.currentVersion.isBranch ?
-          this.props.currentVersion : this.props.currentVersion.branchVersion;
-        let currentBranchName = branchVersion.branchName;
+        let currentBranchName = this.currentBranch.branchName;
 
         return this.props.branches.map(
             (branch) => {

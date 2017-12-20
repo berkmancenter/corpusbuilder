@@ -155,6 +155,7 @@ export default class Viewer extends React.Component {
             documentId: this.documentId,
             name: branch.name
         });
+        this.editing = false;
     }
 
     toggleBranchMode(isOn) {
