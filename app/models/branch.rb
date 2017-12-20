@@ -23,5 +23,8 @@ class Branch < ApplicationRecord
       branch.working.id
     end
     expose :editor, with: Editor::Simple
+    expose :editable do |branch, options|
+      options[:editor_id].present? && options[:editor_id] == branch.editor_id
+    end
   end
 end

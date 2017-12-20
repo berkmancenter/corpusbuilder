@@ -65,8 +65,12 @@ module V1Base
         end
       end
 
-      def require_editor!
+      def infer_editor!
         @editor_id = headers['X-Editor-Id']
+      end
+
+      def require_editor!
+        infer_editor!
 
         if @editor_id.nil?
           error!('Missing X-Editor-Id header', 403)

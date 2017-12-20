@@ -231,7 +231,11 @@ class V1::DocumentsAPI < Grape::API
 
       desc 'Lists branches for the document'
       get 'branches' do
-        present @document.branches, with: Branch::Simple
+        infer_editor!
+
+        present @document.branches,
+          with: Branch::Simple,
+          editor_id: @editor_id
       end
 
       desc 'Branches off of a given revision'

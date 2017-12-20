@@ -81,13 +81,33 @@ export default class DocumentOptions extends React.Component {
 
         return this.props.branches.map(
             (branch) => {
+                let selectionIcon = null;
+
+                if(currentBranchName !== branch.name) {
+                    selectionIcon = <span className="corpusbuilder-document-options-selection">
+                        &nbsp;
+                    </span>;
+                }
+                else {
+                    selectionIcon = <span className="corpusbuilder-document-options-selection">
+                        <i className="fa fa-check" aria-hidden="true"></i>&nbsp;
+                    </span>;
+                }
+
+                let editabilityIcon = branch.editable ? null :
+                    <span className="corpusbuilder-document-options-editability">
+                        &nbsp;<i className="fa fa-lock" aria-hidden="true"></i>
+                    </span>;
+
                 return (
                     <li key={ `branch-${ branch.revision_id }` }
                         >
                         <button type="button"
                                 onClick={ () => this.props.onBranchSwitch(branch) }
                                 >
-                            { currentBranchName === branch.name ? `* ${branch.name}` : branch.name }
+                            { selectionIcon }
+                            { branch.name }
+                            { editabilityIcon }
                         </button>
                     </li>
                 );
@@ -142,14 +162,25 @@ export default class DocumentOptions extends React.Component {
         );
     }
 
+    renderEdit() {
+        if(!this.props.currentVersion.editable) return null;
+
+        return [
+            <Button toggles={ true }
+                    onToggle={ this.props.onBranchModeToggle.bind(this) }
+                    key={ 'edit-button' }
+                    >
+                <i className={ 'fa fa-pencil' }>&nbsp;</i>
+                Edit
+            </Button>,
+            <div key={ 'edit-separator' } className={ 'corpusbuilder-options-separator' }>&nbsp;</div>
+        ]
+    }
+
     render() {
         return (
             <div>
-                <Button toggles={ true } onToggle={ this.props.onBranchModeToggle.bind(this) } >
-                    <i className={ 'fa fa-pencil' }>&nbsp;</i>
-                    Edit
-                </Button>
-                <div className={ 'corpusbuilder-options-separator' }>&nbsp;</div>
+                { this.renderEdit() }
                 { this.renderViewMenu() }
                 { this.renderVersionMenu() }
             </div>

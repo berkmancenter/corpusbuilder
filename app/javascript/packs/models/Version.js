@@ -52,6 +52,20 @@ export default class Version {
         }
     }
 
+    get editable() {
+        if(this.isBranch) {
+            return this.object.editable;
+        }
+        else {
+            if(this.knowsParentBranch) {
+                return this.branchVersion.editable;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+
     update(object) {
         this.object = object;
     }
