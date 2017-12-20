@@ -20,7 +20,7 @@ export default class Button extends React.Component {
     }
 
     initProps(props) {
-        this.toggled = props.toggled || false;
+        this.toggled = this.toggled || props.toggled || false;
         this.visible = props.visible === undefined ? true : props.visible;
     }
 

@@ -167,6 +167,7 @@ export default class DocumentOptions extends React.Component {
 
         return [
             <Button toggles={ true }
+                    toggled={ this.props.editing }
                     onToggle={ this.props.onBranchModeToggle.bind(this) }
                     key={ 'edit-button' }
                     >
