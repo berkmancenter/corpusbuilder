@@ -131,7 +131,7 @@ export default class DocumentLine extends React.Component {
 
     @computed
     get hasWords() {
-        return this.props.line.length > 0;
+        return this.words.length > 0;
     }
 
     @computed

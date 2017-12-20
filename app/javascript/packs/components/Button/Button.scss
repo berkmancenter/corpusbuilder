@@ -1,4 +1,11 @@
 .corpusbuilder {
+    &-button[disabled] {
+      opacity: 0.5;
+      cursor: default;
+      color: #777;
+      box-shadow: 0px 0.5px 1px rgba(0, 0, 0, 0.4);
+    }
+
     &-button, &-button:active, &-button:focus {
       height: 30px;
       line-height: 30px;

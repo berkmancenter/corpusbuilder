@@ -153,7 +153,7 @@ export default class Viewer extends React.Component {
     chooseBranch(branch) {
         this.currentVersion = this.props.documents.getVersion({
             documentId: this.documentId,
-            branchName: branch.name
+            name: branch.name
         });
     }
 
@@ -219,10 +219,20 @@ export default class Viewer extends React.Component {
     }
 
     saveLine(doc, line, editedText, boxes) {
-      this.props.documents.correct(doc, this.page, line, this.currentVersion, editedText, boxes)
-          .finally((_) => {
-              this.showInlineEditor = false;
-          });
+        this.props.documents.correct(doc, this.page, line, this.currentVersion, editedText, boxes)
+            .finally((_) => {
+                this.showInlineEditor = false;
+            });
+    }
+
+    saveNewBranch(name) {
+        this.props.documents.branchOff(this.documentId, this.currentVersion, name)
+            .then((newBranch) => {
+                setTimeout(() => {
+                    this.showNewBranchWindow = false;
+                    this.currentVersion = this.props.documents.getBranch(this.documentId, name);
+                }, 1000);
+            });
     }
 
     hideAnnotationEditor() {
@@ -338,6 +348,7 @@ export default class Viewer extends React.Component {
                                    document={ doc }
                                    currentVersion={ this.currentVersion }
                                    onCloseRequested={ this.hideNewBranchWindow.bind(this) }
+                                   onSaveRequested={ this.saveNewBranch.bind(this) }
                                    />
                   <AnnotationEditor visible={ this.showAnnotationEditor }
                                     document={ doc }

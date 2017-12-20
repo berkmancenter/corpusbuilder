@@ -5,8 +5,8 @@ import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
 import styles from './NewBranchWindow.scss';
 
-@observer
 @inject('documents')
+@observer
 export default class NewBranchWindow extends React.Component {
     @observable
     editedName = ""
@@ -22,6 +22,9 @@ export default class NewBranchWindow extends React.Component {
     @computed
     get valid() {
         let branches = this.props.documents.state.branches.get(this.props.document.id);
+
+        if(this.editedName === undefined || branches === undefined) return false;
+
         let branch = branches.find((b) => {
             return b.name === this.editedName;
         });

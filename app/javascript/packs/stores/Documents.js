@@ -121,32 +121,25 @@ export default class Documents {
     getRevision(id, documentId) {
     }
 
-    createBranch(documentId, parentVersion) {
-       //let payload = {
-       //    edit_spec: {
-       //        grapheme_ids: line.map((g) => { return g.id; }),
-       //        text: text,
-       //        boxes: boxes.map((box) => {
-       //              return {
-       //                  ulx: box.ulx,
-       //                  uly: box.uly,
-       //                  lrx: box.lrx,
-       //                  lry: box.lry
-       //              }
-       //          }
-       //        )
-       //    }
-       //};
+    branchOff(documentId, version, name) {
+        let branchVersion = version.isRevision ? version.branchVersion : version;;
 
-       //Request
-       //    .put(`${this.baseUrl}/api/documents/${doc.id}/${branchName}/tree`, payload)
-       //    .then(
-       //        action(
-       //            ( _ ) => {
-       //                this.tree(doc.id, branchName, page);
-       //            }
-       //        )
-       //    );
+        let payload = {
+            revision: branchVersion.branchName,
+            name: name
+        };
+
+        return Request
+            .post(`${this.baseUrl}/api/documents/${documentId}/branches`, payload)
+            .then(
+                action(
+                    ( _ ) => {
+                        this.state.branches.clear();
+                        this.state.versions.clear();
+                        this.state.revisions.clear();
+                    }
+                )
+            );
     }
 
     revisions(documentId, branchName) {

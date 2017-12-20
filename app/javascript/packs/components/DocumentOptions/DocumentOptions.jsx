@@ -70,6 +70,10 @@ export default class DocumentOptions extends React.Component {
     }
 
     renderBranchesOptions() {
+        let branchVersion = this.props.currentVersion.isBranch ?
+          this.props.currentVersion : this.props.currentVersion.branchVersion;
+        let currentBranchName = branchVersion.branchName;
+
         return this.props.branches.map(
             (branch) => {
                 return (
@@ -78,7 +82,7 @@ export default class DocumentOptions extends React.Component {
                         <button type="button"
                                 onClick={ () => this.props.onBranchSwitch(branch) }
                                 >
-                            { this.props.currentBranch === branch.name ? `* ${branch.name}` : branch.name }
+                            { currentBranchName === branch.name ? `* ${branch.name}` : branch.name }
                         </button>
                     </li>
                 );
