@@ -228,10 +228,8 @@ export default class Viewer extends React.Component {
     saveNewBranch(name) {
         this.props.documents.branchOff(this.documentId, this.currentVersion, name)
             .then((newBranch) => {
-                setTimeout(() => {
-                    this.showNewBranchWindow = false;
-                    this.currentVersion = this.props.documents.getBranch(this.documentId, name);
-                }, 1000);
+                this.showNewBranchWindow = false;
+                this.currentVersion = this.props.documents.getBranch(name, this.documentId);
             });
     }
 
