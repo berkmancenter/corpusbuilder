@@ -8,7 +8,19 @@
     display: inline-block;
     box-sizing: content-box;
     font-family: sans-serif;
+    flex: auto;
+    padding-bottom: 45px;
     position: relative;
+
+    &-subcontext {
+      padding: 5px 20px 5px;
+      margin-top: 6px;
+      background: #ddd;
+
+      span {
+        font-size: 13px;
+      }
+    }
 
     svg {
       margin: 20px;

@@ -3,14 +3,20 @@
 
   &-window-manager {
     background-color: #f2f2f2;
+    position: relative;
+
+    > div:first-child {
+      display: flex;
+      flex-direction: row;
+    }
 
     &-options {
       width: auto;
       height: auto;
       padding: 10px;
       position: absolute;
-      left: 430px;
-      margin-top: -50px;
+      left: 415px;
+      bottom: 0px;
       background-color: #ddd;
 
       .dropdown__content {

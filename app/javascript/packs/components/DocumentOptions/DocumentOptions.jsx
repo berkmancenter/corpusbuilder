@@ -119,6 +119,11 @@ export default class DocumentOptions extends React.Component {
         return (
           <DropdownMenu {...this.menus.view}>
               <li>
+                  <button type="button" onClick={ this.props.onToggleDiff.bind(this, !this.props.showDiff) }>
+                      { this.props.showDiff ? '✓' : '' } Diff Of Changes
+                  </button>
+              </li>
+              <li>
                   <button type="button" onClick={ this.props.onToggleBackground.bind(this, !this.props.showBackground) }>
                       { this.props.showBackground ? '✓' : '' } Background Scan
                   </button>

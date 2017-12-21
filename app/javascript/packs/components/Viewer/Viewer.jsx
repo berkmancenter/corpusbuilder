@@ -39,6 +39,9 @@ export default class Viewer extends React.Component {
     showImage = false;
 
     @observable
+    showDiff = false;
+
+    @observable
     documentId = null;
 
     @observable
@@ -183,6 +186,10 @@ export default class Viewer extends React.Component {
         this.showImage = isOn;
     }
 
+    toggleDiff(isOn) {
+        this.showDiff = isOn;
+    }
+
     resetChanges() {
         this.props.documents.reset(this.documentId, this.currentVersion);
     }
@@ -283,6 +290,18 @@ export default class Viewer extends React.Component {
         this.page = props.page || 1;
     }
 
+    renderSubmenu() {
+        if(this.showDiff) {
+            return (
+                <div className="corpusbuilder-viewer-subcontext">
+                  <span>Diff:</span>
+                </div>
+            );
+        }
+
+        return null;
+    }
+
     render() {
         let doc = this.tree;
         let width = this.width;
@@ -308,16 +327,19 @@ export default class Viewer extends React.Component {
                                    showCertainties={ this.showCertainties }
                                    showAnnotations={ this.showAnnotations }
                                    showBackground={ this.showImage }
+                                   showDiff={ this.showDiff }
                                    onBranchSwitch={ this.chooseBranch.bind(this) }
                                    onBranchModeToggle={ this.toggleBranchMode.bind(this) }
                                    onToggleCertainties={ this.toggleCertainties.bind(this) }
                                    onToggleAnnotations={ this.toggleAnnotations.bind(this) }
                                    onToggleBackground={ this.toggleBackground.bind(this) }
+                                   onToggleDiff={ this.toggleDiff.bind(this) }
                                    onResetChangesRequest={ this.resetChanges.bind(this) }
                                    onCommitRequest={ this.commitChanges.bind(this) }
                                    onNewBranchRequest={ this.onNewBranchRequested.bind(this) }
                                    />
                 </div>
+                { this.renderSubmenu() }
                 <div className="corpusbuilder-viewer-contents" style={ contentStyles }>
                   <div className="corpusbuilder-viewer-contents-wrapper">
                     <DocumentPage document={ doc }
