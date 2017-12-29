@@ -2,6 +2,7 @@ import React from 'react';
 
 import { default as Dropdown } from 'react-simple-dropdown';
 import { Button } from '../Button';
+import { BranchesMenu } from '../BranchesMenu';
 
 import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react';
@@ -13,9 +14,6 @@ import fontAwesome from 'font-awesome/scss/font-awesome.scss';
 
 @observer
 export default class DocumentOptions extends React.Component {
-    constructor(props) {
-        super(props);
-    }
 
     @computed
     get currentBranch() {
@@ -76,45 +74,6 @@ export default class DocumentOptions extends React.Component {
         this.menus[menuName].isOpen = false;
     }
 
-    renderBranchesOptions() {
-        let currentBranchName = this.currentBranch.branchName;
-
-        return this.props.branches.map(
-            (branch) => {
-                let selectionIcon = null;
-
-                if(currentBranchName !== branch.name) {
-                    selectionIcon = <span className="corpusbuilder-document-options-selection">
-                        &nbsp;
-                    </span>;
-                }
-                else {
-                    selectionIcon = <span className="corpusbuilder-document-options-selection">
-                        <i className="fa fa-check" aria-hidden="true"></i>&nbsp;
-                    </span>;
-                }
-
-                let editabilityIcon = branch.editable ? null :
-                    <span className="corpusbuilder-document-options-editability">
-                        &nbsp;<i className="fa fa-lock" aria-hidden="true"></i>
-                    </span>;
-
-                return (
-                    <li key={ `branch-${ branch.revision_id }` }
-                        >
-                        <button type="button"
-                                onClick={ () => this.props.onBranchSwitch(branch) }
-                                >
-                            { selectionIcon }
-                            { branch.name }
-                            { editabilityIcon }
-                        </button>
-                    </li>
-                );
-            }
-        );
-    }
-
     renderViewMenu() {
         return (
           <DropdownMenu {...this.menus.view}>
@@ -160,9 +119,13 @@ export default class DocumentOptions extends React.Component {
                       Reset Changes
                   </button>
               </li>
-              <NestedDropdownMenu {...this.menus.branches}>
-                  { this.renderBranchesOptions() }
-              </NestedDropdownMenu>
+              <BranchesMenu onBranchSwitch={ this.props.onBranchSwitch.bind(this) }
+                            currentVersion={ this.props.currentVersion }
+                            branches={ this.props.branches }
+                            suffix="Branch: "
+                            nested={ true }
+                            >
+              </BranchesMenu>
           </DropdownMenu>
         );
     }
