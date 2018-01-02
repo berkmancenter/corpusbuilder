@@ -1,6 +1,7 @@
 import { action, autorun, observable } from 'mobx';
 import Request from '../lib/Request';
 import Version from '../models/Version';
+import Diff from '../models/Diff';
 
 export default class Documents {
     constructor(baseUrl, state) {
@@ -23,7 +24,10 @@ export default class Documents {
                     action(
                         ( diff ) => {
                             console.log(`Diff for key: ${key}`, diff);
-                            this.state.diffs.set(key, diff);
+                            this.state.diffs.set(
+                              key,
+                              (new Diff(diff))
+                            );
                         }
                     )
                 );

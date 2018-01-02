@@ -18,7 +18,7 @@ import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
 import { DocumentOptions } from '../DocumentOptions'
 import { InlineEditor } from '../InlineEditor'
 import { NewBranchWindow } from '../NewBranchWindow'
-import { BranchesMenu } from '../BranchesMenu';
+import { DiffOptions } from '../DiffOptions';
 import { Button } from '../Button';
 
 import s from './Viewer.scss'
@@ -35,6 +35,9 @@ export default class Viewer extends React.Component {
 
     @observable
     currentDiffVersion = null;
+
+    @observable
+    diffPage = 1;
 
     @observable
     editing = false;
@@ -287,6 +290,10 @@ export default class Viewer extends React.Component {
         }
     }
 
+    onDiffSwitch(page) {
+        this.diffPage = page;
+    }
+
     onDiffBranchSwitch(branch) {
         this.currentDiffVersion = this.props.documents.getVersion({
             documentId: this.documentId,
@@ -320,37 +327,15 @@ export default class Viewer extends React.Component {
 
     renderSubmenu() {
         if(this.showDiff) {
-            let page = 1;
-            let countPages = 10;
-
             return (
                 <div className="corpusbuilder-viewer-subcontext">
-                    <div className="corpusbuilder-document-diff-switcher">
-                        <span>Changes:</span>
-                        <Button onClick={ () => this.props.onDiffSwitch(1) }
-                                disabled={ page == 1 }
-                                >
-                          { '❙◀' }
-                        </Button>
-                        <Button onClick={ () => this.props.onDiffSwitch(page - 1) }
-                                disabled={ page == 1 }
-                                >
-                          { '◀' }
-                        </Button>
-                        <span> { 1 } - { 3 } / { 10 } </span>
-                        <Button onClick={ () => this.props.onDiffSwitch(page + 1) } disabled={ page == countPages }>
-                          { '▶' }
-                        </Button>
-                        <Button onClick={ () => this.props.onDiffSwitch(countPages) } disabled={ page == countPages }>
-                          { '▶❙' }
-                        </Button>
-                        <span>between:</span>
-                        <BranchesMenu onBranchSwitch={ this.onDiffBranchSwitch.bind(this) }
-                                      currentVersion={ this.currentDiffVersion }
-                                      branches={ this.branches }
-                                      >
-                        </BranchesMenu>
-                    </div>
+                    <DiffOptions diff={ this.diff }
+                                 branches={ this.branches }
+                                 page={ this.diffPage }
+                                 currentDiffVersion={ this.currentDiffVersion }
+                                 onDiffBranchSwitch={ this.onDiffBranchSwitch.bind(this) }
+                                 onDiffSwitch={ this.onDiffSwitch.bind(this) }
+                                 />
                 </div>
             );
         }
