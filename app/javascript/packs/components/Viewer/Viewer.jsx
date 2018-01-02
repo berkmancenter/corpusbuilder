@@ -100,6 +100,22 @@ export default class Viewer extends React.Component {
     }
 
     @computed
+    get diff() {
+        if(this.documentId === null ||
+           this.currentDiffVersion === null ||
+           this.currentVersion === null) {
+            return null;
+        }
+        else {
+            return this.props.documents.diff(
+              this.documentId,
+              this.currentVersion,
+              this.currentDiffVersion
+            );
+        }
+    }
+
+    @computed
     get branches() {
         return this.props.documents.branches(this.documentId) || [];
     }
@@ -455,6 +471,8 @@ export default class Viewer extends React.Component {
         let viewerStyle = {
             minWidth: `${this.props.width}px`
         };
+
+        console.log(this.diff);
 
         return (
             <div ref={ this.reportElement.bind(this) }

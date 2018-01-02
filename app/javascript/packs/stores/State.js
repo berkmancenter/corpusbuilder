@@ -5,6 +5,9 @@ class State {
     trees = observable.map();
 
     @observable
+    diffs = observable.map();
+
+    @observable
     surfaceCounts = observable.map();
 
     @observable

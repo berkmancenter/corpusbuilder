@@ -8,6 +8,30 @@ export default class Documents {
         this.baseUrl = baseUrl;
     }
 
+    diff(documentId, version, otherVersion, force = false) {
+        let key = `diff-${version.identifier}-${otherVersion.identifier}`;
+
+        if( force || !this.state.diffs.has(key)) {
+            Request
+                .get(
+                  `${this.baseUrl}/api/documents/${documentId}/${version.identifier}/diff`,
+                  {
+                      other_version: otherVersion.identifier
+                  }
+                )
+                .then(
+                    action(
+                        ( diff ) => {
+                            console.log(`Diff for key: ${key}`, diff);
+                            this.state.diffs.set(key, diff);
+                        }
+                    )
+                );
+        }
+
+        return this.state.diffs.get(key);
+    }
+
     tree(documentId, version, page = 1, preloadNext = 1, preloadPrev = 1, force = false) {
         let key = `${version.identifier}-${page}`
 

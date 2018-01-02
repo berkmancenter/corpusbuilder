@@ -19,7 +19,9 @@ class Grapheme < ApplicationRecord
     expose :area, with: Area::Tree
     expose :value
     expose :id
-    expose :inclusion
+    expose :revision_id
+    expose :surface_number
+    expose :parent_ids
     expose :zone_id
   end
 end
