@@ -5,6 +5,8 @@ module Graphemes
     validates :revision_right, presence: true
 
     def execute
+      Rails.logger.debug "Revisions left: #{revision_left.inspect}"
+      Rails.logger.debug "Revisions right: #{revision_right.inspect}"
       sql = <<-sql
         select distinct on (surfaces.number, graphemes.position_weight, g.grapheme_id)
               g.grapheme_id as id,

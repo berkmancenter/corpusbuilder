@@ -33,6 +33,15 @@ export default class Diff {
         });
     }
 
+    @computed
+    get isEmpty() {
+        return this.rawDiff.length === 0;
+    }
+
+    static empty() {
+        return new Diff([]);
+    }
+
     constructor(rawDiff) {
         this.rawDiff = rawDiff;
     }

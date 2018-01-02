@@ -20,34 +20,38 @@ export default class DiffOptions extends React.Component {
 
     renderPager() {
         if(this.props.diff === null || this.props.diff === undefined) {
-            return <span>Changes between:</span>;
+            return <span>Diffs between:</span>;
         }
-
-        return [
-            <span key={ 1 }>Changes:</span>,
-            <Button key={ 2 } onClick={ () => this.props.onDiffSwitch(1) }
-                    disabled={ this.props.page == 1 }
-                    >
-              { '❙◀' }
-            </Button>,
-            <Button key={ 3 } onClick={ () => this.props.onDiffSwitch(this.page - 1) }
-                    disabled={ this.props.page == 1 }
-                    >
-              { '◀' }
-            </Button>,
-            <span key={ 4 }> { this.props.page } / { this.countPages } </span>,
-            <Button key={ 5 } onClick={ () => this.props.onDiffSwitch(this.props.page + 1) }
-                    disabled={ this.props.page == this.countPages }
-                    >
-              { '▶' }
-            </Button>,
-            <Button key={ 6 } onClick={ () => this.props.onDiffSwitch(this.countPages) }
-                    disabled={ this.props.page == this.countPages }
-                    >
-              { '▶❙' }
-            </Button>,
-            <span key={ 7 }>between:</span>
-        ]
+        else if(this.props.diff.isEmpty) {
+            return <span>No diffs found between:</span>
+        }
+        else {
+            return [
+                <span key={ 1 }>Diffs:</span>,
+                <Button key={ 2 } onClick={ () => this.props.onDiffSwitch(1) }
+                        disabled={ this.props.page == 1 }
+                        >
+                  { '❙◀' }
+                </Button>,
+                <Button key={ 3 } onClick={ () => this.props.onDiffSwitch(this.props.page - 1) }
+                        disabled={ this.props.page == 1 }
+                        >
+                  { '◀' }
+                </Button>,
+                <span key={ 4 }> { this.props.page } / { this.countPages } </span>,
+                <Button key={ 5 } onClick={ () => this.props.onDiffSwitch(this.props.page + 1) }
+                        disabled={ this.props.page == this.countPages }
+                        >
+                  { '▶' }
+                </Button>,
+                <Button key={ 6 } onClick={ () => this.props.onDiffSwitch(this.countPages) }
+                        disabled={ this.props.page == this.countPages }
+                        >
+                  { '▶❙' }
+                </Button>,
+                <span key={ 7 }>between:</span>
+            ]
+        }
     }
 
     render() {

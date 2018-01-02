@@ -10,6 +10,10 @@ export default class Documents {
     }
 
     diff(documentId, version, otherVersion, force = false) {
+        if(version.identifier === otherVersion.identifier) {
+            return Diff.empty();
+        }
+
         let key = `diff-${version.identifier}-${otherVersion.identifier}`;
 
         if( force || !this.state.diffs.has(key)) {

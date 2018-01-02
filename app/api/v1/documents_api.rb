@@ -29,6 +29,8 @@ class V1::DocumentsAPI < Grape::API
           return revision
         end
       else
+        Rails.logger.debug "Params: #{params.inspect}"
+        Rails.logger.debug "Querying for branch name: #{params[params_name]}"
         branch = @document.branches.where(name: params[params_name]).first
 
         if !branch.present? && options[:required]
@@ -143,8 +145,7 @@ class V1::DocumentsAPI < Grape::API
       end
       get ':revision/diff' do
         revision1 = revision_from_params :revision
-        revision2 = revision_from_params(:other_revision, required: false) ||
-          revision1.parent
+        revision2 = revision_from_params(:other_version, required: true)
 
         present Graphemes::QueryDiff.run!(
             revision_left: revision2,
