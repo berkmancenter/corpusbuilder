@@ -20,6 +20,7 @@ import { InlineEditor } from '../InlineEditor'
 import { NewBranchWindow } from '../NewBranchWindow'
 import { DiffOptions } from '../DiffOptions';
 import { Button } from '../Button';
+import { DiffLayer } from '../DiffLayer';
 
 import s from './Viewer.scss'
 
@@ -115,6 +116,17 @@ export default class Viewer extends React.Component {
               this.currentVersion,
               this.currentDiffVersion
             );
+        }
+    }
+
+    @computed
+    get diffWords() {
+        if(this.diffPage === null || this.tree === null || this.diff === null ||
+           this.diffPage === undefined || this.tree === undefined || this.diff === undefined) {
+            return [ ];
+        }
+        else {
+            return this.diff.words(this.diffPage, this.tree.surfaces[0].graphemes);
         }
     }
 
@@ -292,6 +304,7 @@ export default class Viewer extends React.Component {
 
     onDiffSwitch(page) {
         this.diffPage = page;
+        this.page = this.diff.pages[ page - 1 ].surfaceNumber;
     }
 
     onDiffBranchSwitch(branch) {
@@ -429,6 +442,13 @@ export default class Viewer extends React.Component {
                               width={ width }
                               mainPageTop={ mainPageTop }
                               />
+                  <DiffLayer diffWords={ this.diffWords }
+                             document={ doc }
+                             page={ page }
+                             visible={ this.showDiff }
+                             width={ width }
+                             mainPageTop={ mainPageTop }
+                             />
                   { otherContent }
                 </div>
                 <div className="corpusbuilder-options bottom">
@@ -457,8 +477,6 @@ export default class Viewer extends React.Component {
         let viewerStyle = {
             minWidth: `${this.props.width}px`
         };
-
-        console.log(this.diff);
 
         return (
             <div ref={ this.reportElement.bind(this) }

@@ -1,0 +1,17 @@
+.corpusbuilder {
+  &-diff {
+    .corpusbuilder-highlight-line {
+      &-added {
+        background: green;
+      }
+
+      &-modified {
+        background: orange;
+      }
+
+      &-deleted {
+        background: red;
+      }
+    }
+  }
+}

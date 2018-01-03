@@ -79,6 +79,17 @@ export default class Highlight extends React.Component {
         return this.props.width / this.surfaceWidth;
     }
 
+    @computed
+    get className() {
+        let names = [ "corpusbuilder-highlight-line" ];
+
+        if(this.props.variantClassName !== null && this.props.variantClassName !== undefined) {
+            names.push( `corpusbuilder-highlight-line-${ this.props.variantClassName }` );
+        }
+
+        return names.join(' ');
+    }
+
     render() {
         if(this.props.graphemes === null || this.props.graphemes === undefined ||
            this.props.graphemes.length === 0) {
@@ -94,7 +105,7 @@ export default class Highlight extends React.Component {
             };
 
             return (
-                <div className="corpusbuilder-highlight-line"
+                <div className={ this.className }
                       style={ lineStyles }
                       key={ `highlight-line-${ lineStyles.left }-${ lineStyles.top }` }
                       >

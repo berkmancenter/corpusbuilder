@@ -4,6 +4,24 @@ export default class GraphemesUtils {
                    .map(this.wordToBox);
     }
 
+    static lines(graphemes) {
+        let initialState = {
+            result: [ [] ],
+        };
+
+        return graphemes.reduce((state, grapheme) => {
+            state.result[ state.result.length - 1 ].push( grapheme );
+
+            // if we're seeing the pop-directionality grapheme then
+            // it's a mark of the end of line:
+            if(grapheme.value.charCodeAt(0) === this.popDirectionalityMark) {
+                state.result.push( [ ] );
+            }
+
+            return state;
+        }, initialState).result;
+    }
+
     static wordToBox(word) {
         if(word.length === 0) {
             throw "Cannot compute the bounding box of an empty word. Zero graphemes have been given.";
@@ -31,6 +49,14 @@ export default class GraphemesUtils {
     }
 
     static words(graphemes) {
+        return this.lines(graphemes).reduce((result, line) => {
+            return result.concat(
+                this.lineWords(line)
+            );
+        }, [ ]);
+    }
+
+    static lineWords(graphemes) {
         let results = [];
         let lastUlx = null;
         let lastLrx = null;
@@ -59,6 +85,13 @@ export default class GraphemesUtils {
                 return word.length > 0 && !this.isSpecial(word[0]);
             }
         );
+    }
+
+    static areRelated(grapheme1, grapheme2) {
+        let ids1 = grapheme1.parent_ids.concat([ grapheme1.id ]);
+        let ids2 = grapheme2.parent_ids.concat([ grapheme2.id ]);
+
+        return ids1.find((id) => { return ids2.includes(id) }) !== undefined;
     }
 
     static asReadingOrder(graphemes) {

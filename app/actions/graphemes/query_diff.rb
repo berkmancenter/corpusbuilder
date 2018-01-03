@@ -11,6 +11,10 @@ module Graphemes
         select distinct on (surfaces.number, graphemes.position_weight, g.grapheme_id)
               g.grapheme_id as id,
               g.revision_ids[1] as revision_id,
+              case when g.revision_ids[1] = :revision_left_id
+              then 'left'
+              else 'right'
+              end as inclusion,
               graphemes.value,
               graphemes.area,
               graphemes.zone_id,

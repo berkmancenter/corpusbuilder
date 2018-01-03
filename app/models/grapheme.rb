@@ -20,6 +20,7 @@ class Grapheme < ApplicationRecord
     expose :value
     expose :id
     expose :revision_id
+    expose :inclusion
     expose :surface_number
     expose :parent_ids
     expose :zone_id

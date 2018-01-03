@@ -148,8 +148,8 @@ class V1::DocumentsAPI < Grape::API
         revision2 = revision_from_params(:other_version, required: true)
 
         present Graphemes::QueryDiff.run!(
-            revision_left: revision2,
-            revision_right: revision1
+            revision_left: revision1,
+            revision_right: revision2
           ).result,
           with: Grapheme::Diff
       end
