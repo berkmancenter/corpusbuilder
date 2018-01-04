@@ -1,0 +1,17 @@
+.corpusbuilder {
+  &-visual-preview {
+    &-preview {
+      &-wrapper {
+        position: relative;
+      }
+
+      &-source {
+        display: none;
+      }
+    }
+
+    &-canvas-area {
+      position: relative;
+    }
+  }
+}

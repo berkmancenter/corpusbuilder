@@ -4,7 +4,7 @@ import { inject, observer } from 'mobx-react'
 import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
 import { Highlight } from '../Highlight';
-import { BoxesEditor } from '../BoxesEditor';
+import { VisualPreview } from '../VisualPreview';
 import GraphemeUtils from '../../lib/GraphemesUtils';
 
 import styles from './InlineEditor.scss'
@@ -12,16 +12,11 @@ import styles from './InlineEditor.scss'
 @observer
 export default class InlineEditor extends React.Component {
 
-    rootElement = null;
-
     @observable
     editedText = "";
 
     @observable
     showBoxes = false;
-
-    @observable
-    selectedBox = null;
 
     @observable
     boxes = [ ];
@@ -44,51 +39,8 @@ export default class InlineEditor extends React.Component {
     }
 
     @computed
-    get lineY() {
-        return this.line.reduce((min, grapheme) => {
-            return Math.min(min, grapheme.area.uly);
-        }, this.line[0].area.uly) * this.previewToSurfaceRatio;
-    }
-
-    @computed
-    get lineBottomY() {
-        return this.line.reduce((min, grapheme) => {
-            return Math.min(min, grapheme.area.lry);
-        }, this.line[0].area.lry) * this.previewToSurfaceRatio;
-    }
-
-    @computed
-    get previewImageWidth() {
-        return this.image.naturalWidth;
-    }
-
-    @computed
-    get lineHeight() {
-        return this.lineBottomY - this.lineY;
-    }
-
-    @computed
-    get previewToSurfaceRatio() {
-        let surface = this.props.document.surfaces[0];
-
-        return this.previewImageWidth / (surface.area.lrx - surface.area.ulx);
-    }
-
-    @computed
-    get scaledLineHeight() {
-        let ratio = this.input.offsetWidth / this.image.naturalWidth;
-
-        return this.lineHeight * ratio;
-    }
-
-    @computed
     get dir() {
         return this.props.text.codePointAt(0) === 0x200f ? "rtl" : "ltr";
-    }
-
-    @computed
-    get pageImageUrl() {
-        return this.props.document.surfaces[0].image_url;
     }
 
     @computed
@@ -109,52 +61,6 @@ export default class InlineEditor extends React.Component {
         }
 
         return result;
-    }
-
-    get canvas() {
-        if(this.rootElement === null) {
-            return null;
-        }
-        else {
-            return this.rootElement.getElementsByClassName('corpusbuilder-inline-editor-preview')[0];
-        }
-    }
-
-    get canvasArea() {
-        if(this.rootElement === null) {
-            return null;
-        }
-        else {
-            return this.rootElement.getElementsByClassName('corpusbuilder-inline-editor-canvas-area')[0];
-        }
-    }
-
-    get image() {
-        if(this.rootElement === null) {
-            return null;
-        }
-        else {
-            return this.rootElement.getElementsByClassName('corpusbuilder-inline-editor-preview-source')[0];
-        }
-    }
-
-    get input() {
-        if(this.rootElement === null) {
-            return null;
-        }
-        else {
-            return this.rootElement.getElementsByClassName('corpusbuilder-inline-editor-input')[0];
-        }
-    }
-
-    captureRoot(div) {
-        if(this.rootElement === null) {
-            this.rootElement = div;
-
-            setTimeout(() => {
-                this.renderPreview();
-            });
-        }
     }
 
     removeBox(e) {
@@ -183,15 +89,6 @@ export default class InlineEditor extends React.Component {
             this.originalBoxes = boxes;
         }
         this.boxes.replace(boxes);
-    }
-
-    onBoxSelectionChanged(box) {
-        this.selectedBox = box;
-    }
-
-    onEditorKeyUp(e) {
-        if(e.ctrlKey && e.keyCode == 13) {
-        }
     }
 
     onCloseRequested() {
@@ -237,28 +134,6 @@ export default class InlineEditor extends React.Component {
         this.showBoxes = show;
     }
 
-    renderPreview() {
-        if(this.canvas !== null) {
-            let context = this.canvas.getContext('2d');
-
-            this.canvas.width = this.input.offsetWidth;
-            this.canvas.height = this.scaledLineHeight * 2;
-            this.canvasArea.style.height = `${this.scaledLineHeight * 2}px`;
-
-            context.drawImage(
-                this.image,
-                0,
-                this.lineY - (this.lineHeight / 2),
-                this.previewImageWidth,
-                this.lineHeight * 2,
-                0,
-                0,
-                this.canvas.width,
-                this.scaledLineHeight * 2
-            );
-        }
-    }
-
     render() {
         if(this.props.visible) {
             let boxesHelp = null;
@@ -281,29 +156,21 @@ export default class InlineEditor extends React.Component {
                 );
             }
             return (
-                <div ref={ this.captureRoot.bind(this) }>
+                <div>
                   <FloatingWindow visible={ this.props.visible }
                                   offsetTop={ 20 }
                                   onCloseRequested={ this.onCloseRequested.bind(this) }
                                   >
                         { messageBox }
-                        <div className="corpusbuilder-inline-editor-preview-wrapper">
-                            <img className="corpusbuilder-inline-editor-preview-source"
-                                src={ this.pageImageUrl }
-                                />
-                            <div className="corpusbuilder-inline-editor-canvas-area">
-                                <canvas className="corpusbuilder-inline-editor-preview" />
-                                <BoxesEditor line={ this.props.line }
-                                             visible={ this.showBoxes }
-                                             document={ this.props.document }
-                                             boxes={ this.boxes }
-                                             onBoxSelectionChanged={ this.onBoxSelectionChanged.bind(this) }
-                                             onBoxesReported={ this.onBoxesReported.bind(this) }
-                                             />
-                            </div>
-                        </div>
+                        <VisualPreview pageImageUrl={ this.pageImageUrl }
+                                       line={ this.props.line }
+                                       document={ this.props.document }
+                                       editable={ true }
+                                       boxes={ this.boxes }
+                                       showBoxes={ this.showBoxes }
+                                       onBoxesReported={ this.onBoxesReported.bind(this) }
+                                       />
                         <input onChange={ this.onTextChanged.bind(this) }
-                               onKeyUp={ this.onEditorKeyUp.bind(this) }
                                value={ this.editedText }
                                dir={ this.dir }
                                className="corpusbuilder-inline-editor-input"

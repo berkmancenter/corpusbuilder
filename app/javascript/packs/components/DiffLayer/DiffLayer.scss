@@ -13,5 +13,29 @@
         background: red;
       }
     }
+
+    &-label {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    &-separator {
+      text-align: center;
+      background: white;
+      border-top: 1px dashed #ddd;
+      height: 1px;
+      margin-top: 15px;
+      margin-bottom: 8px;
+
+      .fa {
+        position: relative;
+        margin: 0 auto;
+        background: white;
+        top: -10px;
+        color: #ddd;
+        font-size: 18px;
+        padding: 4px;
+      }
+    }
   }
 }

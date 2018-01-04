@@ -17,8 +17,17 @@ export default class BoxesEditor extends React.Component {
     @observable
     boxSelected = null;
 
+    @computed
+    get editable() {
+        return this.props.editable;
+    }
+
     componentDidMount() {
         this.inferBoxes();
+
+        if(!this.editable) {
+            return null;
+        }
 
         this.interactable = interact('.corpusbuilder-boxes-editor-item')
           .draggable({
@@ -43,8 +52,10 @@ export default class BoxesEditor extends React.Component {
     }
 
     componentWillUnmount() {
-        this.interactable.unset();
-        delete this.interactable;
+        if(this.interactable !== null) {
+            this.interactable.unset();
+            delete this.interactable;
+        }
     }
 
     componentWillUpdate(props) {
@@ -72,7 +83,7 @@ export default class BoxesEditor extends React.Component {
         if(this.props.boxes === null || this.props.boxes === undefined ||
            this.props.boxes.length === 0) {
             this.boxes = GraphemesUtils.wordBoxes(this.props.line)
-                                      .map(this.scaleBoxDown.bind(this));
+                                       .map(this.scaleBoxDown.bind(this));
             this.broadcastBoxes();
         }
         else {
@@ -192,6 +203,10 @@ export default class BoxesEditor extends React.Component {
     }
 
     onBoxClick(event) {
+        if(!this.editable) {
+            return null;
+        }
+
         if(event.ctrlKey || event.metaKey) {
             let target = event.target;
             let boxIndex = target.getAttribute('data-index');
@@ -211,6 +226,10 @@ export default class BoxesEditor extends React.Component {
     }
 
     onBoxMouseMove(event) {
+        if(!this.editable) {
+            return null;
+        }
+
         let target = event.target;
 
         if(event.buttons === 0 && (event.ctrlKey || event.metaKey)) {
@@ -224,6 +243,10 @@ export default class BoxesEditor extends React.Component {
     }
 
     onEditorMouseMove(event) {
+        if(!this.editable) {
+            return null;
+        }
+
         if(event.ctrlKey || event.metaKey) {
             event.target.style.cursor = 'crosshair';
         }
@@ -246,6 +269,10 @@ export default class BoxesEditor extends React.Component {
     }
 
     onEditorMouseUp(event) {
+        if(!this.editable) {
+            return null;
+        }
+
         if(this.newBox !== null) {
             this.endDraw();
         }

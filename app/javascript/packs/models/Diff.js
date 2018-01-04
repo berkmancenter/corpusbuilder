@@ -40,7 +40,7 @@ export default class Diff {
         return this.rawDiff.length === 0;
     }
 
-    words(pageNumber, graphemes) {
+    words(pageNumber, graphemes, currentVersion, otherVersion) {
         if(this.isEmpty) {
             return [ ];
         }
@@ -86,7 +86,7 @@ export default class Diff {
             }
 
             if(mode !== null) {
-                wordDiffs.push(new WordDiff(mode, word));
+                wordDiffs.push(new WordDiff(mode, word, currentVersion, otherVersion));
             }
         }
 
@@ -105,7 +105,7 @@ export default class Diff {
                     otherMap.values()
                 )
             ).map((word) => {
-                return new WordDiff("deleted", word);
+                return new WordDiff("deleted", word, currentVersion, otherVersion);
             })
         );
     }

@@ -126,7 +126,12 @@ export default class Viewer extends React.Component {
             return [ ];
         }
         else {
-            return this.diff.words(this.diffPage, this.tree.surfaces[0].graphemes);
+            return this.diff.words(
+                this.diffPage,
+                this.tree.surfaces[0].graphemes,
+                this.currentVersion,
+                this.currentDiffVersion
+            );
         }
     }
 
@@ -436,12 +441,12 @@ export default class Viewer extends React.Component {
                                     onSaveRequested={ this.saveAnnotation.bind(this) }
                                     />
                   <Annotations visible={ this.showAnnotations }
-                              document={ doc }
-                              version={ this.currentVersion }
-                              page={ page }
-                              width={ width }
-                              mainPageTop={ mainPageTop }
-                              />
+                               document={ doc }
+                               version={ this.currentVersion }
+                               page={ page }
+                               width={ width }
+                               mainPageTop={ mainPageTop }
+                               />
                   <DiffLayer diffWords={ this.diffWords }
                              document={ doc }
                              page={ page }

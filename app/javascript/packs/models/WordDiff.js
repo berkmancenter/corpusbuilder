@@ -39,8 +39,10 @@ export default class WordDiff {
         ];
     }
 
-    constructor(status, graphemes) {
+    constructor(status, graphemes, afterVersion, beforeVersion) {
         this.status = status;
         this.graphemes = graphemes;
+        this.afterVersion = afterVersion;
+        this.beforeVersion = beforeVersion;
     }
 }
