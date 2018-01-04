@@ -6,6 +6,10 @@ import { Highlight } from '../Highlight';
 import styles from './DiffLayer.scss'
 
 export default class DiffLayer extends React.Component {
+    onClick(diffWord) {
+        console.log("Clicked on: ", diffWord);
+    }
+
     render() {
         if(this.props.visible) {
             return (
@@ -14,6 +18,7 @@ export default class DiffLayer extends React.Component {
                         this.props.diffWords.map((diffWord, index) => {
                             return (
                                 <Highlight key={ `diff-${index}` }
+                                           onClick={ this.onClick.bind(this, diffWord) }
                                            variantClassName={ diffWord.status }
                                            graphemes={ diffWord.graphemes }
                                            document={ this.props.document }

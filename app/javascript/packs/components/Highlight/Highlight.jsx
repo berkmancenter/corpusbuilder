@@ -36,6 +36,11 @@ export default class Highlight extends React.Component {
     }
 
     @computed
+    get isClickable() {
+        return this.props.onClick !== null && this.props.onClick !== undefined;
+    }
+
+    @computed
     get lineCoords() {
         let special = [ 0x202c, 0x200e, 0x200f ];
 
@@ -87,7 +92,17 @@ export default class Highlight extends React.Component {
             names.push( `corpusbuilder-highlight-line-${ this.props.variantClassName }` );
         }
 
+        if(this.isClickable) {
+            names.push( `corpusbuilder-highlight-line-clickable` );
+        }
+
         return names.join(' ');
+    }
+
+    onClick() {
+        if(this.isClickable) {
+            this.props.onClick();
+        }
     }
 
     render() {
@@ -108,6 +123,7 @@ export default class Highlight extends React.Component {
                 <div className={ this.className }
                       style={ lineStyles }
                       key={ `highlight-line-${ lineStyles.left }-${ lineStyles.top }` }
+                      onClick={ this.onClick.bind(this) }
                       >
                   &nbsp;
                 </div>

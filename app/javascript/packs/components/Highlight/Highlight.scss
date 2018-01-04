@@ -7,6 +7,10 @@
       position: absolute;
       opacity: 0.5;
       transform: translateX(20px);
+
+      &-clickable {
+        cursor: pointer;
+      }
     }
   }
 }
