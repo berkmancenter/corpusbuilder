@@ -1,3 +1,5 @@
+import { computed } from 'mobx';
+
 export default class Version {
     object = null;
     type = 'branch';
@@ -10,6 +12,16 @@ export default class Version {
     get identifier() {
         if(this.isBranch) {
             return this.object.name;
+        }
+        else {
+            return this.object.id;
+        }
+    }
+
+    @computed
+    get revisionId() {
+        if(this.isBranch) {
+            return this.object.revision_id;
         }
         else {
             return this.object.id;

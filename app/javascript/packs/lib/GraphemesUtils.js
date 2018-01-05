@@ -22,6 +22,13 @@ export default class GraphemesUtils {
         }, initialState).result;
     }
 
+    static boxesOverlap(box1, box2) {
+        return box1.uly <= box2.lry &&
+               box1.lry >= box2.uly &&
+               box1.ulx <= box2.lrx &&
+               box1.lrx >= box2.ulx;
+    }
+
     static wordToBox(word) {
         if(word.length === 0) {
             throw "Cannot compute the bounding box of an empty word. Zero graphemes have been given.";

@@ -16,31 +16,12 @@ export default class DiffLayer extends React.Component {
     @observable
     currentBoxes = [ ];
 
+    @observable
+    otherBoxes = [ ];
+
     @computed
     get hasPreviewOpened() {
         return this.openedDiff !== null;
-    }
-
-    @computed
-    get afterText() {
-        if(this.hasPreviewOpened) {
-            return this.openedDiff.graphemes.map((g) => { return g.value }).join('');
-        }
-        else {
-            return '';
-        }
-    }
-
-    @computed
-    get beforeText() {
-        // todo: implement real logic:
-
-        if(this.hasPreviewOpened) {
-            return this.openedDiff.graphemes.map((g) => { return g.value }).join('');
-        }
-        else {
-            return '';
-        }
     }
 
     @computed
@@ -68,24 +49,74 @@ export default class DiffLayer extends React.Component {
     onPreviewCloseRequest() {
         this.openedDiff = null;
         this.currentBoxes = [ ];
+        this.otherBoxes = [ ];
     }
 
     onCurrentBoxesReported(boxes) {
         this.currentBoxes = boxes;
     }
 
+    onOtherBoxesReported(boxes) {
+        this.otherBoxes = boxes;
+    }
+
+    renderOtherPreview() {
+      if(this.hasPreviewOpened) {
+          if(this.openedDiff.hasBeforeDiff) {
+              return [
+                  <div key={ 1 } className="corpusbuilder-diff-label">
+                    On { this.beforeBranchName }:
+                  </div>,
+                  <VisualPreview key={ 2 } pageImageUrl={ this.pageImageUrl }
+                                line={ this.openedDiff.otherGraphemes }
+                                document={ this.props.document }
+                                boxes={ this.otherBoxes }
+                                showBoxes={ true }
+                                editable={ false }
+                                onBoxesReported={ this.onOtherBoxesReported.bind(this) }
+                                />,
+                  <input key={ 3 } disabled="disabled" value={ this.openedDiff.beforeText } />
+              ];
+          }
+          else {
+              return (
+                <div className="corpusbuilder-diff-label">
+                  On { this.beforeBranchName }:
+                  <div className="corpusbuilder-diff-nodata">---</div>
+                </div>
+              );
+          }
+      }
+
+      return null;
+    }
+
     renderCurrentPreview() {
       if(this.hasPreviewOpened) {
-          return (
-              <VisualPreview pageImageUrl={ this.pageImageUrl }
-                             line={ this.openedDiff.graphemes }
-                             document={ this.props.document }
-                             boxes={ this.currentBoxes }
-                             showBoxes={ true }
-                             editable={ false }
-                             onBoxesReported={ this.onCurrentBoxesReported.bind(this) }
-                             />
-          );
+          if(this.openedDiff.hasAfterDiff) {
+              return [
+                  <div key={ 4 } className="corpusbuilder-diff-label">
+                    On { this.afterBranchName }:
+                  </div>,
+                  <VisualPreview key={ 5 } pageImageUrl={ this.pageImageUrl }
+                                line={ this.openedDiff.graphemes }
+                                document={ this.props.document }
+                                boxes={ this.currentBoxes }
+                                showBoxes={ true }
+                                editable={ false }
+                                onBoxesReported={ this.onCurrentBoxesReported.bind(this) }
+                                />,
+                  <input key={ 6 } disabled="disabled" value={ this.openedDiff.afterText } />
+              ];
+          }
+          else {
+              return (
+                  <div className="corpusbuilder-diff-label">
+                    On { this.afterBranchName }:
+                    <div className="corpusbuilder-diff-nodata">---</div>
+                  </div>
+              );
+          }
       }
 
       return null;
@@ -99,19 +130,11 @@ export default class DiffLayer extends React.Component {
                                     onCloseRequested={ this.onPreviewCloseRequest.bind(this) }
                                     >
                       <div className="corpusbuilder-diff-preview">
-                          <div className="corpusbuilder-diff-label">
-                            On { this.beforeBranchName }:
-                          </div>
                           { this.renderCurrentPreview() }
-                          <input disabled="disabled" value={ this.beforeText } />
                           <div className="corpusbuilder-diff-separator">
-                            <i className="fa fa-hand-o-down" aria-hidden="true"></i>
+                            &nbsp;
                           </div>
-                          <div className="corpusbuilder-diff-label">
-                            On { this.afterBranchName }:
-                          </div>
-                          { this.renderCurrentPreview() }
-                          <input disabled="disabled" value={ this.afterText } />
+                          { this.renderOtherPreview() }
                       </div>
                     </FloatingWindow>
                     {

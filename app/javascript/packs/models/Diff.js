@@ -40,17 +40,34 @@ export default class Diff {
         return this.rawDiff.length === 0;
     }
 
-    words(pageNumber, graphemes, currentVersion, otherVersion) {
+    words(pageNumber, currentGraphemes, otherGraphemes, currentVersion, otherVersion) {
         if(this.isEmpty) {
             return [ ];
         }
 
-        let currentWords = GraphemeUtils.words(graphemes);
+        // the idea is to match the current words with the items
+        // from this diff, and do the same with the words comming
+        // from the other version.
+        //
+        // next, we will need to merge the ones that overlap
+        // visually
+        //
+        // the added words are the ones having only the graphemes
+        // with parent_ids empty
+        //
+        // the removed are the ones having no diff grapheme in the
+        // list of current diff graphemes
+        //
+        // modified is the rest
+
+        let currentWords = GraphemeUtils.words(currentGraphemes);
+        let otherWords = GraphemeUtils.words(otherGraphemes);
+        let diffGraphemes = this.pages[pageNumber - 1].graphemes;
+
         let currentMap = new Map();
         let otherMap = new Map();
-        let wordDiffs = [ ];
 
-        for(let grapheme of this.pages[pageNumber - 1].graphemes) {
+        for(let grapheme of diffGraphemes) {
             if(grapheme.inclusion === 'left') {
                 currentMap.set(grapheme.id, grapheme);
             }
@@ -59,55 +76,39 @@ export default class Diff {
             }
         }
 
-        for(let word of currentWords) {
-            let mode = null;
-            let countMatched = 0;
+        let findWords = (givenWords, givenMap) => {
+            let foundWords = [ ];
 
-            for(let grapheme of word) {
-                let matched = currentMap.get(grapheme.id);
+            for(let word of givenWords) {
+                let diffWord = null;
 
-                if(matched !== undefined) {
-                    countMatched++;
+                for(let grapheme of word) {
+                    let matched = givenMap.get(grapheme.id);
 
-                    if(matched.parent_ids.length !== 0) {
-                        mode = "modified";
-                        break;
-                    }
-                    else {
-                        if(mode === null) {
-                            mode = "added";
+                    if(matched !== undefined) {
+                        if(diffWord === null) {
+                            diffWord = new WordDiff(currentVersion, otherVersion, word);
                         }
+
+                        diffWord.addDiffGrapheme(matched);
+                        givenMap.delete(grapheme.id);
                     }
                 }
-            }
 
-            if(countMatched !== word.length && mode === "added") {
-                mode = "modified";
-            }
-
-            if(mode !== null) {
-                wordDiffs.push(new WordDiff(mode, word, currentVersion, otherVersion));
-            }
-        }
-
-        for(let otherGrapheme of otherMap.values()) {
-            for(let currentGrapheme of currentMap.values()) {
-                if(GraphemeUtils.areRelated(otherGrapheme, currentGrapheme)) {
-                    currentMap.delete(currentGrapheme.id);
-                    otherMap.delete(otherGrapheme.id);
+                if(diffWord !== null) {
+                    foundWords.push(diffWord);
                 }
             }
-        }
 
-        return wordDiffs.concat(
-            GraphemeUtils.words(
-                Array.from(
-                    otherMap.values()
-                )
-            ).map((word) => {
-                return new WordDiff("deleted", word, currentVersion, otherVersion);
-            })
-        );
+            return foundWords;
+        };
+
+        return WordDiff.groupOverlapping(
+            findWords(currentWords, currentMap),
+            findWords(otherWords, otherMap)
+        ).map((wordGroup) => {
+            return WordDiff.merge(wordGroup);
+        });
     }
 
     static empty() {

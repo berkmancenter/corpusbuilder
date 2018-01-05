@@ -1,5 +1,10 @@
 .corpusbuilder {
   &-diff {
+    &-nodata {
+        color: #ddd;
+        display: inline;
+    }
+
     .corpusbuilder-highlight-line {
       &-added {
         background: green;

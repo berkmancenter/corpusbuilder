@@ -104,6 +104,22 @@ export default class Viewer extends React.Component {
     }
 
     @computed
+    get otherDiffTree() {
+        if(this.documentId === null ||
+           this.page === null ||
+           this.currentDiffVersion === null) {
+            return null;
+        }
+        else {
+            return this.props.documents.tree(
+              this.documentId,
+              this.currentDiffVersion,
+              this.page
+            );
+        }
+    }
+
+    @computed
     get diff() {
         if(this.documentId === null ||
            this.currentDiffVersion === null ||
@@ -121,14 +137,16 @@ export default class Viewer extends React.Component {
 
     @computed
     get diffWords() {
-        if(this.diffPage === null || this.tree === null || this.diff === null ||
-           this.diffPage === undefined || this.tree === undefined || this.diff === undefined) {
+        if(this.diffPage === null || this.tree === null || this.diff === null || this.otherDiffTree === null ||
+           this.diffPage === undefined || this.tree === undefined || this.diff === undefined ||
+           this.otherDiffTree === undefined) {
             return [ ];
         }
         else {
             return this.diff.words(
                 this.diffPage,
                 this.tree.surfaces[0].graphemes,
+                this.otherDiffTree.surfaces[0].graphemes,
                 this.currentVersion,
                 this.currentDiffVersion
             );
