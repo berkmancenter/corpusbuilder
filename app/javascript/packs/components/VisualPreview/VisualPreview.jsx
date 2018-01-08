@@ -86,12 +86,23 @@ export default class VisualPreview extends React.Component {
     }
 
     get image() {
-        if(this.rootElement === null) {
-            return null;
+        if(this._image === null || this._image === undefined) {
+            let image = new Image();
+
+            image.onload = (() => {
+                this.renderPreview();
+            }).bind(this);
+
+            image.src = this.pageImageUrl;
+
+            this._image = image;
         }
-        else {
-            return this.rootElement.getElementsByClassName('corpusbuilder-visual-preview-preview-source')[0];
-        }
+
+        return this._image;
+    }
+
+    componentWillUpdate() {
+        this._image = null;
     }
 
     onBoxSelectionChanged(box) {
@@ -133,9 +144,6 @@ export default class VisualPreview extends React.Component {
     render() {
         return (
             <div ref={ this.captureRoot.bind(this) } className="corpusbuilder-visual-preview-preview-wrapper">
-                <img className="corpusbuilder-visual-preview-preview-source"
-                    src={ this.pageImageUrl }
-                    />
                 <div className="corpusbuilder-visual-preview-canvas-area">
                     <canvas className="corpusbuilder-visual-preview-preview" />
                     <BoxesEditor line={ this.props.line }
