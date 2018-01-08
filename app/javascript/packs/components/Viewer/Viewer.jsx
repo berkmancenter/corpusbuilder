@@ -226,10 +226,11 @@ export default class Viewer extends React.Component {
         this.editing = isOn;
 
         if(isOn) {
+            this.currentDiffVersion = this.currentVersion;
             this.currentVersion = this.currentVersion.workingVersion;
         }
         else {
-            this.currentVersion = this.currentVersion.branchVersion;
+            this.currentVersion = this.currentDiffVersion = this.currentVersion.branchVersion;
         }
     }
 

@@ -27,7 +27,7 @@ export default class DiffLayer extends React.Component {
     @computed
     get afterBranchName() {
         if(this.hasPreviewOpened) {
-            return this.openedDiff.afterVersion.branchName;
+            return this.openedDiff.afterVersion.name;
         }
 
         return null;
@@ -36,7 +36,7 @@ export default class DiffLayer extends React.Component {
     @computed
     get beforeBranchName() {
         if(this.hasPreviewOpened) {
-            return this.openedDiff.beforeVersion.branchName;
+            return this.openedDiff.beforeVersion.name;
         }
 
         return null;

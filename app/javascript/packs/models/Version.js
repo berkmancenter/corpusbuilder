@@ -18,6 +18,23 @@ export default class Version {
         }
     }
 
+    get isWorking() {
+        return this.object.isWorking === true;
+    }
+
+    @computed
+    get name() {
+        if(this.isBranch) {
+            return this.branchName;
+        }
+
+        if(this.isWorking) {
+            return `${ this.object.branch.name } (working)`;
+        }
+
+        return this.identifier;
+    }
+
     @computed
     get revisionId() {
         if(this.isBranch) {
@@ -47,7 +64,8 @@ export default class Version {
     get workingVersion() {
         return Version.revision({
             id: this.object.working_id,
-            branch: this.object
+            branch: this.object,
+            isWorking: true
         });
     }
 

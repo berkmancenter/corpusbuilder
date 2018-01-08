@@ -29,8 +29,6 @@ class V1::DocumentsAPI < Grape::API
           return revision
         end
       else
-        Rails.logger.debug "Params: #{params.inspect}"
-        Rails.logger.debug "Querying for branch name: #{params[params_name]}"
         branch = @document.branches.where(name: params[params_name]).first
 
         if !branch.present? && options[:required]

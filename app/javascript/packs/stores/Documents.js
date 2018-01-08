@@ -253,6 +253,7 @@ export default class Documents {
                 action(
                     ( _ ) => {
                         this.tree(doc.id, version, page, 0, 0, true);
+                        this.state.diffs.clear();
                     }
                 )
             );
