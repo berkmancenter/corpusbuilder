@@ -71,7 +71,7 @@ export default class WordDiff {
 
     @computed
     get otherGraphemes() {
-        return this.word2;
+        return this.wasDeleted ? this.word1 : this.word2;
     }
 
     addDiffGrapheme(diffGrapheme) {

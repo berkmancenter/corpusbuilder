@@ -1,5 +1,5 @@
 import React from 'react';
-import { observable, computed } from 'mobx';
+import { autorun, observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
 
@@ -194,14 +194,35 @@ export default class Viewer extends React.Component {
         });
         this.currentDiffVersion = this.currentVersion;
         this.showImage = this.props.showImage;
+
+        setTimeout(() => {
+            // auto-publish page switches
+            autorun(() => {
+                if(this.props.onPageSwitch !== null && this.props.onPageSwitch !== undefined) {
+                    this.props.onPageSwitch(this.page);
+                }
+            });
+
+            // auto-set the diffPage when the current page changes
+            autorun(() => {
+                if(this.diff !== null && this.diff !== undefined) {
+                    let index = 1;
+
+                    for(let diffPage of this.diff.pages) {
+                        if(diffPage.surfaceNumber === this.page) {
+                            this.diffPage = index;
+                            break;
+                        }
+
+                        index++;
+                    }
+                }
+            });
+        });
     }
 
     navigate(page) {
         this.page = page;
-
-        if(this.props.onPageSwitch !== null && this.props.onPageSwitch !== undefined) {
-            this.props.onPageSwitch(page);
-        }
     }
 
     reportElement(div) {

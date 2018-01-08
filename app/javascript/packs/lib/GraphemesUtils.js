@@ -1,5 +1,9 @@
 export default class GraphemesUtils {
     static wordBoxes(graphemes) {
+        if(graphemes === undefined || graphemes === null) {
+            return [ ];
+        }
+
         return this.words(graphemes)
                    .map(this.wordToBox);
     }
