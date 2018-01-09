@@ -15,4 +15,12 @@ class Revision < ApplicationRecord
       Revision.statuses[:conflict]
     ])
   }
+
+  def self.graphemes_revisions_partition_table_name(id)
+    "graphemes_revisions_#{id.gsub(/-/, '_')}"
+  end
+
+  def graphemes_revisions_partition_table_name
+    self.class.graphemes_revisions_partition_table_name(id)
+  end
 end

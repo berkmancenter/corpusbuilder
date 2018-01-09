@@ -20,7 +20,7 @@ class Branch < ApplicationRecord
     expose :name
     expose :revision_id
     expose :working_id do |branch, _|
-      branch.working.id
+      branch.working.try(:id)
     end
     expose :editor, with: Editor::Simple
     expose :editable do |branch, options|

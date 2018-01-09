@@ -3,9 +3,13 @@ module Revisions
     attr_accessor :document_id, :parent_id, :status
 
     def execute
-      Revision.create! document_id: @document_id,
+      revision = Revision.create! document_id: @document_id,
         parent_id: @parent_id,
         status: (status || Revision.statuses[:regular])
+
+      Revisions::CreatePartition.run! revision: revision
+
+      revision
     end
   end
 end

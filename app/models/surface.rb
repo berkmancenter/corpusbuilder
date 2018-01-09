@@ -23,7 +23,7 @@ class Surface < ApplicationRecord
           revisions: { document_id: surface.document_id },
           name: options[:branch_name]
         )
-        surface.graphemes.joins(:revisions).where(revisions: { id: branches_query.select(:revision_id) }).uniq
+        surface.graphemes.joins(:revisions).where(revisions: { id: branches_query.select(:revision_id) })
       else
         surface.graphemes
       end
@@ -32,7 +32,7 @@ class Surface < ApplicationRecord
         _graphemes = _graphemes.where("graphemes.area <@ ?", options[:area].to_s)
       end
 
-      Grapheme::Tree.represent _graphemes, options
+      Grapheme::Tree.represent _graphemes.uniq, options
     end
   end
 end

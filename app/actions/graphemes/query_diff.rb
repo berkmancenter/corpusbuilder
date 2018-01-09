@@ -24,7 +24,7 @@ module Graphemes
                 array_agg(revision_id) as revision_ids
           from graphemes_revisions
           where revision_id = :revision_left_id
-            or revision_id = :revision_right_id
+             or revision_id = :revision_right_id
           group by grapheme_id
           having array_length(array_agg(revision_id), 1) < 2
         ) g

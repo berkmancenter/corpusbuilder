@@ -67,27 +67,27 @@ module Documents
     end
 
     def copy_data_into_graphemes_revisions
-      revisions = [ master_branch.revision.id, master_branch.working.id ]
+      revisions = [ master_branch.revision, master_branch.working ]
 
-      revisions.each do |revision_id|
-        execute_copy_into_graphemes_revisions(revision_id)
+      revisions.each do |revision|
+        execute_copy_into_graphemes_revisions(revision)
       end
     end
 
-    def execute_copy_into_graphemes_revisions(revision_id)
+    def execute_copy_into_graphemes_revisions(revision)
       conn = Grapheme.connection.raw_connection
 
       grapheme_ids = graphemes.map(&:id)
 
-      Rails.logger.info "Using Postgres COPY to add #{graphemes.count} graphemes to the revision #{revision_id}"
+      Rails.logger.info "Using Postgres COPY to add #{graphemes.count} graphemes to the revision #{revision.id}"
 
-      conn.copy_data "COPY graphemes_revisions (grapheme_id, revision_id) FROM STDIN CSV" do
+      conn.copy_data "COPY #{revision.graphemes_revisions_partition_table_name} (grapheme_id, revision_id) FROM STDIN CSV" do
         grapheme_ids.each do |grapheme_id|
-          conn.put_copy_data "#{grapheme_id},#{revision_id}\n"
+          conn.put_copy_data "#{grapheme_id},#{revision.id}\n"
         end
       end
 
-      Rails.logger.info "Copied #{graphemes.count} graphemes to the revision #{revision_id}"
+      Rails.logger.info "Copied #{graphemes.count} graphemes to the revision #{revision.id}"
     end
 
     def master_branch

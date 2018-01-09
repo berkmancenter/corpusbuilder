@@ -32,7 +32,7 @@ class V1::DocumentsAPI < Grape::API
         branch = @document.branches.where(name: params[params_name]).first
 
         if !branch.present? && options[:required]
-          error!('Branch doesn\'t exist', 422)
+          error!("Branch doesn't exist", 422)
         end
 
         return branch.try(:revision)

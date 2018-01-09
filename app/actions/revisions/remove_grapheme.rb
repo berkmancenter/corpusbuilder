@@ -4,10 +4,8 @@ module Revisions
 
     def execute
       pg_result = Revision.connection.execute <<-SQL
-        delete from graphemes_revisions
-        where
-            revision_id = '#{ revision_id }' :: uuid
-        and grapheme_id = '#{ grapheme_id }' :: uuid
+        delete from #{Revision.graphemes_revisions_partition_table_name(revision_id)}
+        where grapheme_id = '#{ grapheme_id }' :: uuid
       SQL
 
       pg_result.cmd_tuples

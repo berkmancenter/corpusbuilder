@@ -337,7 +337,7 @@ describe V1::DocumentsAPI, type: :request do
         development_branch
         surfaces
         graphemes
-        surface_2_graphemes
+        master_branch.revision.graphemes << surface_2_graphemes
 
         get url(document.id, 'master'), headers: headers, params: { surface_number: 2 }
       end
@@ -359,7 +359,7 @@ describe V1::DocumentsAPI, type: :request do
           }
         }
 
-        get url(document.id, 'master'), headers: headers, params: _params
+        get url(document.id, master_branch.working.id), headers: headers, params: _params
       end
 
       let(:area_no_surface_request) do
@@ -378,6 +378,8 @@ describe V1::DocumentsAPI, type: :request do
       end
 
       let(:valid_request_result) do
+        graphemes
+        master_branch.revision.graphemes = master_branch.working.graphemes
         valid_request
 
         JSON.parse(response.body)
@@ -1153,7 +1155,6 @@ describe V1::DocumentsAPI, type: :request do
           valid_request
           master_branch.reload
 
-
           expect(master_branch.working.graphemes.to_a.uniq.select(&:conflict?).count).to eq(2)
         end
       end
@@ -1164,26 +1165,44 @@ describe V1::DocumentsAPI, type: :request do
       it_behaves_like "application authenticated route"
       it_behaves_like "revision accepting route"
 
+      let(:good_revision_request) { valid_request }
+      let(:good_branch_request) { valid_request }
+
+      let(:valid_request) do
+        master_branch
+        development_branch
+        corrections
+
+        method.call url(document.id, 'development'), params: { other_version: development_branch.working.id }, headers: headers
+      end
+
+      let(:valid_root_request) do
+        master_branch
+        corrections
+
+        method.call url(document.id, master_branch.revision.id), params: { other_version: development_branch.revision.id }, headers: headers
+      end
+
       def url(id, revision = 'master')
         "/api/documents/#{id}/#{revision}/diff"
       end
 
       it "returns all new graphemes with the status of addition" do
-        expect(valid_response.select { |g| g["inclusion"] == "right" }.count).to eq(4)
+        expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(4)
       end
 
       it "returns old graphemes with the inclusion of deletion" do
-        expect(valid_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
+        expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
       end
 
       it "returns all graphemes when root revision specified" do
-        expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(0)
-        expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(5)
+        expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
+        expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(4)
       end
 
       it "returns just the right amount of attributes" do
-        expect(valid_response.first.keys.sort).to eq([
-          "id", "value", "area", "inclusion", "zone_id"
+        expect(valid_root_response.first.keys.sort).to eq([
+          "id", "value", "area", "inclusion", "zone_id", "parent_ids", "surface_number", "revision_id"
         ].sort)
       end
     end
@@ -1260,7 +1279,6 @@ describe V1::DocumentsAPI, type: :request do
       expect(with_data_response).to have_key("branches")
       expect(with_data_response["branches"].map { |b| b["name"] }).to eq([master_branch.name, development_branch.name, topic1_branch.name])
       expect(with_data_response["branches"].map { |b| b["editor"]["email"] }).to eq([editor1.email, editor2.email, editor3.email])
-      expect(with_data_response["branches"].map { |b| b["editor"]["id"] }).to eq([editor1.id, editor2.id, editor3.id])
       expect(with_data_response["branches"].first["revision_id"]).to be_present
       expect(with_data_response["branches"].map { |b| b["revision_id"] }.sort).to eq(Revision.all.map(&:id).sort)
     end

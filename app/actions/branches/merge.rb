@@ -5,7 +5,9 @@ module Branches
     validate :branches_not_in_conflicts
 
     def execute
-      branch.working.grapheme_ids = merge_items.map(&:id)
+      #branch.working.grapheme_ids = merge_items.map(&:id)
+      Revisions::PointAtGraphemes.run! ids: merge_items.map(&:id),
+        target: branch.working
 
       if no_conflicts?
         Branches::Commit.run! branch: branch

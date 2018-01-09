@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171117181119) do
+ActiveRecord::Schema.define(version: 20180109122852) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -136,11 +136,10 @@ ActiveRecord::Schema.define(version: 20171117181119) do
   end
 
   create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "document_id"
-    t.box "area"
+    t.uuid "surface_id", null: false
+    t.box "area", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "surface_id", null: false
     t.index ["area"], name: "index_zones_on_area", using: :gist
     t.index ["surface_id"], name: "index_zones_on_surface_id"
   end
