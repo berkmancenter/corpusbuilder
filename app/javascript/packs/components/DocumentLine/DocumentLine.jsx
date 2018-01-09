@@ -62,7 +62,7 @@ export default class DocumentLine extends React.Component {
         let absolutePixelDiff = right.area.ulx - left.area.lrx;
         let gap = absolutePixelDiff * this.props.ratio;
 
-        return ( gap + this.letterSpacingByWord ) / ( this.spaceWidth + this.letterSpacingByWord );
+        return Math.ceil(( gap + this.letterSpacingByWord ) / ( this.spaceWidth + this.letterSpacingByWord ));
     }
 
     @computed
