@@ -40,9 +40,7 @@ export default class MouseManager extends React.Component {
             ObserveMousePosition.run(
                 this.props.appState,
                 {
-                    select: {
-                        id: 0
-                    },
+                    select: '',
                     x: e.pageX - offset.x,
                     y: e.pageY - offset.y
                 }

@@ -23,7 +23,9 @@ export default class FetchDocumentBranch extends Action {
                 });
 
                 version.update(branch);
-                stopObserving();
+                if(typeof stopObserving === 'function') {
+                    stopObserving();
+                }
             }
         });
 

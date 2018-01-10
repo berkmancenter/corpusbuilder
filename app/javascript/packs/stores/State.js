@@ -9,7 +9,11 @@ export default class State {
     }
 
     invalidate(selector) {
-        throw "unimplemented";
+        this.cache.keys().filter((k) => {
+            return k.indexOf(selector.id) !== -1;
+        }).forEach((key) => {
+            this.cache.delete(key);
+        });
     }
 
     resolve(selector, callback) {
@@ -29,6 +33,7 @@ export default class State {
             }
             else {
                 action(() => {
+                    resource = value;
                     this.cache.set(selector.id, value);
                 })();
             }

@@ -1,11 +1,12 @@
 import { computed } from 'mobx';
 
 export default class Selector {
-    select: {};
-    tag: "";
+    select = {};
+    tag = "";
 
     constructor(tag, select) {
         this.select = select;
+        this.tag = tag;
 
         for(let key of Object.keys(select)) {
             if(key !== "id") {
