@@ -1,6 +1,7 @@
 import React from 'react';
-import state from '../../stores/State'
-import * as qwest from 'qwest';
+
+import State from '../../stores/State'
+
 import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react'
 import { Viewer } from '../Viewer'
@@ -10,9 +11,7 @@ import { Button } from '../Button';
 import { DocumentInfo } from '../DocumentInfo'
 import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
 
-import Documents from '../../stores/Documents'
-import Metadata from '../../stores/Metadata'
-import Mouse from '../../stores/Mouse'
+import Request from '../../lib/Request';
 
 import styles from './WindowManager.scss';
 import fontAwesome from 'font-awesome/scss/font-awesome.scss'
@@ -24,7 +23,7 @@ export default class WindowManager extends React.Component {
     constructor(props) {
         super(props);
 
-        qwest.base = props.baseUrl;
+        Request.setBaseUrl(props.baseUrl);
     }
 
     @observable
@@ -53,11 +52,14 @@ export default class WindowManager extends React.Component {
     }
 
     @computed
+    get appState() {
+        return new State(this.props.baseUrl);
+    }
+
+    @computed
     get sharedContext() {
         return {
-            documents: new Documents(this.props.baseUrl, state),
-            metadata: new Metadata(this.props.baseUrl, state),
-            mouse: new Mouse(state)
+            appState: this.appState
         };
     }
 

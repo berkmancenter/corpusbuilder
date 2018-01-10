@@ -3,9 +3,12 @@ import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
+
+import FetchDocumentBranches from '../../actions/FetchDocumentBranches';
+
 import styles from './NewBranchWindow.scss';
 
-@inject('documents')
+@inject('appState')
 @observer
 export default class NewBranchWindow extends React.Component {
     @observable
@@ -21,7 +24,13 @@ export default class NewBranchWindow extends React.Component {
 
     @computed
     get valid() {
-        let branches = this.props.documents.state.branches.get(this.props.document.id);
+        let branches = FetchDocumentBranches.run(
+            this.props.appState, {
+                select: {
+                    document: { id: this.props.document.id }
+                }
+            }
+        );
 
         if(this.editedName === undefined || branches === undefined) return false;
 

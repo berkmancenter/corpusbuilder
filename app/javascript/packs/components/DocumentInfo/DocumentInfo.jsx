@@ -4,12 +4,12 @@ import { inject, observer } from 'mobx-react'
 import state from '../../stores/State'
 import s from './DocumentInfo.scss'
 
-@inject('documents')
+@inject('appState')
 @observer
 export default class DocumentInfo extends React.Component {
 
     @computed get info() {
-        return this.props.documents.info(this.props.document.id);
+        return null; // todo: implement me: this.props.documents.info(this.props.document.id);
     }
 
     render() {

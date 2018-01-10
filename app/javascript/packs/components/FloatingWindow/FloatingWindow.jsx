@@ -3,9 +3,11 @@ import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 import { OutsideClicksHandler } from '../OutsideClicksHandler'
 
+import GetMousePosition from '../../actions/GetMousePosition';
+
 import styles from './FloatingWindow.scss';
 
-@inject('mouse')
+@inject('appState')
 @observer
 export default class FloatingWindow extends React.Component {
 
@@ -19,7 +21,7 @@ export default class FloatingWindow extends React.Component {
     @computed
     get mousePosition() {
         if(this.lastPositionWhenInvisible === null) {
-            this.lastPositionWhenInvisible = this.props.mouse.lastPosition();
+            this.lastPositionWhenInvisible = GetMousePosition.run(this.props.appState, { select: '' });
         }
 
         return this.lastPositionWhenInvisible;

@@ -5,7 +5,7 @@ import { Highlight } from '../Highlight';
 
 import styles from './Annotations.scss'
 
-@inject('metadata')
+@inject('appState')
 @observer
 export default class Annotations extends React.Component {
 
@@ -16,10 +16,11 @@ export default class Annotations extends React.Component {
 
     @computed
     get annotations() {
-        return this.props.metadata.annotations(
-            this.props.document.id,
-            this.props.version
-        );
+        return [ ]; // todo: implement me
+       // return this.props.metadata.annotations(
+       //     this.props.document.id,
+       //     this.props.version
+       // );
     }
 
     @computed

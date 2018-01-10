@@ -1,32 +1,39 @@
-import { observable } from 'mobx'
+import { observable, action } from 'mobx';
 
-class State {
-    @observable
-    trees = observable.map();
+export default class State {
+    cache = observable.map();
+    baseUrl = "";
 
-    @observable
-    diffs = observable.map();
+    constructor(baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 
-    @observable
-    surfaceCounts = observable.map();
+    invalidate(selector) {
+        throw "unimplemented";
+    }
 
-    @observable
-    branches = observable.map();
+    resolve(selector, callback) {
+        let resource = this.cache.get(selector.id);
 
-    @observable
-    versions = observable.map();
+        if(resource === undefined && callback !== undefined) {
+            let value = callback();
 
-    @observable
-    infos = observable.map();
+            if(typeof value.then === 'function') {
+                value.then(
+                    action(
+                        (data) => {
+                            this.cache.set(selector.id, data);
+                        }
+                    )
+                );
+            }
+            else {
+                action(() => {
+                    this.cache.set(selector.id, value);
+                })();
+            }
+        }
 
-    @observable
-    revisions = observable.map();
-
-    @observable
-    mouseLastPosition = observable({ x: 0, y: 0 });
-
-    @observable
-    annotations = observable.map();
+        return resource;
+    }
 }
-
-export default window.__CB_STATE = new State();

@@ -5,15 +5,16 @@ import { inject, observer } from 'mobx-react'
 
 import s from './DocumentRevisionsBrowser.scss'
 
-@inject('documents')
+@inject('appState')
 @observer
 export default class DocumentRevisionsBrowser extends React.Component {
 
     @computed get revisions() {
-        return this.props.documents.revisions(
-            this.props.document.id,
-            this.props.branchName
-        ) || [];
+        return []; // todo: implement me
+       //return this.props.documents.revisions(
+       //    this.props.document.id,
+       //    this.props.branchName
+       //) || [];
     }
 
     render() {

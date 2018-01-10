@@ -1,7 +1,10 @@
 import * as qwest from 'qwest';
 
 export default class Request {
-    static getRequests = new Map();
+
+    static setBaseUrl(baseUrl) {
+        qwest.base = baseUrl;
+    }
 
     // todo: as the pattern emerges that all verbs are treated the same way
     // DRY out the following code

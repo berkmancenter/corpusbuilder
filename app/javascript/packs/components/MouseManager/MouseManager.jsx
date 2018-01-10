@@ -1,7 +1,9 @@
 import React from 'react';
 import { inject } from 'mobx-react'
 
-@inject('mouse')
+import ObserveMousePosition from '../../actions/ObserveMousePosition';
+
+@inject('appState')
 export default class MouseManager extends React.Component {
 
     _host = null;
@@ -35,7 +37,16 @@ export default class MouseManager extends React.Component {
         node.addEventListener('mousemove', (e) => {
             let offset = this.offset(node);
 
-            this.props.mouse.setLastPosition(e.pageX - offset.x, e.pageY - offset.y);
+            ObserveMousePosition.run(
+                this.props.appState,
+                {
+                    select: {
+                        id: 0
+                    },
+                    x: e.pageX - offset.x,
+                    y: e.pageY - offset.y
+                }
+            );
         }, false);
     }
 

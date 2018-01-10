@@ -3,11 +3,15 @@ import { autorun, observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 import ContentLoader from 'react-content-loader'
 
-import state from '../../stores/State'
+import State from '../../stores/State'
 
-import Documents from '../../stores/Documents'
-import Metadata from '../../stores/Metadata'
-import Mouse from '../../stores/Mouse'
+import FetchDocumentPage from '../../actions/FetchDocumentPage';
+import FetchDocumentDiff from '../../actions/FetchDocumentDiff';
+import FetchDocumentBranches from '../../actions/FetchDocumentBranches';
+import FetchDocumentBranch from '../../actions/FetchDocumentBranch';
+import CreateDocumentBranch from '../../actions/CreateDocumentBranch';
+import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
+import CommitDocumentChanges from '../../actions/CommitDocumentChanges';
 
 import { MouseManager } from '../MouseManager'
 import { PopupMenu } from '../PopupMenu'
@@ -24,8 +28,7 @@ import { DiffLayer } from '../DiffLayer';
 
 import s from './Viewer.scss'
 
-@inject('documents')
-@inject('metadata')
+@inject('appState')
 @observer
 export default class Viewer extends React.Component {
 
@@ -86,7 +89,7 @@ export default class Viewer extends React.Component {
     showTagsEditor = false;
 
     @computed
-    get tree() {
+    get document() {
         // note: checks for all nulls are to make this computed dependent on all
         // three observables - not just the version
         if(this.documentId === null ||
@@ -95,10 +98,15 @@ export default class Viewer extends React.Component {
             return null;
         }
         else {
-            return this.props.documents.tree(
-              this.documentId,
-              this.currentVersion,
-              this.page
+            return FetchDocumentPage.run(
+              this.props.appState,
+              {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion,
+                    pageNumber: this.page
+                }
+              }
             );
         }
     }
@@ -111,10 +119,15 @@ export default class Viewer extends React.Component {
             return null;
         }
         else {
-            return this.props.documents.tree(
-              this.documentId,
-              this.currentDiffVersion,
-              this.page
+            return FetchDocumentPage.run(
+              this.props.appState,
+              {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentDiffVersion,
+                    pageNumber: this.page
+                }
+              }
             );
         }
     }
@@ -127,25 +140,30 @@ export default class Viewer extends React.Component {
             return null;
         }
         else {
-            return this.props.documents.diff(
-              this.documentId,
-              this.currentVersion,
-              this.currentDiffVersion
+            return FetchDocumentDiff.run(
+              this.props.appState,
+              {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion,
+                    otherVersion: this.currentDiffVersion
+                }
+              }
             );
         }
     }
 
     @computed
     get diffWords() {
-        if(this.diffPage === null || this.tree === null || this.diff === null || this.otherDiffTree === null ||
-           this.diffPage === undefined || this.tree === undefined || this.diff === undefined ||
+        if(this.diffPage === null || this.document === null || this.diff === null || this.otherDiffTree === null ||
+           this.diffPage === undefined || this.document === undefined || this.diff === undefined ||
            this.otherDiffTree === undefined) {
             return [ ];
         }
         else {
             return this.diff.words(
                 this.diffPage,
-                this.tree.surfaces[0].graphemes,
+                this.document.surfaces[0].graphemes,
                 this.otherDiffTree.surfaces[0].graphemes,
                 this.currentVersion,
                 this.currentDiffVersion
@@ -155,7 +173,14 @@ export default class Viewer extends React.Component {
 
     @computed
     get branches() {
-        return this.props.documents.branches(this.documentId) || [];
+        return FetchDocumentBranches.run(
+          this.props.appState,
+          {
+            select: {
+                document: { id: this.documentId }
+            }
+          }
+        );
     }
 
     @computed
@@ -165,8 +190,8 @@ export default class Viewer extends React.Component {
 
     @computed
     get height() {
-        let width = this.tree.surfaces[0].area.lrx - this.tree.surfaces[0].area.ulx;
-        let height = this.tree.surfaces[0].area.lry - this.tree.surfaces[0].area.uly;
+        let width = this.document.surfaces[0].area.lrx - this.document.surfaces[0].area.ulx;
+        let height = this.document.surfaces[0].area.lry - this.document.surfaces[0].area.uly;
 
         let ratio = this.width / width;
 
@@ -175,23 +200,28 @@ export default class Viewer extends React.Component {
 
     @computed
     get documentMaxHeight() {
-        if(this.tree === null || this.tree === undefined) {
+        if(this.document === null || this.document === undefined) {
             return this.width;
         }
 
-        let ratio = this.width / this.tree.global.tallest_surface.width;
+        let ratio = this.width / this.document.global.tallest_surface.width;
 
-        return ratio * this.tree.global.tallest_surface.height;
+        return ratio * this.document.global.tallest_surface.height;
     }
 
     constructor(props) {
         super(props);
 
         this.documentId = this.props.documentId;
-        this.currentVersion = this.props.documents.getVersion({
-            documentId: this.documentId,
-            name: this.props.branchName || 'master'
-        });
+        this.currentVersion = FetchDocumentBranch.run(
+            this.props.appState,
+            {
+              select: {
+                  document: { id: this.documentId },
+                  name: this.props.branchName || 'master'
+              }
+            }
+        );
         this.currentDiffVersion = this.currentVersion;
         this.showImage = this.props.showImage;
 
@@ -234,10 +264,15 @@ export default class Viewer extends React.Component {
     }
 
     chooseBranch(branch) {
-        this.currentVersion = this.props.documents.getVersion({
-            documentId: this.documentId,
-            name: branch.name
-        });
+        this.currentVersion = FetchDocumentBranch.run(
+            this.props.appState,
+            {
+              select: {
+                  document: { id: this.documentId },
+                  name: branch.name
+              }
+            }
+        );
         this.editing = false;
     }
 
@@ -272,18 +307,30 @@ export default class Viewer extends React.Component {
     }
 
     resetChanges() {
-        this.props.documents.reset(this.documentId, this.currentVersion);
+        ResetDocumentBranch.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion
+                }
+            }
+        );
     }
 
     commitChanges() {
-        this.props.documents.commit(this.documentId, this.currentVersion)
-            .then((_) => {
-                this.editing = false;
-                this.currentVersion = this.props.documents.getBranch(
-                  this.currentVersion.branchVersion.branchName,
-                  this.documentId
-                );
-            });
+       CommitDocumentChanges(
+           this.props.appState,
+           {
+               select: {
+                   document: { id: this.documentId },
+                   version: this.currentVersion
+               }
+           }
+       ).then((_) => {
+           this.editing = false;
+           this.chooseBranch(this.currentVersion.branchVersion);
+       });
     }
 
     onNewBranchRequested() {
@@ -299,27 +346,45 @@ export default class Viewer extends React.Component {
     }
 
     saveAnnotation(annotation) {
-        this.props.metadata.saveAnnotation(
-            this.documentId,
-            this.currentVersion,
-            annotation,
-            this.lastSelectedGraphemes
-        );
+       //this.props.metadata.saveAnnotation(
+       //    this.documentId,
+       //    this.currentVersion,
+       //    annotation,
+       //    this.lastSelectedGraphemes
+       //);
     }
 
     saveLine(doc, line, editedText, boxes) {
-        this.props.documents.correct(doc, this.page, line, this.currentVersion, editedText, boxes)
-            .finally((_) => {
-                this.showInlineEditor = false;
-            });
+        CorrectDocumentPage.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    pageNumber: this.page
+                },
+                line: line,
+                text: editedText,
+                boxes: boxes
+            }
+        ).then((_) => {
+            this.showInlineEditor = false;
+        });
     }
 
     saveNewBranch(name) {
-        this.props.documents.branchOff(this.documentId, this.currentVersion, name)
-            .then((newBranch) => {
-                this.showNewBranchWindow = false;
-                this.currentVersion = this.props.documents.getBranch(name, this.documentId);
-            });
+        CreateDocumentBranch.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion,
+                    name: name
+                }
+            }
+        ).then((newBranch) => {
+            this.showNewBranchWindow = false;
+            this.chooseBranch(newBranch);
+        });
     }
 
     hideAnnotationEditor() {
@@ -353,10 +418,15 @@ export default class Viewer extends React.Component {
     }
 
     onDiffBranchSwitch(branch) {
-        this.currentDiffVersion = this.props.documents.getVersion({
-            documentId: this.documentId,
-            name: branch.name
-        });
+        this.currentDiffVersion = FetchDocumentBranch.run(
+            this.props.appState,
+            {
+              select: {
+                  document: { id: this.documentId },
+                  name: branch.name
+              }
+            }
+        );
         this.diffPage = 1;
     }
 
@@ -403,7 +473,7 @@ export default class Viewer extends React.Component {
     }
 
     render() {
-        let doc = this.tree;
+        let doc = this.document;
         let width = this.width;
         let content;
 
