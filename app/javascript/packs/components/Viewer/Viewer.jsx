@@ -23,6 +23,7 @@ import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
 import { DocumentOptions } from '../DocumentOptions'
 import { InlineEditor } from '../InlineEditor'
 import { NewBranchWindow } from '../NewBranchWindow'
+import { MergeBranchesWindow } from '../MergeBranchesWindow';
 import { DiffOptions } from '../DiffOptions';
 import { Button } from '../Button';
 import { DiffLayer } from '../DiffLayer';
@@ -52,6 +53,9 @@ export default class Viewer extends React.Component {
 
     @observable
     showDiff = false;
+
+    @observable
+    showMergeWindow = false;
 
     @observable
     documentId = null;
@@ -373,6 +377,10 @@ export default class Viewer extends React.Component {
         });
     }
 
+    mergeBranches() {
+        console.log('Bam! Merge!');
+    }
+
     saveNewBranch(name) {
         CreateDocumentBranch.run(
             this.props.appState,
@@ -401,6 +409,10 @@ export default class Viewer extends React.Component {
         this.showNewBranchWindow = false;
     }
 
+    hideMergeWindow() {
+        this.showMergeWindow = false;
+    }
+
     editTags() {
         this.showPopup = false;
         this.showTagsEditor = true;
@@ -417,6 +429,10 @@ export default class Viewer extends React.Component {
     onDiffSwitch(page) {
         this.diffPage = page;
         this.page = this.diff.pages[ page - 1 ].surfaceNumber;
+    }
+
+    onMergeRequested() {
+        this.showMergeWindow = true;
     }
 
     onDiffBranchSwitch(branch) {
@@ -466,6 +482,7 @@ export default class Viewer extends React.Component {
                                  currentDiffVersion={ this.currentDiffVersion }
                                  onDiffBranchSwitch={ this.onDiffBranchSwitch.bind(this) }
                                  onDiffSwitch={ this.onDiffSwitch.bind(this) }
+                                 onMergeRequested={ this.onMergeRequested.bind(this) }
                                  />
                 </div>
             );
@@ -542,6 +559,13 @@ export default class Viewer extends React.Component {
                                    currentVersion={ this.currentVersion }
                                    onCloseRequested={ this.hideNewBranchWindow.bind(this) }
                                    onSaveRequested={ this.saveNewBranch.bind(this) }
+                                   />
+                  <MergeBranchesWindow visible={ this.showMergeWindow }
+                                   document={ doc }
+                                   currentVersion={ this.currentVersion }
+                                   otherVersion={ this.currentDiffVersion }
+                                   onCloseRequested={ this.hideMergeWindow.bind(this) }
+                                   onMergeRequested={ this.mergeBranches.bind(this) }
                                    />
                   <AnnotationEditor visible={ this.showAnnotationEditor }
                                     document={ doc }

@@ -20,14 +20,13 @@ export default class DiffOptions extends React.Component {
 
     renderPager() {
         if(this.props.diff === null || this.props.diff === undefined) {
-            return <span>Diffs between:</span>;
+            return <span>Computing the differences between the branch:</span>;
         }
         else if(this.props.diff.isEmpty) {
-            return <span>No diffs found between:</span>
+            return <span>No differences found between the branch:</span>
         }
         else {
             return [
-                <span key={ 1 }>Diffs:</span>,
                 <Button key={ 2 } onClick={ () => this.props.onDiffSwitch(1) }
                         disabled={ this.props.page == 1 }
                         >
@@ -56,13 +55,20 @@ export default class DiffOptions extends React.Component {
 
     render() {
         return (
-            <div className="corpusbuilder-document-diff-switcher">
-                { this.renderPager() }
-                <BranchesMenu onBranchSwitch={ this.props.onDiffBranchSwitch.bind(this) }
-                              currentVersion={ this.props.currentDiffVersion }
-                              branches={ this.props.branches }
-                              >
-                </BranchesMenu>
+            <div className="corpusbuilder-diff-options">
+                <div className="corpusbuilder-document-diff-switcher">
+                    { this.renderPager() }
+                    <BranchesMenu onBranchSwitch={ this.props.onDiffBranchSwitch.bind(this) }
+                                  currentVersion={ this.props.currentDiffVersion }
+                                  branches={ this.props.branches }
+                                  >
+                    </BranchesMenu>
+                </div>
+                <Button onClick={ () => this.props.onMergeRequested(this.currentVersion) }
+                        disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty }
+                        >
+                  Merge
+                </Button>
             </div>
       );
     }
