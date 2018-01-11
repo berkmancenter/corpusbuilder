@@ -12,6 +12,7 @@ import FetchDocumentBranch from '../../actions/FetchDocumentBranch';
 import CreateDocumentBranch from '../../actions/CreateDocumentBranch';
 import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
 import CommitDocumentChanges from '../../actions/CommitDocumentChanges';
+import CorrectDocumentPage from '../../actions/CorrectDocumentPage';
 
 import { MouseManager } from '../MouseManager'
 import { PopupMenu } from '../PopupMenu'
@@ -319,7 +320,7 @@ export default class Viewer extends React.Component {
     }
 
     commitChanges() {
-       CommitDocumentChanges(
+       CommitDocumentChanges.run(
            this.props.appState,
            {
                select: {
@@ -360,6 +361,7 @@ export default class Viewer extends React.Component {
             {
                 select: {
                     document: { id: this.documentId },
+                    version: this.currentVersion,
                     pageNumber: this.page
                 },
                 line: line,
@@ -381,9 +383,9 @@ export default class Viewer extends React.Component {
                     name: name
                 }
             }
-        ).then((newBranch) => {
+        ).then((_) => {
             this.showNewBranchWindow = false;
-            this.chooseBranch(newBranch);
+            this.chooseBranch({ name: name });
         });
     }
 

@@ -11,7 +11,7 @@ export default class ResetDocumentBranch extends Action {
             .then(
                 action(
                     ( _ ) => {
-                        this.state.invalidate(
+                        state.invalidate(
                             new Selector('FetchDocumentPage', {
                                 document: { id: selector.document.id }
                             })

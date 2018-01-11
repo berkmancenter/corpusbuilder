@@ -5,7 +5,7 @@ import Selector from '../lib/Selector';
 
 export default class CreateDocumentBranch extends Action {
     execute(state, selector, params) {
-        let branchVersion = selector.version.isRevision ? selector.version.branchVersion : version;
+        let branchVersion = selector.version.isRevision ? selector.version.branchVersion : selector.version;
 
         let payload = {
             revision: branchVersion.branchName,
@@ -16,7 +16,7 @@ export default class CreateDocumentBranch extends Action {
             .then(
                 action(
                     ( _ ) => {
-                        this.state.invalidate(
+                        state.invalidate(
                             new Selector('FetchDocumentBranches', {
                                 document: { id: selector.document.id }
                             })

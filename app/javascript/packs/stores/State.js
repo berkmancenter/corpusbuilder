@@ -10,7 +10,7 @@ export default class State {
 
     invalidate(selector) {
         this.cache.keys().filter((k) => {
-            return k.indexOf(selector.id) !== -1;
+            return selector.belongsToString(k);
         }).forEach((key) => {
             this.cache.delete(key);
         });
