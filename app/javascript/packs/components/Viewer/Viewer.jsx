@@ -13,6 +13,7 @@ import CreateDocumentBranch from '../../actions/CreateDocumentBranch';
 import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
 import CommitDocumentChanges from '../../actions/CommitDocumentChanges';
 import CorrectDocumentPage from '../../actions/CorrectDocumentPage';
+import MergeDocumentBranches from '../../actions/MergeDocumentBranches';
 
 import { MouseManager } from '../MouseManager'
 import { PopupMenu } from '../PopupMenu'
@@ -378,7 +379,18 @@ export default class Viewer extends React.Component {
     }
 
     mergeBranches() {
-        console.log('Bam! Merge!');
+        MergeDocumentBranches.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    branch: this.currentVersion.branchVersion,
+                    otherBranch: this.currentDiffVersion.branchVersion
+                }
+            }
+        ).then((_) => {
+            this.showMergeWindow = false;
+        });
     }
 
     saveNewBranch(name) {

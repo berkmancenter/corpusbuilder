@@ -11,6 +11,9 @@ class Grapheme < ApplicationRecord
   class Tree < Grape::Entity
     expose :area, with: Area::Tree
     expose :value
+    expose :status do |grapheme|
+      grapheme.status
+    end
     expose :id
     expose :certainty
   end
@@ -19,7 +22,6 @@ class Grapheme < ApplicationRecord
     expose :area, with: Area::Tree
     expose :value
     expose :id
-    expose :revision_id
     expose :inclusion
     expose :surface_number
     expose :parent_ids

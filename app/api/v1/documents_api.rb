@@ -162,7 +162,7 @@ class V1::DocumentsAPI < Grape::API
 
         updated_branch = action! Branches::Merge, branch: current_branch, other_branch: other_branch
 
-        if updated_branch.conflict?
+        if !updated_branch.is_a?(ActiveModel::Errors) && updated_branch.conflict?
           error!('Merge Conflict!', 409)
         end
       end

@@ -15,6 +15,8 @@
   "actions/FetchDocumentPage.js.map": "/packs/actions/FetchDocumentPage.js.map",
   "actions/GetMousePosition.js": "/packs/actions/GetMousePosition.js",
   "actions/GetMousePosition.js.map": "/packs/actions/GetMousePosition.js.map",
+  "actions/MergeDocumentBranches.js": "/packs/actions/MergeDocumentBranches.js",
+  "actions/MergeDocumentBranches.js.map": "/packs/actions/MergeDocumentBranches.js.map",
   "actions/ObserveMousePosition.js": "/packs/actions/ObserveMousePosition.js",
   "actions/ObserveMousePosition.js.map": "/packs/actions/ObserveMousePosition.js.map",
   "actions/ResetDocumentBranch.js": "/packs/actions/ResetDocumentBranch.js",

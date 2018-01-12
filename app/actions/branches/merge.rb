@@ -5,8 +5,7 @@ module Branches
     validate :branches_not_in_conflicts
 
     def execute
-      #branch.working.grapheme_ids = merge_items.map(&:id)
-      Revisions::PointAtGraphemes.run! ids: merge_items.map(&:id),
+      Revisions::PointAtGraphemes.run! ids: merge_ids,
         target: branch.working
 
       if no_conflicts?
@@ -19,20 +18,53 @@ module Branches
     end
 
     def no_conflicts?
-      @_no_conflicts ||= merge_items.none?(&:conflict?)
+      @_no_conflicts ||= merge_conflicts.empty?
     end
 
-    def merge_items
-      @_merge_items ||= Graphemes::QueryMerge.run!(
+    def merge_ids
+      @_merge_ids ||= -> {
+        conflict_graphemes.map(&:id).concat(branch_item_ids).
+                                     concat(other_branch_ids).
+                                     uniq
+      }.call
+    end
+
+    def all_branch_ids(branch)
+      Grapheme.connection.
+        execute("select grapheme_id from #{branch.revision.graphemes_revisions_partition_table_name}").
+        to_a.map { |item| item["grapheme_id"] }
+    end
+
+    def branch_item_ids
+      @_branch_item_ids ||= -> {
+        all_branch_ids(branch).select do |id|
+          merge_conflicts.none? { |conflict| conflict.conflicting_ids.include? id }
+        end
+      }.call
+    end
+
+    def other_branch_ids
+      @_other_branch_ids ||= -> {
+        all_branch_ids(other_branch).select do |id|
+          merge_conflicts.none? { |conflict| conflict.conflicting_ids.include? id }
+        end
+      }.call
+    end
+
+    def conflict_graphemes
+      @_conflict_graphemes ||= -> {
+        merge_conflicts.map do |grapheme|
+          Grapheme.create! grapheme.attributes.without("id", "conflicting_ids", "surface_number").
+                                               merge("status" => Grapheme.statuses[:conflict])
+        end
+      }.call
+    end
+
+    def merge_conflicts
+      @_merge_conflicts ||= Graphemes::QueryMergeConflicts.run!(
         branch_left: branch,
         branch_right: other_branch
-      ).result.map do |grapheme|
-        if grapheme.conflict?
-          grapheme = Grapheme.create! grapheme.attributes.without("id")
-        end
-
-        grapheme
-      end
+      ).result
     end
 
     def branches_not_in_conflicts
