@@ -116,6 +116,7 @@ class V1::DocumentsAPI < Grape::API
       end
       get ':revision/tree' do
         infer_revision!
+        infer_editor!
 
         data_options = {}.merge @revision_options
 
@@ -133,6 +134,8 @@ class V1::DocumentsAPI < Grape::API
             lrx: params[:area][:lrx],
             lry: params[:area][:lry]
         end
+
+        data_options[:editor_id] = @editor_id
 
         present @document, { with: Document::Tree }.merge(data_options)
       end

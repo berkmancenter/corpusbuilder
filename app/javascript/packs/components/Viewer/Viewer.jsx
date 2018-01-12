@@ -96,7 +96,10 @@ export default class Viewer extends React.Component {
 
     @computed
     get hasConflict() {
-        return true;
+        if(this.document !== null && this.document !== undefined) {
+            return this.document.global.count_conflicts !== null &&
+                   parseInt(this.document.global.count_conflicts, 10) > 0
+        }
     }
 
     @computed
@@ -501,6 +504,7 @@ export default class Viewer extends React.Component {
                     <DiffOptions diff={ this.diff }
                                  branches={ this.branches }
                                  page={ this.diffPage }
+                                 document={ this.document }
                                  currentDiffVersion={ this.currentDiffVersion }
                                  onDiffBranchSwitch={ this.onDiffBranchSwitch.bind(this) }
                                  onDiffSwitch={ this.onDiffSwitch.bind(this) }
@@ -514,7 +518,7 @@ export default class Viewer extends React.Component {
     }
 
     renderStatus() {
-        if(this.hasConflict) {
+        if(this.hasConflict && this.currentVersion.editable) {
             return (
                 <div className="corpusbuilder-viewer-status">
                     <div className="corpusbuilder-viewer-status-conflict">

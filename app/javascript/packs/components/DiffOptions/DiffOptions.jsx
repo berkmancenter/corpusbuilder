@@ -65,7 +65,7 @@ export default class DiffOptions extends React.Component {
                     </BranchesMenu>
                 </div>
                 <Button onClick={ () => this.props.onMergeRequested(this.currentVersion) }
-                        disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty }
+                        disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 }
                         >
                   Merge
                 </Button>

@@ -27,7 +27,7 @@ class Document < ApplicationRecord
 
   class Tree < Grape::Entity
     expose :id
-    expose :global do |document|
+    expose :global do |document, options|
       tallest = document.
             surfaces.
             select(%Q{
@@ -39,9 +39,40 @@ class Document < ApplicationRecord
             limit(1).
             first
 
+      # todo: refactor the following:
+      count_conflicts = if options.key? :branch_name
+        branch = Branch.joins(:revision).where(
+          revisions: { document_id: document.id },
+          name: options[:branch_name]
+        ).first
+        result = Grapheme.connection.execute <<-SQL
+          select count(graphemes.id)
+          from #{branch.working.graphemes_revisions_partition_table_name}
+          inner join graphemes on graphemes.id = grapheme_id
+          where status = #{Grapheme.statuses[:conflict]}
+        SQL
+        result.first["count"]
+      else
+        revision = Revision.find(options[:revision_id])
+
+        if revision.working? || revision.conflict?
+          branch = Branch.joins(:revision).where(
+            revisions: { id: revision.parent_id }
+          ).first
+          result = Grapheme.connection.execute <<-SQL
+            select count(graphemes.id)
+            from #{branch.working.graphemes_revisions_partition_table_name}
+            inner join graphemes on graphemes.id = grapheme_id
+            where status = #{Grapheme.statuses[:conflict]}
+          SQL
+          result.first["count"]
+        end
+      end
+
       {
         id: document.id,
         surfaces_count: document.surfaces.count,
+        count_conflicts: count_conflicts.nil? ? nil : count_conflicts,
         tallest_surface: (
           tallest.try(:attributes).
             try(:slice, "height", "width")
