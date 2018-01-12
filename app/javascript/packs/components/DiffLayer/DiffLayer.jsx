@@ -142,7 +142,7 @@ export default class DiffLayer extends React.Component {
                             return (
                                 <Highlight key={ `diff-${index}` }
                                            onClick={ this.onClick.bind(this, diffWord) }
-                                           variantClassName={ diffWord.status }
+                                           variantClassName={ diffWord.allStatuses }
                                            graphemes={ diffWord.graphemes }
                                            document={ this.props.document }
                                            mainPageTop={ this.props.mainPageTop }

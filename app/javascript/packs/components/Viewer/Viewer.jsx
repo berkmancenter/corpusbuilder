@@ -95,6 +95,11 @@ export default class Viewer extends React.Component {
     showTagsEditor = false;
 
     @computed
+    get hasConflict() {
+        return true;
+    }
+
+    @computed
     get document() {
         // note: checks for all nulls are to make this computed dependent on all
         // three observables - not just the version
@@ -312,6 +317,11 @@ export default class Viewer extends React.Component {
         this.showDiff = isOn;
     }
 
+    toggleShowConflictDiff() {
+        this.showDiff = !this.showDiff;
+        this.toggleBranchMode(this.showDiff);
+    }
+
     resetChanges() {
         ResetDocumentBranch.run(
             this.props.appState,
@@ -503,6 +513,23 @@ export default class Viewer extends React.Component {
         return null;
     }
 
+    renderStatus() {
+        if(this.hasConflict) {
+            return (
+                <div className="corpusbuilder-viewer-status">
+                    <div className="corpusbuilder-viewer-status-conflict">
+                        <div className="corpusbuilder-viewer-status-conflict-message">
+                            <span>Merge Conflict!</span>
+                            <Button onClick={ this.toggleShowConflictDiff.bind(this) }>
+                                { this.showDiff ? 'Hide' : 'Show' } differing words
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+    }
+
     render() {
         let doc = this.document;
         let width = this.width;
@@ -604,6 +631,7 @@ export default class Viewer extends React.Component {
                              />
                   { otherContent }
                 </div>
+                { this.renderStatus() }
                 <div className="corpusbuilder-options bottom">
                   <DocumentPageSwitcher document={ doc }
                       page={ page }
@@ -624,7 +652,7 @@ export default class Viewer extends React.Component {
             );
         }
         else {
-            content = <ContentLoader type="facebook" />;
+            content = <ContentLoader type="code" />;
         }
 
         let viewerStyle = {

@@ -22,6 +22,31 @@
       }
     }
 
+    &-status {
+      padding: 5px 0px 5px;
+      margin-bottom: 8px;
+      margin-top: 0px;
+
+      &-conflict {
+        background-color: rgba(200, 0, 0, 0.1);
+        color: rgba(100, 10, 10, 0.5);
+        padding: 5px 10px;
+        text-align: center;
+
+        &-message {
+          margin: 0 auto;
+        }
+
+        span {
+          margin-right: 10px;
+        }
+      }
+
+      span {
+        font-size: 13px;
+      }
+    }
+
     svg {
       margin: 20px;
       background: white;

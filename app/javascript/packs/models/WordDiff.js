@@ -17,6 +17,26 @@ export default class WordDiff {
     }
 
     @computed
+    get allStatuses() {
+        if(this.inConflict) {
+            return [ this.status, "conflict" ];
+        }
+
+        return [ this.status ];
+    }
+
+    @computed
+    get inConflict() {
+        for(let grapheme of this.graphemes) {
+            if(grapheme.status === "conflict") {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @computed
     get beforeText() {
         return (this.hasAfterDiff ? this.word2 : this.word1).map((g) => {
             return g.value;

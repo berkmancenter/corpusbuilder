@@ -89,7 +89,11 @@ export default class Highlight extends React.Component {
         let names = [ "corpusbuilder-highlight-line" ];
 
         if(this.props.variantClassName !== null && this.props.variantClassName !== undefined) {
-            names.push( `corpusbuilder-highlight-line-${ this.props.variantClassName }` );
+            let classes = Array.isArray(this.props.variantClassName) ? this.props.variantClassName :
+                                                                     [ this.props.variantClassName ];
+            for(let className of classes) {
+                names.push( `corpusbuilder-highlight-line-${ className }` );
+            }
         }
 
         if(this.isClickable) {
