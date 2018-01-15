@@ -56,6 +56,9 @@ export default class Viewer extends React.Component {
     showDiff = false;
 
     @observable
+    forceEditingBoxes = null;
+
+    @observable
     showMergeWindow = false;
 
     @observable
@@ -373,6 +376,16 @@ export default class Viewer extends React.Component {
        //);
     }
 
+    onEditDiffRequested(diffWord) {
+        this.showInlineEditor = true;
+        this.editingLine = diffWord.graphemes;
+        this.editingText = diffWord.text;
+        this.forceEditingBoxes = true;
+    }
+
+    onDiffPreviewClosed() {
+    }
+
     saveLine(doc, line, editedText, boxes) {
         CorrectDocumentPage.run(
             this.props.appState,
@@ -428,6 +441,7 @@ export default class Viewer extends React.Component {
 
     hideInlineEditor() {
         this.showInlineEditor = false;
+        this.forceEditingBoxes = null;
     }
 
     hideNewBranchWindow() {
@@ -591,6 +605,7 @@ export default class Viewer extends React.Component {
                                 document={ doc }
                                 line={ this.editingLine }
                                 text={ this.editingText }
+                                showBoxes={ this.forceEditingBoxes }
                                 page={ page }
                                 width={ width }
                                 mainPageTop={ mainPageTop }
@@ -632,6 +647,9 @@ export default class Viewer extends React.Component {
                              visible={ this.showDiff }
                              width={ width }
                              mainPageTop={ mainPageTop }
+                             hasConflict={ this.hasConflict }
+                             onEditDiffRequested={ this.onEditDiffRequested.bind(this) }
+                             onPreviewClosed={ this.onDiffPreviewClosed.bind(this) }
                              />
                   { otherContent }
                 </div>

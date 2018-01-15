@@ -5,6 +5,10 @@
         display: inline;
     }
 
+    &-conflict-options {
+      margin-top: 10px;
+    }
+
     .corpusbuilder-highlight-line {
       &-added {
         background: rgba(43, 102, 28, 0.50);
@@ -50,7 +54,7 @@
       background: white;
       border-top: 1px dashed #ddd;
       height: 1px;
-      margin-top: 15px;
+      margin-top: 10px;
       margin-bottom: 8px;
 
       .fa {

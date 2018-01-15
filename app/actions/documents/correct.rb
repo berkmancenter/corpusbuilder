@@ -2,7 +2,7 @@ module Documents
   class Correct < Action::Base
     attr_accessor :document, :graphemes, :branch_name
 
-    validate :revision_is_in_working_state
+    # validate :revision_is_in_working_state
 
     def execute
       @graphemes.each do |spec|

@@ -16,7 +16,16 @@ export default class InlineEditor extends React.Component {
     editedText = "";
 
     @observable
-    showBoxes = false;
+    _showBoxes = false;
+
+    @computed
+    get showBoxes() {
+        return this.props.showBoxes || this._showBoxes;
+    }
+
+    set showBoxes(value) {
+        this._showBoxes = true;
+    }
 
     @observable
     boxes = [ ];

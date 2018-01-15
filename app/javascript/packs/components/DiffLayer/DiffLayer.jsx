@@ -4,6 +4,7 @@ import { inject, observer } from 'mobx-react'
 import { Highlight } from '../Highlight';
 import { FloatingWindow } from '../FloatingWindow';
 import { VisualPreview } from '../VisualPreview';
+import { Button } from '../Button';
 
 import styles from './DiffLayer.scss'
 
@@ -50,6 +51,12 @@ export default class DiffLayer extends React.Component {
         this.openedDiff = null;
         this.currentBoxes = [ ];
         this.otherBoxes = [ ];
+        this.props.onPreviewClosed();
+    }
+
+    onEditDiffRequested() {
+        this.props.onEditDiffRequested(this.openedDiff);
+        this.onPreviewCloseRequest();
     }
 
     onCurrentBoxesReported(boxes) {
@@ -122,6 +129,21 @@ export default class DiffLayer extends React.Component {
       return null;
     }
 
+    renderCurrentButtons() {
+        if(this.hasPreviewOpened && this.openedDiff.hasAfterDiff && this.openedDiff.inConflict) {
+            return (
+                <div className="corpusbuilder-diff-conflict-options">
+                    <Button toggles={ false }
+                            onClick={ this.onEditDiffRequested.bind(this, this.openedDiff) }>
+                        Edit To Resolve Conflict
+                    </Button>
+                </div>
+            );
+        }
+
+        return null;
+    }
+
     render() {
         if(this.props.visible) {
             return (
@@ -131,6 +153,7 @@ export default class DiffLayer extends React.Component {
                                     >
                       <div className="corpusbuilder-diff-preview">
                           { this.renderCurrentPreview() }
+                          { this.renderCurrentButtons() }
                           <div className="corpusbuilder-diff-separator">
                             &nbsp;
                           </div>

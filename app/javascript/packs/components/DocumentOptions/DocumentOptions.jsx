@@ -32,26 +32,15 @@ export default class DocumentOptions extends React.Component {
         }
     }
 
-    @observable
-    menus = {
-        view: this.generateMenu('view', 'View'),
-        version: this.generateMenu('version', (() => {
-            if(this.currentBranch !== null) {
-                return `Version (${ this.currentBranch.branchName })`;
-            }
-            else {
-                return 'Version';
-            }
-        }).bind(this)),
-        branches: this.generateMenu('branches', (() => {
-            if(this.currentBranch !== null) {
-                return `Branch: ${ this.currentBranch.branchName }`;
-            }
-            else {
-                return 'Branch';
-            }
-        }).bind(this))
-    };
+    menus = { };
+
+    componentWillMount() {
+        this.generateMenus();
+    }
+
+    componentWillReceiveProps(props) {
+        this.generateMenus(props);
+    }
 
     generateMenu(name, titleFn) {
         let title = typeof titleFn == "string" ? titleFn : titleFn();
@@ -62,6 +51,37 @@ export default class DocumentOptions extends React.Component {
             toggle: <Button toggles={ true } onToggle={this.toggle.bind(this, name)}>{ title }</Button>,
             align: 'left'
         });
+    }
+
+    generateMenus(props = this.props) {
+        this.menus = {
+            view: this.generateMenu('view', 'View'),
+            version: this.generateMenu('version', (() => {
+                if(this.currentBranch !== null) {
+                    let icon = null;
+                    if(props.currentVersion.isWorking) {
+                      icon = <i className="fa fa-pencil">&nbsp;</i>;
+                    }
+                    return (
+                        <div>
+                            Version
+                            <span>{ icon } { this.currentBranch.branchName }</span>
+                        </div>
+                    );
+                }
+                else {
+                    return 'Version';
+                }
+            }).bind(this)),
+            branches: this.generateMenu('branches', (() => {
+                if(this.currentBranch !== null) {
+                    return `Branch: ${ this.currentBranch.branchName }`;
+                }
+                else {
+                    return 'Branch';
+                }
+            }).bind(this))
+        };
     }
 
     toggle(menuName) {
@@ -79,7 +99,7 @@ export default class DocumentOptions extends React.Component {
           <DropdownMenu {...this.menus.view}>
               <li>
                   <button type="button" onClick={ this.props.onToggleDiff.bind(this, !this.props.showDiff) }>
-                      { this.props.showDiff ? '✓' : '' } Diff Of Changes
+                      { this.props.showDiff ? '✓' : '' } Changes And Merging
                   </button>
               </li>
               <li>
