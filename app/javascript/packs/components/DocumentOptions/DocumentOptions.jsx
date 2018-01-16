@@ -44,13 +44,15 @@ export default class DocumentOptions extends React.Component {
 
     generateMenu(name, titleFn) {
         let title = typeof titleFn == "string" ? titleFn : titleFn();
+        let toggled = this.menus[name] !== undefined ? this.menus[name].isOpen : false;
+        let opened = this.menus[name] !== undefined ? this.menus[name].isOpen : false;
 
-        return observable({
-            isOpen: false,
+        return {
+            isOpen: opened,
             close: this.close.bind(this, name),
-            toggle: <Button toggles={ true } onToggle={this.toggle.bind(this, name)}>{ title }</Button>,
+            toggle: <Button toggles={ true } toggled={ toggled} onToggle={this.toggle.bind(this, name)}>{ title }</Button>,
             align: 'left'
-        });
+        };
     }
 
     generateMenus(props = this.props) {
@@ -88,10 +90,15 @@ export default class DocumentOptions extends React.Component {
         let menu = this.menus[menuName];
 
         menu.isOpen = !menu.isOpen;
+
+        this.generateMenus();
+        this.forceUpdate();
     }
 
     close(menuName) {
         this.menus[menuName].isOpen = false;
+        this.generateMenus();
+        this.forceUpdate();
     }
 
     renderViewMenu() {
