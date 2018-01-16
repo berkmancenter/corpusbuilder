@@ -15,6 +15,11 @@ export default class VisualPreview extends React.Component {
     selectedBox = null;
 
     @computed
+    get allowNewBoxes() {
+        return this.props.allowNewBoxes;
+    }
+
+    @computed
     get editable() {
         return this.props.editable;
     }
@@ -107,6 +112,7 @@ export default class VisualPreview extends React.Component {
 
     onBoxSelectionChanged(box) {
         this.selectedBox = box;
+        this.props.onBoxSelectionChanged(box);
     }
 
     captureRoot(div) {
@@ -151,6 +157,7 @@ export default class VisualPreview extends React.Component {
                                  document={ this.props.document }
                                  editable={ this.editable }
                                  boxes={ this.props.boxes }
+                                 allowNewBoxes={ this.allowNewBoxes }
                                  onBoxSelectionChanged={ this.onBoxSelectionChanged.bind(this) }
                                  onBoxesReported={ this.props.onBoxesReported.bind(this) }
                                  />

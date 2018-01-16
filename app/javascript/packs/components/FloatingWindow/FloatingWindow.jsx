@@ -29,6 +29,7 @@ export default class FloatingWindow extends React.Component {
 
     @computed
     get adjustedTop() {
+        console.log("mouse position y: ", this.mousePosition.y);
         return this.mousePosition.y + this.offsetTop;
     }
 

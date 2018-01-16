@@ -45,6 +45,7 @@ export default class DiffLayer extends React.Component {
 
     onClick(diffWord) {
         this.openedDiff = diffWord;
+        this.props.onPreviewOpened();
     }
 
     onPreviewCloseRequest() {

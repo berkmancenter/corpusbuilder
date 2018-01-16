@@ -1,7 +1,6 @@
 import React from 'react';
 import { autorun, observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
-import ContentLoader from 'react-content-loader'
 
 import State from '../../stores/State'
 
@@ -14,6 +13,8 @@ import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
 import CommitDocumentChanges from '../../actions/CommitDocumentChanges';
 import CorrectDocumentPage from '../../actions/CorrectDocumentPage';
 import MergeDocumentBranches from '../../actions/MergeDocumentBranches';
+import GetMousePosition from '../../actions/GetMousePosition';
+import ObserveMousePosition from '../../actions/ObserveMousePosition';
 
 import { MouseManager } from '../MouseManager'
 import { PopupMenu } from '../PopupMenu'
@@ -28,6 +29,7 @@ import { MergeBranchesWindow } from '../MergeBranchesWindow';
 import { DiffOptions } from '../DiffOptions';
 import { Button } from '../Button';
 import { DiffLayer } from '../DiffLayer';
+import { Spinner } from '../Spinner';
 
 import s from './Viewer.scss'
 
@@ -377,6 +379,15 @@ export default class Viewer extends React.Component {
     }
 
     onEditDiffRequested(diffWord) {
+        ObserveMousePosition.run(
+            this.props.appState,
+            {
+                select: '',
+                x: this.showDiffMousePosition.x,
+                y: this.showDiffMousePosition.y
+            }
+        );
+
         this.showInlineEditor = true;
         this.editingLine = diffWord.graphemes;
         this.editingText = diffWord.text;
@@ -384,6 +395,10 @@ export default class Viewer extends React.Component {
     }
 
     onDiffPreviewClosed() {
+    }
+
+    onDiffPreviewOpened() {
+        this.showDiffMousePosition = GetMousePosition.run(this.props.appState, { select: '' });
     }
 
     saveLine(doc, line, editedText, boxes) {
@@ -606,6 +621,7 @@ export default class Viewer extends React.Component {
                                 line={ this.editingLine }
                                 text={ this.editingText }
                                 showBoxes={ this.forceEditingBoxes }
+                                allowNewBoxes={ !this.forceEditingBoxes }
                                 page={ page }
                                 width={ width }
                                 mainPageTop={ mainPageTop }
@@ -649,6 +665,7 @@ export default class Viewer extends React.Component {
                              mainPageTop={ mainPageTop }
                              hasConflict={ this.hasConflict }
                              onEditDiffRequested={ this.onEditDiffRequested.bind(this) }
+                             onPreviewOpened={ this.onDiffPreviewOpened.bind(this) }
                              onPreviewClosed={ this.onDiffPreviewClosed.bind(this) }
                              />
                   { otherContent }
@@ -674,7 +691,7 @@ export default class Viewer extends React.Component {
             );
         }
         else {
-            content = <ContentLoader type="code" />;
+            content = <Spinner />;
         }
 
         let viewerStyle = {

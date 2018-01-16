@@ -30,6 +30,12 @@ module Documents
         )
       end
 
+      if revision.conflict? && revision.graphemes.where(status: Grapheme.statuses[:conflict]).count == 0
+        revision.update_attributes!(
+          status: Revision.statuses[:working]
+        )
+      end
+
       @graphemes
     end
 

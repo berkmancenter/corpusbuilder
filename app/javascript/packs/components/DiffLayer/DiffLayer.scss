@@ -28,18 +28,18 @@
       &-conflict:after {
         content: "!";
         position: absolute;
-        top: -15px;
-        right: -15px;
+        top: -22px;
+        right: -22px;
+        font-family: serif;
         display: block;
-        background: red;
+        background: rgba(200, 20, 20, 1);
         color: white;
         text-align: center;
-        font-size: 14px;
+        font-size: 17px;
         font-weight: bold;
-        width: 20px;
-        height: 20px;
-        border-radius: 2px;
-        text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+        width: 25px;
+        height: 25px;
+        border-radius: 100px 100px 100px 0px;
         opacity: 1;
       }
     }

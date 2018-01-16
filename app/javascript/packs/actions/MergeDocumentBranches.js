@@ -12,7 +12,7 @@ export default class MergeDocumentBranches extends Action {
         let branchVersion = selector.branch.isRevision ? selector.branch.branchVersion : selector.branch;
 
         return this.put(`${state.baseUrl}/api/documents/${selector.document.id}/${branchVersion.branchName}/merge`, payload)
-            .then(
+            .finally(
                 action(
                     ( _ ) => {
                         state.invalidate(

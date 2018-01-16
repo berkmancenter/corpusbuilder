@@ -11,6 +11,7 @@ class Grapheme < ApplicationRecord
   class Tree < Grape::Entity
     expose :area, with: Area::Tree
     expose :value
+    expose :position_weight
     expose :status do |grapheme|
       grapheme.status
     end

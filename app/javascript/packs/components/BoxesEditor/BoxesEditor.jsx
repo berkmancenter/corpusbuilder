@@ -18,6 +18,11 @@ export default class BoxesEditor extends React.Component {
     boxSelected = null;
 
     @computed
+    get allowNewBoxes() {
+        return this.props.allowNewBoxes;
+    }
+
+    @computed
     get editable() {
         return this.props.editable;
     }
@@ -203,7 +208,7 @@ export default class BoxesEditor extends React.Component {
     }
 
     onBoxClick(event) {
-        if(!this.editable) {
+        if(!this.editable || !this.allowNewBoxes) {
             return null;
         }
 
@@ -243,7 +248,7 @@ export default class BoxesEditor extends React.Component {
     }
 
     onEditorMouseMove(event) {
-        if(!this.editable) {
+        if(!this.editable || !this.allowNewBoxes) {
             return null;
         }
 

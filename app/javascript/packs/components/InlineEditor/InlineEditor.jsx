@@ -27,8 +27,16 @@ export default class InlineEditor extends React.Component {
         this._showBoxes = true;
     }
 
+    @computed
+    get allowNewBoxes() {
+        return this.props.allowNewBoxes === true;
+    }
+
     @observable
     boxes = [ ];
+
+    @observable
+    selectedBox = null;
 
     originalBoxes = [ ];
 
@@ -49,7 +57,7 @@ export default class InlineEditor extends React.Component {
 
     @computed
     get dir() {
-        return this.props.text.codePointAt(0) === 0x200f ? "rtl" : "ltr";
+        return this.props.line[0].value.codePointAt(0) === 0x200f ? "rtl" : "ltr";
     }
 
     @computed
@@ -100,6 +108,10 @@ export default class InlineEditor extends React.Component {
         this.boxes.replace(boxes);
     }
 
+    onBoxSelectionChanged(box) {
+        this.selectedBox = box;
+    }
+
     onCloseRequested() {
         if(this.props.visible) {
             this.editedText = "";
@@ -146,7 +158,7 @@ export default class InlineEditor extends React.Component {
     render() {
         if(this.props.visible) {
             let boxesHelp = null;
-            if(this.showBoxes) {
+            if(this.showBoxes && this.allowNewBoxes) {
                 boxesHelp = <div className="corpusbuilder-inline-editor-help">
                   Hold { this.specialKeyName } to start drawing or select
                 </div>
@@ -177,7 +189,9 @@ export default class InlineEditor extends React.Component {
                                        editable={ true }
                                        boxes={ this.boxes }
                                        showBoxes={ this.showBoxes }
+                                       allowNewBoxes={ this.allowNewBoxes }
                                        onBoxesReported={ this.onBoxesReported.bind(this) }
+                                       onBoxSelectionChanged={ this.onBoxSelectionChanged.bind(this) }
                                        />
                         <input onChange={ this.onTextChanged.bind(this) }
                                value={ this.editedText }
@@ -191,10 +205,13 @@ export default class InlineEditor extends React.Component {
                             <Button onToggle={ this.onToggleBoxes.bind(this) }
                               toggles={ true }
                               toggled={ this.showBoxes }
+                              visible={ !this.props.showBoxes }
                               >
                               Boxes
                             </Button>
-                            <Button onClick={ this.removeBox.bind(this) } visible={ this.selectedBox !== null }>
+                            <Button onClick={ this.removeBox.bind(this) }
+                                    visible={ this.selectedBox !== null && this.selectedBox !== undefined }
+                                    >
                               Remove
                             </Button>
                             <Button onClick={ this.resetText.bind(this) }>
