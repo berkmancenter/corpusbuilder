@@ -24,7 +24,7 @@ export default class InlineEditor extends React.Component {
     }
 
     set showBoxes(value) {
-        this._showBoxes = true;
+        this._showBoxes = value;
     }
 
     @computed

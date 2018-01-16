@@ -41,6 +41,10 @@
       top: 0px;
     }
 
+    .dd-menu-items .corpusbuilder-button:after {
+      position: unset;
+    }
+
     button[disabled] {
       opacity: 0.5;
       cursor: default;
