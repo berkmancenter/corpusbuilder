@@ -18,6 +18,25 @@ export default class DiffOptions extends React.Component {
         return this.props.diff.pages.length;
     }
 
+    @computed
+    get showsWorkingData() {
+        return this.props.currentVersion.isWorking;
+    }
+
+    @computed
+    get hasDifferentVersions() {
+        return this.props.currentVersion !== null &&
+            this.props.currentDiffVersion !== null &&
+            this.props.currentVersion.branchVersion.identifier !== this.props.currentDiffVersion.branchVersion.identifier;
+    }
+
+    @computed
+    get hasWorkingDiff() {
+        return this.props.currentVersion !== null &&
+            this.props.currentDiffVersion !== null &&
+            this.props.currentVersion.identifier === this.props.currentDiffVersion.workingVersion.identifier;
+    }
+
     renderPager() {
         if(this.props.diff === null || this.props.diff === undefined) {
             return <span>Computing the differences between the branch:</span>;
@@ -65,9 +84,16 @@ export default class DiffOptions extends React.Component {
                     </BranchesMenu>
                 </div>
                 <Button onClick={ () => this.props.onMergeRequested(this.currentVersion) }
+                        visible={ this.hasDifferentVersions && !this.showsWorkingData }
                         disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 }
                         >
                   Merge
+                </Button>
+                <Button onClick={ () => this.props.onCommitRequested(this.currentVersion) }
+                        visible={ this.hasWorkingDiff }
+                        disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 }
+                        >
+                  Commit
                 </Button>
             </div>
       );

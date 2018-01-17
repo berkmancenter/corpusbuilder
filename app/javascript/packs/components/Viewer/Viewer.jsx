@@ -534,10 +534,12 @@ export default class Viewer extends React.Component {
                                  branches={ this.branches }
                                  page={ this.diffPage }
                                  document={ this.document }
+                                 currentVersion={ this.currentVersion }
                                  currentDiffVersion={ this.currentDiffVersion }
                                  onDiffBranchSwitch={ this.onDiffBranchSwitch.bind(this) }
                                  onDiffSwitch={ this.onDiffSwitch.bind(this) }
                                  onMergeRequested={ this.onMergeRequested.bind(this) }
+                                 onCommitRequested={ this.commitChanges.bind(this) }
                                  />
                 </div>
             );
