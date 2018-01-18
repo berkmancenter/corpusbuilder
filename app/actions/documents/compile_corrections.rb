@@ -6,22 +6,26 @@ module Documents
     validates :text, presence: true
     validates :boxes, presence: true
 
-    validate :box_for_each_word
+    #validate :box_for_each_word
 
     def execute
       line_diff.word_diffs.map do |word_diff|
         word_diff.grapheme_diffs
-      end.map do |grapheme_diff|
+      end.flatten.map do |grapheme_diff|
         grapheme_diff.to_spec
       end
     end
 
     def revision
       @_revision ||= -> {
-        if branch_name.nil?
-          Revision.working.where(
+        if !branch_name.nil?
+          rev = Revision.working.where(
             parent_id: document.branches.where(name: branch_name).select("branches.revision_id")
           ).first
+          if rev.nil?
+            throw :no_revision!
+          end
+          rev
         else
           Revision.find(revision_id)
         end
@@ -73,10 +77,15 @@ module Documents
         @grapheme_ids = grapheme_ids
         @text = text
         @boxes = boxes
+        @revision = revision
       end
 
       def word_diffs
-        @_word_diffs ||= -> {
+        all_word_diffs.select(&:differ?)
+      end
+
+      def all_word_diffs
+        @_all_word_diffs ||= -> {
           gap = -> (word) {
             -1 * word.count
           }
@@ -94,7 +103,7 @@ module Documents
 
           alignments.first.zip(alignments.last).map do |source, entered|
             WordDiff.new(source, entered, self)
-          end.select(&:differ?)
+          end
         }.call
       end
 
@@ -127,24 +136,24 @@ module Documents
 
       def entered_words
         @_entered_words ||= -> {
-          entered_sorted_visually_text_words_with_indices.each_with_index.map do |entered_chars, word_index|
-            sorted_logically_chars = entered_chars.sort_by { |char| char.index }
+          visually_sorted_words = entered_sorted_visually_text_words_with_indices.sort_by { |w| w[0].visual_index }
+          visually_sorted_words.each_with_index.map do |entered_chars, word_index|
+            sorted_visually_chars = entered_chars.sort_by { |char| char.visual_index }
 
-            graphemes = sorted_logically_chars.map do |entered_char|
+            graphemes = sorted_visually_chars.each_with_index.map do |entered_char, local_index|
               box = sorted_boxes[word_index]
-              byebug if box.nil?
               width = box[:lrx] - box[:ulx]
-              delta_x = ((width / (1.0 * entered_chars.count)) * entered_char.visual_index)
-              delta_x_end = ((width / (1.0 * entered_chars.count)) * (entered_char.visual_index + 1))
+              delta_x = ((width / (1.0 * entered_chars.count)) * local_index)
+              delta_x_end = ((width / (1.0 * entered_chars.count)) * (local_index + 1))
 
               area = Area.new ulx: box[:ulx] + delta_x,
                 lrx: box[:ulx] + delta_x_end,
                 uly: box[:uly],
                 lry: box[:lry]
 
-              Grapheme.new value: char.char,
+              Grapheme.new value: entered_char.char,
                 area: area,
-                position_weight: char.index
+                position_weight: entered_char.index
             end
 
             Word.new(graphemes)
@@ -196,11 +205,11 @@ module Documents
         @_entered_sorted_visually_text_words_with_indices ||= -> {
           visual_indices = Bidi.to_visual_indices(normalized_entered_text, rtl? ? :rtl : :ltr)
 
-          normalized_entered_text.zip(visual_indices).each_with_index.map do |pair, index|
+          normalized_entered_text.chars.zip(visual_indices).each_with_index.map do |pair, index|
             char, visual_index = pair
 
             EnteredChar.new(char, index, visual_index)
-          end.inject([]) do |state, entered_char|
+          end.inject([[]]) do |state, entered_char|
             if entered_char.char[/\s+/].nil?
               state[ state.count - 1].push(entered_char)
             else
@@ -223,12 +232,12 @@ module Documents
       def grapheme_special?(grapheme)
         codepoint = grapheme.value.codepoints.first
 
-        codepoint != 0x200e && codepoint != 0x200f && codepoint != 0x202c
+        codepoint == 0x200e || codepoint == 0x200f || codepoint == 0x202c
       end
 
       def match_source_by_entered(entered_grapheme)
         source_graphemes.find do |source_grapheme|
-          graphemes_need_change(source_grapheme, entered_grapheme)
+          !graphemes_need_change(source_grapheme, entered_grapheme)
         end
       end
 
@@ -262,7 +271,7 @@ module Documents
 
       def match_source_around_word_by_member(entered_grapheme)
         match_side = -> (side) {
-          entered_search_space = entered_graphemes.lazy.send(side == :prev ? :reverse : :itself).
+          entered_search_space = entered_graphemes.send(side == :prev ? :reverse : :itself).lazy.
             drop_while { |g| g.value != entered_grapheme.value || g.area != entered_grapheme.area }
 
           matched_source_grapheme = nil
@@ -366,9 +375,11 @@ module Documents
         word_graphemes_count = word_diff.entered.count
         index_in_word = word_diff.entered.logically_ordered.index(entered)
 
-        ( index_in_word + 1 ) * (
-          ( close_source.position_weight - open_source.position_weight ) /
-          ( word_graphemes_count + 1.0 )
+        open_source.position_weight + (
+          ( index_in_word + 1 ) * (
+            ( close_source.position_weight - open_source.position_weight ) /
+            ( word_graphemes_count + 1.0 )
+          )
         )
       end
 
