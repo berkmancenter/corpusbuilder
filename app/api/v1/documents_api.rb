@@ -221,7 +221,10 @@ class V1::DocumentsAPI < Grape::API
                       Documents::CompileCorrections.run!(
                         grapheme_ids: params[:edit_spec][:grapheme_ids],
                         boxes: params[:edit_spec][:boxes],
-                        text: params[:edit_spec][:text]
+                        text: params[:edit_spec][:text],
+                        branch_name: @revision_options[:branch_name],
+                        revision_id: @revision_options[:revision_id],
+                        document: @document
                       ).result
                     end
 
