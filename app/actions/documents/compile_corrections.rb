@@ -9,11 +9,7 @@ module Documents
     #validate :box_for_each_word
 
     def execute
-      line_diff.word_diffs.map do |word_diff|
-        word_diff.grapheme_diffs
-      end.flatten.map do |grapheme_diff|
-        grapheme_diff.to_spec
-      end
+      line_diff.specs
     end
 
     def revision
@@ -78,6 +74,82 @@ module Documents
         @text = text
         @boxes = boxes
         @revision = revision
+      end
+
+      def specs
+        @_specs ||= -> {
+          source_list = source_graphemes
+          entered_list = entered_graphemes
+
+          all_diffs = word_diffs.map(&:grapheme_diffs).flatten
+
+          diffs = all_diffs.reject(&:deletion?).group_by do |grapheme_diff|
+            grapheme_diff.entered.id
+          end
+
+          if source_list.first != first_bounding_grapheme
+            source_list.insert(0, first_bounding_grapheme)
+          end
+
+          if source_list.last != last_bounding_grapheme
+            source_list.push(last_bounding_grapheme)
+          end
+
+          entered_list.push(last_bounding_grapheme)
+
+          checked_source_idx = 0
+          source_idx = 0
+          entered_idx = 0
+          current_source = nil
+          current_entered = nil
+          current_span = nil
+          diff_spans = [ ]
+
+          while entered_idx < entered_list.count
+            if source_idx == source_list.count
+              entered_idx += 1
+              source_idx = checked_source_idx
+            end
+
+            current_entered = entered_list[ entered_idx ]
+            current_source = source_list[ source_idx ]
+
+            if diffs.has_key?( current_entered.id )
+              current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
+              current_span.open ||= current_source
+              current_span.diffs.push( diffs[ current_entered.id ].first )
+              entered_idx += 1
+              checked_source_idx = source_idx
+            else
+              if !graphemes_need_change( current_source, current_entered )
+                if current_span.present? && current_span.diffs.count > 0
+                  current_span.close = current_source
+                  diff_spans.push( current_span )
+                  current_span = nil
+                end
+                entered_idx += 1
+              else
+                source_idx += 1
+              end
+            end
+          end
+
+          diff_spans.map do |diff_span|
+            grapheme_diffs = diff_span.diffs.sort_by { |diff| diff.entered.position_weight }
+
+            addmod_specs = grapheme_diffs.map(&:to_spec)
+
+            addmod_specs.each_with_index do |addmod_spec, index|
+              addmod_spec[:position_weight] = diff_span.open.position_weight +
+                ( index + 1 ) * (
+                  ( diff_span.close.position_weight - diff_span.open.position_weight ) /
+                  ( grapheme_diffs.count + 1.0 )
+                )
+            end
+
+            addmod_specs
+          end.flatten + all_diffs.select(&:deletion?).map(&:to_spec)
+        }.call
       end
 
       def word_diffs
@@ -153,7 +225,8 @@ module Documents
 
               Grapheme.new value: entered_char.char,
                 area: area,
-                position_weight: entered_char.index
+                position_weight: entered_char.index,
+                id: SecureRandom.uuid
             end
 
             Word.new(graphemes)
@@ -350,7 +423,7 @@ module Documents
             value: entered.value,
             area: entered.area,
             surface_number: word_diff.line_diff.surface_number,
-            position_weight: entered_position_weight
+            position_weight: nil
           }
         elsif deletion?
           {
@@ -360,7 +433,7 @@ module Documents
         elsif modification?
           {
             id: source.id,
-            position_weight: source.position_weight,
+            position_weight: nil,
             value: entered.value,
             area: entered.area,
             surface_number: word_diff.line_diff.surface_number
@@ -368,19 +441,6 @@ module Documents
         else
           raise StandardError, "No change spec for diff pointing at equal graphemes"
         end
-      end
-
-      def entered_position_weight
-        open_source, close_source = word_diff.line_diff.match_source_around_word_by_member(entered)
-        word_graphemes_count = word_diff.entered.count
-        index_in_word = word_diff.entered.logically_ordered.index(entered)
-
-        open_source.position_weight + (
-          ( index_in_word + 1 ) * (
-            ( close_source.position_weight - open_source.position_weight ) /
-            ( word_graphemes_count + 1.0 )
-          )
-        )
       end
 
       def inspect_grapheme(g)
@@ -443,7 +503,7 @@ module Documents
       end
 
       def has_new?
-        logically_ordered.any? { |g| g.id.nil? }
+        logically_ordered.any? { |g| !g.persisted? }
       end
 
       def ==(other)

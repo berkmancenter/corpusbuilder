@@ -6,6 +6,8 @@ import { FloatingWindow } from '../FloatingWindow';
 import { VisualPreview } from '../VisualPreview';
 import { Button } from '../Button';
 
+import GraphemeUtils from '../../lib/GraphemesUtils';
+
 import styles from './DiffLayer.scss'
 
 @observer
@@ -29,6 +31,26 @@ export default class DiffLayer extends React.Component {
     get afterBranchName() {
         if(this.hasPreviewOpened) {
             return this.openedDiff.afterVersion.name;
+        }
+
+        return null;
+    }
+
+    @computed
+    get beforeDir() {
+        return this.afterDir;
+    }
+
+    @computed
+    get afterDir() {
+        if(this.hasPreviewOpened) {
+            let line = GraphemeUtils.lines(this.props.document.surfaces[0].graphemes).find((line) => {
+                return line.find((g) => {
+                    return g.id === this.openedDiff.afterGraphemes[0].id;
+                }) !== undefined;
+            });
+
+            return line[0].value.codePointAt(0) === GraphemeUtils.rtlMark ? "rtl" : "ltr";
         }
 
         return null;
@@ -83,7 +105,7 @@ export default class DiffLayer extends React.Component {
                                 editable={ false }
                                 onBoxesReported={ this.onOtherBoxesReported.bind(this) }
                                 />,
-                  <input key={ 3 } disabled="disabled" value={ this.openedDiff.beforeText } />
+                  <input key={ 3 } disabled="disabled" dir={ this.beforeDir } value={ this.openedDiff.beforeText } />
               ];
           }
           else {
@@ -114,7 +136,7 @@ export default class DiffLayer extends React.Component {
                                 editable={ false }
                                 onBoxesReported={ this.onCurrentBoxesReported.bind(this) }
                                 />,
-                  <input key={ 6 } disabled="disabled" value={ this.openedDiff.afterText } />
+                  <input key={ 6 } disabled="disabled" dir={ this.afterDir } value={ this.openedDiff.afterText } />
               ];
           }
           else {

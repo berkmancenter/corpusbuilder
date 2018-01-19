@@ -37,15 +37,45 @@ export default class WordDiff {
     }
 
     @computed
+    get beforeGraphemes() {
+        return (this.hasAfterDiff ? this.word2 : this.word1).sort((a, b) => {
+            if(a.position_weight < b.position_weight) {
+                return -1;
+            }
+            else if(a.position_weight > b.position_weight) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+          });
+    }
+
+    @computed
     get beforeText() {
-        return (this.hasAfterDiff ? this.word2 : this.word1).map((g) => {
-            return g.value;
-        }).join('');
+       return this.beforeGraphemes.map((g) => {
+           return g.value;
+       }).join('');
+    }
+
+    @computed
+    get afterGraphemes() {
+        return this.word1.sort((a, b) => {
+                if(a.position_weight < b.position_weight) {
+                    return -1;
+                }
+                else if(a.position_weight > b.position_weight) {
+                    return 1;
+                }
+                else {
+                    return 0;
+                }
+            })
     }
 
     @computed
     get afterText() {
-        return this.word1.map((g) => { return g.value }).join('');
+        return this.afterGraphemes.map((g) => { return g.value }).join('');
     }
 
     @computed
