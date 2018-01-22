@@ -5,8 +5,7 @@ module Documents
     validates :grapheme_ids, presence: true
     validates :text, presence: true
     validates :boxes, presence: true
-
-    #validate :box_for_each_word
+    validate :revision_given
 
     def execute
       line_diff.specs
@@ -19,7 +18,7 @@ module Documents
             parent_id: document.branches.where(name: branch_name).select("branches.revision_id")
           ).first
           if rev.nil?
-            throw :no_revision!
+            nil
           end
           rev
         else
@@ -109,6 +108,8 @@ module Documents
             if source_idx == source_list.count
               entered_idx += 1
               source_idx = checked_source_idx
+
+              break if entered_idx == entered_list.count
             end
 
             current_entered = entered_list[ entered_idx ]
@@ -132,6 +133,11 @@ module Documents
                 source_idx += 1
               end
             end
+          end
+
+          if current_span.present?
+            current_span.close = last_bounding_grapheme
+            diff_spans.push(current_span)
           end
 
           diff_spans.map do |diff_span|
@@ -225,6 +231,7 @@ module Documents
 
               Grapheme.new value: entered_char.char,
                 area: area,
+                zone_id: source_graphemes.first.zone_id,
                 position_weight: entered_char.index,
                 id: SecureRandom.uuid
             end
@@ -278,10 +285,12 @@ module Documents
         @_entered_sorted_visually_text_words_with_indices ||= -> {
           visual_indices = Bidi.to_visual_indices(normalized_entered_text, rtl? ? :rtl : :ltr)
 
-          normalized_entered_text.chars.zip(visual_indices).each_with_index.map do |pair, index|
-            char, visual_index = pair
+         #normalized_entered_text.chars.zip(visual_indices).each_with_index.map do |pair, index|
+         #  char, visual_index = pair
 
-            EnteredChar.new(char, index, visual_index)
+         #  EnteredChar.new(char, index, visual_index)
+          visual_indices.each_with_index.map do |index, visual_index|
+            EnteredChar.new(normalized_entered_text[index], index, visual_index)
           end.inject([[]]) do |state, entered_char|
             if entered_char.char[/\s+/].nil?
               state[ state.count - 1].push(entered_char)
@@ -400,7 +409,9 @@ module Documents
       end
 
       def differ?
-        source != entered
+        source.nil? && entered.present? ||
+          source.present? && entered.nil? ||
+          source != entered
       end
 
       def inspect
@@ -507,8 +518,10 @@ module Documents
       end
 
       def ==(other)
-        text == other.text &&
+        other.nil? || (
+          text == other.text &&
           area == other.area
+        )
       end
 
       def area
@@ -527,6 +540,12 @@ module Documents
 
     def create_development_dumps?
       true
+    end
+
+    def revision_given
+      if revision.nil?
+        errors.add(:base, "Given branch name or revision id doesn't point at any existing revision")
+      end
     end
   end
 end

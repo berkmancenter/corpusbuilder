@@ -7,6 +7,10 @@ describe Documents::CompileCorrections do
     create :document
   end
 
+  let(:editor) do
+    create :editor
+  end
+
   let(:surface) do
     create(
       :surface,
@@ -66,6 +70,9 @@ describe Documents::CompileCorrections do
 
     ids << create_grapheme([0x202c].pack("U"), boxes[boxes.count-1], text.chars.count, ids.count, text.chars.count)
 
+    document.master.revision.grapheme_ids << ids
+    document.master.working.grapheme_ids << ids
+
     ids
   end
 
@@ -73,12 +80,17 @@ describe Documents::CompileCorrections do
     from_spec = spec.slice(spec.keys.first)
     to_spec = spec.slice(spec.keys.last)
 
+    Branches::Create.run!(document_id: document.id, name: "master", editor_id: editor.id)
+
     ids = create_graphemes(from_spec, dir)
 
     corrections = Documents::CompileCorrections.run!(
       grapheme_ids: ids,
       text: to_spec.keys.first,
-      boxes: to_spec.values.first
+      boxes: to_spec.values.first,
+      document: document,
+      branch_name: 'master',
+      revision_id: nil
     ).result
 
     corrections.inject([[], [], []]) do |state, correction|
@@ -151,12 +163,12 @@ describe Documents::CompileCorrections do
   it 'provides proper additions in the RTL scenario' do
     additions, modifications, removals = run_example(
       {
-        "سلطة أمير البلد" => [
+        "ليس بالكتاب الذي" => [
           { ulx:  88, uly: 0, lrx:  97, lry: 20 },
           { ulx: 100, uly: 0, lrx: 109, lry: 20 },
           { ulx: 112, uly: 0, lrx: 124, lry: 20 }
         ],
-        "سلطة أمير البلد 1234567" => [
+        "ليس بالكتاب الذي abcdefg" => [
           { ulx:  50, uly: 0, lrx:  80, lry: 20 },
           { ulx:  88, uly: 0, lrx:  97, lry: 20 },
           { ulx: 100, uly: 0, lrx: 109, lry: 20 },
@@ -167,7 +179,7 @@ describe Documents::CompileCorrections do
     )
 
     expect(additions.count).to eq(7)
-    expect(additions.map { |a| a[:value] }.join).to eq("1234567")
+    expect(additions.map { |a| a[:value] }.join).to eq("abcdefg")
 
     expect(modifications.count).to eq(0)
     expect(removals.count).to eq(0)
@@ -176,12 +188,12 @@ describe Documents::CompileCorrections do
   it 'makes the resulting, emerging line read exactly the same as the one given in params' do
     additions, modifications, removals = run_example(
       {
-        "سلطة أمير      البلد" => [
+        "وهو صورة للحياة" => [
           { ulx:  38, uly: 0, lrx:  57, lry: 20 },
           { ulx: 100, uly: 0, lrx: 119, lry: 20 },
           { ulx: 122, uly: 0, lrx: 134, lry: 20 }
         ],
-        "سلطة أمير 12345 البلد" => [
+        "وهو صورة 1234 للحياة" => [
           { ulx:  38, uly: 0, lrx:  57, lry: 20 },
           { ulx:  68, uly: 0, lrx:  97, lry: 20 },
           { ulx: 100, uly: 0, lrx: 119, lry: 20 },
@@ -191,8 +203,8 @@ describe Documents::CompileCorrections do
       :rtl
     )
 
-    expect(additions.count).to eq(5)
-    expect(additions.map { |a| a[:value] }.join).to eq("12345")
+    expect(additions.count).to eq(4)
+    expect(additions.map { |a| a[:value] }.join).to eq("1234")
 
     expect(modifications.count).to eq(0)
     expect(removals.count).to eq(0)
@@ -208,7 +220,7 @@ describe Documents::CompileCorrections do
 
     expect(
       resulting_line.codepoints
-    ).to eq([1587, 1604, 1591, 1577, 1571, 1605, 1610, 1585, 49, 50, 51, 52, 53, 1575, 1604, 1576, 1604, 1583])
+    ).to eq([1608, 1607, 1608, 1589, 1608, 1585, 1577, 49, 50, 51, 52, 1604, 1604, 1581, 1610, 1575, 1577])
   end
 
   it 'doesnt change the grapheme for which the box value changes are less than 1' do

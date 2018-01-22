@@ -3,6 +3,9 @@ module Shared
     attr_accessor :from, :to, :gap_penalty, :score_fn
 
     def execute
+      return all_from if to.nil?
+      return all_to if from.nil?
+
       # 1. prepare the score and transition matrices:
       score_matrix = (1..to.count + 1).inject([]) { |all, row| all << [0] * (from.count + 1); all }
       transition_matrix = (1..to.count + 1).inject([]) { |all, row| all << [nil] * (from.count + 1); all }
@@ -72,6 +75,20 @@ module Shared
       [
         from_alignment.reverse,
         to_alignment.reverse
+      ]
+    end
+
+    def all_from
+      [
+        from.to_a,
+        from.count.times.map { |_| nil }
+      ]
+    end
+
+    def all_to
+      [
+        to.count.times.map { |_| nil },
+        to.to_a
       ]
     end
 

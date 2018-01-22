@@ -10,6 +10,7 @@ module Graphemes
         sql = <<-SQL
           select array[diff1.id, diff2.id] as conflicting_ids,
                 diff2.value,
+                diff2.status,
                 diff2.area,
                 diff2.zone_id,
                 diff2.position_weight,

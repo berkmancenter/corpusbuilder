@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe Graphemes::QueryMerge do
+describe Graphemes::QueryMergeConflicts do
   RSpec.shared_examples_for "a proper merge result" do
 
     it "returns all unchanged on both sides as they were" do
@@ -78,7 +78,7 @@ describe Graphemes::QueryMerge do
   end
 
   let(:result) do
-    Graphemes::QueryMerge.run!(
+    Graphemes::QueryMergeConflicts.run!(
       branch_left: branch_left,
       branch_right: branch_right
     ).result

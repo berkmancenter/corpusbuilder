@@ -595,7 +595,7 @@ describe V1::DocumentsAPI, type: :request do
 
         it "calls the Documents::CompileCorrections" do
           expect(Documents::CompileCorrections).to receive(:run!).
-            with(grapheme_ids: graphemes.map(&:id), text: 'a test', boxes: boxes).and_call_original
+            with(grapheme_ids: graphemes.map(&:id), text: 'a test', boxes: boxes, document: document, branch_name: 'master', revision_id: nil).and_call_original
           expect_any_instance_of(Documents::CompileCorrections).to receive(:execute).and_call_original
 
           valid_request
@@ -1202,7 +1202,7 @@ describe V1::DocumentsAPI, type: :request do
 
       it "returns just the right amount of attributes" do
         expect(valid_root_response.first.keys.sort).to eq([
-          "id", "value", "area", "inclusion", "zone_id", "parent_ids", "surface_number", "revision_id"
+          "id", "value", "area", "inclusion", "zone_id", "parent_ids", "surface_number"
         ].sort)
       end
     end
