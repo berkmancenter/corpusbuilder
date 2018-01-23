@@ -3,46 +3,6 @@ require 'rails_helper'
 describe Graphemes::QueryMergeConflicts do
   RSpec.shared_examples_for "a proper merge result" do
 
-    it "returns all unchanged on both sides as they were" do
-      result_ids = result.map(&:id)
-
-      unchanged.each do |grapheme|
-        expect(result_ids).to include(grapheme.id)
-      end
-    end
-
-    it "returns changed from the left side where right did not change them" do
-      result_ids = result.map(&:id)
-
-      changed_left_clean.each do |grapheme|
-        expect(result_ids).to include(grapheme.id)
-      end
-    end
-
-    it "returns changed from the right side where left did not change them" do
-      result_ids = result.map(&:id)
-
-      changed_right_clean.each do |grapheme|
-        expect(result_ids).to include(grapheme.id)
-      end
-    end
-
-    it "does not return if left removes and right doesn't change" do
-      result_ids = result.map(&:id)
-
-      removed_left_clean.each do |grapheme|
-        expect(result_ids).not_to include(grapheme.id)
-      end
-    end
-
-    it "does not return if right removes and left doesn't change" do
-      result_ids = result.map(&:id)
-
-      removed_right_clean.each do |grapheme|
-        expect(result_ids).not_to include(grapheme.id)
-      end
-    end
-
     it "returns conflict items for changed on left and right sides" do
       conflict_items = result.select(&:conflict?)
 

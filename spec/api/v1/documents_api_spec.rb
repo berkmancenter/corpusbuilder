@@ -588,6 +588,12 @@ describe V1::DocumentsAPI, type: :request do
           surfaces
           graphemes
 
+          open = create :grapheme, value: [0x200e].pack("U*"), position_weight: 0, zone_id: graphemes.first.zone_id, area: graphemes.first.area
+          close = create :grapheme, value: [0x202c].pack("U*"), position_weight: 100, zone_id: graphemes.first.zone_id, area: graphemes.first.area
+
+          master_branch.revision.graphemes << [ open, close ]
+          master_branch.working.graphemes << [ open, close ]
+
           put url(document.id),
             headers: headers,
             params: minimal_valid_params

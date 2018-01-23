@@ -9,6 +9,7 @@ module Graphemes
       @_conflicts ||= -> {
         sql = <<-SQL
           select array[diff1.id, diff2.id] as conflicting_ids,
+                diff2.id,
                 diff2.value,
                 diff2.status,
                 diff2.area,
@@ -76,8 +77,8 @@ module Graphemes
                     on surfaces.id = zones.surface_id
             order by surfaces.number, graphemes.position_weight
           ) diff2
-          on   ( diff1.inclusion = 'right' and ( diff1.area && diff2.area ) )
-            or ( diff2.inclusion = 'right' and ( diff1.area && diff2.area ) )
+          on   ( diff1.inclusion = 'right' and coalesce(area( diff1.area # diff2.area ), 0) > 0 )
+            or ( diff2.inclusion = 'right' and coalesce(area( diff1.area # diff2.area ), 0) > 0 )
         SQL
 
         Grapheme.find_by_sql sql
