@@ -168,7 +168,7 @@ class V1::DocumentsAPI < Grape::API
         Rails.logger.debug "Merge action finished"
 
         if !updated_branch.is_a?(ActiveModel::Errors) && updated_branch.conflict?
-          error!('Merge Conflict!', 409)
+          error!('Merge Conflict!', 200)
         end
       end
 

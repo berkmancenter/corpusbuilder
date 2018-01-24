@@ -11,23 +11,22 @@ export default class MergeDocumentBranches extends Action {
 
         let branchVersion = selector.branch.isRevision ? selector.branch.branchVersion : selector.branch;
 
-        return this.put(`${state.baseUrl}/api/documents/${selector.document.id}/${branchVersion.branchName}/merge`, payload)
-            .finally(
-                action(
-                    ( _ ) => {
-                        state.invalidate(
-                            new Selector('FetchDocumentPage', {
-                                document: { id: selector.document.id }
-                            })
-                        );
-                        state.invalidate(
-                            new Selector('FetchDocumentDiff', {
-                                document: { id: selector.document.id }
-                            })
-                        );
-                    }
-                )
+        let callback = action((_) => {
+            state.invalidate(
+                new Selector('FetchDocumentPage', {
+                    document: { id: selector.document.id }
+                })
             );
+            state.invalidate(
+                new Selector('FetchDocumentDiff', {
+                    document: { id: selector.document.id }
+                })
+            );
+        });
+
+        return this.put(`${state.baseUrl}/api/documents/${selector.document.id}/${branchVersion.branchName}/merge`, payload)
+            .catch(callback)
+            .finally(callback);
     }
 }
 
