@@ -24,7 +24,6 @@ module Branches
     def merge_ids
       @_merge_ids ||= -> {
         to_exclude_ids = self.exclude_ids
-        #byebug
         conflict_graphemes.map(&:id).concat(branch_item_ids).
                                      concat(other_branch_ids).
                                      uniq - to_exclude_ids
@@ -55,10 +54,14 @@ module Branches
 
     def conflict_graphemes
       @_conflict_graphemes ||= -> {
-        merge_conflicts.uniq.map do |grapheme|
-          Grapheme.create! grapheme.attributes.without("id", "conflicting_ids", "surface_number").
-                                               merge("status" => Grapheme.statuses[:conflict])
-        end
+        ours_conflicts = merge_conflicts.uniq.select { |g| g.revision_id == other_branch.revision_id }
+        root_conflicts = merge_conflicts.uniq.
+          select { |g| g.revision_id != other_branch.revision_id }.
+          reject { |g1| ours_conflicts.any? { |g2| g1.area.overlaps?(g2.area) } }
+       (ours_conflicts + root_conflicts).map do |grapheme|
+         Grapheme.create! grapheme.attributes.without("id", "conflicting_ids", "surface_number", "inclusion", "revision_id").
+                                              merge("status" => Grapheme.statuses[:conflict])
+       end
       }.call
     end
 
@@ -84,6 +87,10 @@ module Branches
       if other_branch.conflict?
         errors.add(:other_branch, "cannot be in an unresolved conflict state")
       end
+    end
+
+    def create_development_dumps?
+      true
     end
   end
 end

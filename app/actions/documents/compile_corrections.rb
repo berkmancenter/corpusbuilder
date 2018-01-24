@@ -77,8 +77,8 @@ module Documents
 
       def specs
         @_specs ||= -> {
-          source_list = source_graphemes
-          entered_list = entered_graphemes
+          source_list = source_graphemes.dup
+          entered_list = entered_graphemes.dup
 
           all_diffs = word_diffs.map(&:grapheme_diffs).flatten
 
@@ -331,7 +331,7 @@ module Documents
             revision.graphemes.
               where(zone_id: source_graphemes.first.zone_id).
               where("position_weight < ?", source_graphemes.first.position_weight).
-              order("position_weight desc").
+              reorder("position_weight desc").
               first
           end
         }.call
@@ -345,7 +345,7 @@ module Documents
             revision.graphemes.
               where(zone_id: source_graphemes.first.zone_id).
               where("position_weight > ?", source_graphemes.last.position_weight).
-              order("position_weight asc").
+              reorder("position_weight asc").
               first
           end
         }.call

@@ -9,6 +9,8 @@ module Graphemes
       @_conflicts ||= -> {
         sql = <<-SQL
           select array[diff1.id, diff2.id] as conflicting_ids,
+                diff2.inclusion,
+                diff2.revision_id,
                 diff2.id,
                 diff2.value,
                 diff2.status,
@@ -20,6 +22,7 @@ module Graphemes
           from (
             select g.grapheme_id as id,
                 g.inclusion[1],
+                g.revision_ids[1] as revision_id,
                 graphemes.status,
                 graphemes.value,
                 graphemes.area,
@@ -28,12 +31,12 @@ module Graphemes
               graphemes.parent_ids,
               surfaces.number as surface_number
             from (
-              select gs.grapheme_id, array_agg(gs.inclusion) as inclusion
+              select gs.grapheme_id, array_agg(gs.inclusion) as inclusion, array_agg(gs.revision_id) as revision_ids
               from (
-                select grapheme_id, 'left' as inclusion
+                select grapheme_id, 'left' as inclusion, revision_id
                 from #{root.graphemes_revisions_partition_table_name}
                 union all
-                select grapheme_id, 'right' as inclusion
+                select grapheme_id, 'right' as inclusion, revision_id
                 from #{left.graphemes_revisions_partition_table_name}
               ) gs
               group by grapheme_id
@@ -50,6 +53,7 @@ module Graphemes
           inner join (
             select g.grapheme_id as id,
                 g.inclusion[1],
+                g.revision_ids[1] as revision_id,
                 graphemes.status,
                 graphemes.value,
                 graphemes.area,
@@ -58,12 +62,12 @@ module Graphemes
               graphemes.parent_ids,
               surfaces.number as surface_number
             from (
-              select gs.grapheme_id, array_agg(gs.inclusion) as inclusion
+              select gs.grapheme_id, array_agg(gs.inclusion) as inclusion, array_agg(gs.revision_id) as revision_ids
               from (
-                select grapheme_id, 'left' as inclusion
+                select grapheme_id, 'left' as inclusion, revision_id
                 from #{root.graphemes_revisions_partition_table_name}
                 union all
-                select grapheme_id, 'right' as inclusion
+                select grapheme_id, 'right' as inclusion, revision_id
                 from #{right.graphemes_revisions_partition_table_name}
               ) gs
               group by grapheme_id
