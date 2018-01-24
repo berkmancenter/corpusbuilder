@@ -1,3 +1,5 @@
+require 'benchmark'
+
 module Branches
   class Merge < Action::Base
     attr_accessor :branch, :other_branch
@@ -5,8 +7,12 @@ module Branches
     validate :branches_not_in_conflicts
 
     def execute
-      Revisions::PointAtGraphemes.run! ids: merge_ids,
-        target: branch.working
+      took = Benchmark.measure do
+        Revisions::PointAtGraphemes.run! ids: merge_ids,
+          target: branch.working
+      end
+
+      Rails.logger.debug "Merge benchmark took: #{took}"
 
       if no_conflicts?
         Branches::Commit.run! branch: branch
@@ -26,7 +32,7 @@ module Branches
         to_exclude_ids = self.exclude_ids
         conflict_graphemes.map(&:id).concat(branch_item_ids).
                                      concat(other_branch_ids).
-                                     uniq - to_exclude_ids
+                                     uniq - to_exclude_ids - conflicting_ids
       }.call
     end
 
@@ -38,18 +44,18 @@ module Branches
 
     def branch_item_ids
       @_branch_item_ids ||= -> {
-        all_branch_ids(branch).select do |id|
-          merge_conflicts.none? { |conflict| conflict.conflicting_ids.include? id }
-        end
+        all_branch_ids(branch)
       }.call
     end
 
     def other_branch_ids
       @_other_branch_ids ||= -> {
-        all_branch_ids(other_branch).select do |id|
-          merge_conflicts.none? { |conflict| conflict.conflicting_ids.include? id }
-        end
+        all_branch_ids(other_branch)
       }.call
+    end
+
+    def conflicting_ids
+      @_conflicting_ids ||= merge_conflicts.map(&:conflicting_ids).flatten
     end
 
     def conflict_graphemes
