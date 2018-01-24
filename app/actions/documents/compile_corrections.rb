@@ -325,7 +325,6 @@ module Documents
             source_graphemes.first
           else
             revision.graphemes.
-              where(zone_id: source_graphemes.first.zone_id).
               where("position_weight < ?", source_graphemes.first.position_weight).
               reorder("position_weight desc").
               first
@@ -339,7 +338,6 @@ module Documents
             source_graphemes.last
           else
             revision.graphemes.
-              where(zone_id: source_graphemes.first.zone_id).
               where("position_weight > ?", source_graphemes.last.position_weight).
               reorder("position_weight asc").
               first
