@@ -7,14 +7,15 @@ module Documents
     def execute
       @graphemes.each do |spec|
         if spec.fetch(:delete, false)
-          Revisions::RemoveGrapheme.run!(
-            revision_id: revision.id,
-            grapheme_id: spec[:id]
-          )
+         Revisions::RemoveGrapheme.run!(
+           revision_id: revision.id,
+           grapheme_id: spec[:id]
+         )
         else
           Graphemes::Create.run!(
             revision: revision,
             area: area(spec),
+            certainty: 1,
             value: spec[:value],
             old_id: spec[:id],
             position_weight: spec[:position_weight],
@@ -38,8 +39,6 @@ module Documents
 
       @graphemes
     end
-
-    private
 
     def area(spec)
       if spec.has_key? :area
@@ -80,6 +79,10 @@ module Documents
           error.add(:branch_name, "points at a branch with inconsistent state, having a working revision not set to a working state")
         end
       end
+    end
+
+    def create_development_dumps?
+      true
     end
   end
 end

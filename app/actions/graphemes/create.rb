@@ -1,12 +1,11 @@
 module Graphemes
   class Create < Action::Base
-    attr_accessor :revision, :area, :value, :surface_number, :old_id, :position_weight
+    attr_accessor :revision, :area, :value, :surface_number, :old_id, :position_weight, :certainty
 
     validates :revision, presence: true
     validates :value, presence: true
     validates :area, presence: true
     validate :surface_id_inferred
-    validate :is_given_position_when_needed
 
     def execute
       Revisions::AddGrapheme.run!(
@@ -22,10 +21,11 @@ module Graphemes
     def grapheme
       @_grapheme ||= Grapheme.create!(
         area: area,
+        certainty: certainty,
         value: value,
         zone_id: zone_id,
         parent_ids: parent_ids,
-        position_weight: position
+        position_weight: position_weight
       )
     end
 
@@ -80,23 +80,9 @@ module Graphemes
         first
     end
 
-    def position
-      if old_id.present?
-        parent.position_weight
-      else
-        position_weight
-      end
-    end
-
     def surface_id_inferred
       if surface_id.empty?
         errors.add(:base, "needs either surface_number or grapheme id")
-      end
-    end
-
-    def is_given_position_when_needed
-      if old_id.nil? && position.nil?
-        errors.add(:position, "needs to be given when not correcting some other grapheme")
       end
     end
   end
