@@ -285,10 +285,6 @@ module Documents
         @_entered_sorted_visually_text_words_with_indices ||= -> {
           visual_indices = Bidi.to_visual_indices(normalized_entered_text, rtl? ? :rtl : :ltr)
 
-         #normalized_entered_text.chars.zip(visual_indices).each_with_index.map do |pair, index|
-         #  char, visual_index = pair
-
-         #  EnteredChar.new(char, index, visual_index)
           visual_indices.each_with_index.map do |index, visual_index|
             EnteredChar.new(normalized_entered_text[index], index, visual_index)
           end.inject([[]]) do |state, entered_char|
@@ -349,30 +345,6 @@ module Documents
               first
           end
         }.call
-      end
-
-      def match_source_around_word_by_member(entered_grapheme)
-        match_side = -> (side) {
-          entered_search_space = entered_graphemes.send(side == :prev ? :reverse : :itself).lazy.
-            drop_while { |g| g.value != entered_grapheme.value || g.area != entered_grapheme.area }
-
-          matched_source_grapheme = nil
-
-          for grapheme in entered_search_space
-            matched_source_grapheme = match_source_by_entered(grapheme)
-
-            if matched_source_grapheme.present?
-              break
-            end
-          end
-
-          matched_source_grapheme || (side == :prev ? first_bounding_grapheme : last_bounding_grapheme)
-        }
-
-        [
-          match_side.call(:prev),
-          match_side.call(:next)
-        ]
       end
 
       class EnteredChar

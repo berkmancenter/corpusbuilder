@@ -323,6 +323,10 @@ export default class Viewer extends React.Component {
 
     toggleDiff(isOn) {
         this.showDiff = isOn;
+
+        if(this.showDiff) {
+            this.onDiffSwitch(1);
+        }
     }
 
     toggleShowConflictDiff() {
@@ -482,7 +486,12 @@ export default class Viewer extends React.Component {
 
     onDiffSwitch(page) {
         this.diffPage = page;
-        this.page = this.diff.pages[ page - 1 ].surfaceNumber;
+
+        let diffPage = this.diff.pages[ page - 1 ];
+
+        if(diffPage !== undefined) {
+            this.page = diffPage.surfaceNumber;
+        }
     }
 
     onMergeRequested() {
