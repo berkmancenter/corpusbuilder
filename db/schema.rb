@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180109122852) do
+ActiveRecord::Schema.define(version: 20180123101056) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -76,14 +76,26 @@ ActiveRecord::Schema.define(version: 20180109122852) do
     t.integer "status", default: 0
     t.uuid "parent_ids", default: [], array: true
     t.decimal "position_weight", precision: 12, scale: 6
-    t.index ["area"], name: "index_graphemes_on_area", using: :gist
-    t.index ["zone_id"], name: "index_graphemes_on_zone_id"
   end
 
   create_table "graphemes_revisions", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_graphemes_revisions_on_grapheme_id_and_revision_id"
+  end
+
+  create_table "graphemes_revisions_4b084dcc_67a4_4eec_a45b_fc32e20b7422", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_4b084dcc67a44eeca45bfc32e20b7422_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_4b084dcc67a44eeca45bfc32e20b7422_revision_id"
+  end
+
+  create_table "graphemes_revisions_84d8dbc1_b654_4404_919b_62045bb20a80", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_84d8dbc1b6544404919b62045bb20a80_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_84d8dbc1b6544404919b62045bb20a80_revision_id"
   end
 
   create_table "images", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -136,10 +148,11 @@ ActiveRecord::Schema.define(version: 20180109122852) do
   end
 
   create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "surface_id", null: false
-    t.box "area", null: false
+    t.uuid "document_id"
+    t.box "area"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "surface_id", null: false
     t.index ["area"], name: "index_zones_on_area", using: :gist
     t.index ["surface_id"], name: "index_zones_on_surface_id"
   end

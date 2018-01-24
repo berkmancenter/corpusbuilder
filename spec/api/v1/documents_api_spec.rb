@@ -3,6 +3,7 @@ require 'airborne'
 
 describe V1::DocumentsAPI, type: :request do
   include AuthenticationSpecHelper
+  include ActiveSupport::Testing::TimeHelpers
 
   let(:headers) do
     {
@@ -270,7 +271,7 @@ describe V1::DocumentsAPI, type: :request do
         working_revision.graphemes << create(:grapheme, position_weight: 3, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
         working_revision.graphemes << create(:grapheme, position_weight: 2, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
         working_revision.graphemes << create(:grapheme, position_weight: 1, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
-      ].flatten
+      ].flatten.uniq
     end
 
     let(:development_graphemes) do
@@ -834,7 +835,7 @@ describe V1::DocumentsAPI, type: :request do
         head_revision.graphemes << create(:grapheme, position_weight: 3, value: 'l', zone_id: first_line.id, area: Area.new(ulx: 40, uly: 0, lrx: 60, lry: 20), certainty: 0.3),
         head_revision.graphemes << create(:grapheme, position_weight: 2, value: 'e', zone_id: first_line.id, area: Area.new(ulx: 20, uly: 0, lrx: 40, lry: 20), certainty: 0.2),
         head_revision.graphemes << create(:grapheme, position_weight: 1, value: 'h', zone_id: first_line.id, area: Area.new(ulx: 0, uly: 0, lrx: 20, lry: 20), certainty: 0.1)
-      ].flatten
+      ].flatten.uniq
     end
 
     let(:grapheme1) { master_graphemes.first }
@@ -1045,6 +1046,7 @@ describe V1::DocumentsAPI, type: :request do
               }
             ]
 
+          travel 1.day
           Branches::Commit.run! branch: topic_branch
 
           Documents::Correct.run! document: document,
@@ -1063,13 +1065,14 @@ describe V1::DocumentsAPI, type: :request do
                 surface_number: 1,
                 position_weight: 3.5,
                 area: {
-                  ulx: 70,
+                  ulx: 160,
                   uly: 0,
-                  lrx: 80, lry: 10
+                  lrx: 170, lry: 10
                 }
               }
             ]
 
+          travel 1.day
           Branches::Commit.run! branch: development_branch
         end
 
@@ -1082,6 +1085,7 @@ describe V1::DocumentsAPI, type: :request do
           corrections
           first_merge
           master_branch.reload
+          travel 1.day
           valid_request
           master_branch.reload
 
@@ -1098,6 +1102,7 @@ describe V1::DocumentsAPI, type: :request do
           topic_branch.revision.graphemes << master_graphemes.uniq
           topic_branch.working.graphemes << master_graphemes.uniq
 
+          travel 1.week
           Documents::Correct.run! document: document,
             branch_name: topic_branch.name,
             graphemes: [
@@ -1113,6 +1118,7 @@ describe V1::DocumentsAPI, type: :request do
 
           Branches::Commit.run! branch: topic_branch
 
+          travel 1.week
           Documents::Correct.run! document: document,
             branch_name: development_branch.name,
             graphemes: [

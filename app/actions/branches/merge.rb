@@ -23,9 +23,11 @@ module Branches
 
     def merge_ids
       @_merge_ids ||= -> {
+        to_exclude_ids = self.exclude_ids
+        #byebug
         conflict_graphemes.map(&:id).concat(branch_item_ids).
                                      concat(other_branch_ids).
-                                     uniq
+                                     uniq - to_exclude_ids
       }.call
     end
 
@@ -53,7 +55,7 @@ module Branches
 
     def conflict_graphemes
       @_conflict_graphemes ||= -> {
-        merge_conflicts.map do |grapheme|
+        merge_conflicts.uniq.map do |grapheme|
           Grapheme.create! grapheme.attributes.without("id", "conflicting_ids", "surface_number").
                                                merge("status" => Grapheme.statuses[:conflict])
         end
@@ -62,6 +64,13 @@ module Branches
 
     def merge_conflicts
       @_merge_conflicts ||= Graphemes::QueryMergeConflicts.run!(
+        branch_left: branch,
+        branch_right: other_branch
+      ).result
+    end
+
+    def exclude_ids
+      @_exclude_ids ||= Graphemes::QueryMergeExcludes.run!(
         branch_left: branch,
         branch_right: other_branch
       ).result
