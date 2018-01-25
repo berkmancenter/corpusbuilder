@@ -1,5 +1,3 @@
-require 'benchmark'
-
 module Branches
   class Merge < Action::Base
     attr_accessor :branch, :other_branch
@@ -7,12 +5,10 @@ module Branches
     validate :branches_not_in_conflicts
 
     def execute
-      took = Benchmark.measure do
-        Revisions::PointAtGraphemes.run! ids: merge_ids,
-          target: branch.working
-      end
+      Revisions::PointAtGraphemes.run! ids: merge_ids,
+        target: branch.working
 
-      Rails.logger.debug "Merge benchmark took: #{took}"
+      branch.working.update_attributes!(merged_with_id: other_branch.revision_id)
 
       if no_conflicts?
         Branches::Commit.run! branch: branch

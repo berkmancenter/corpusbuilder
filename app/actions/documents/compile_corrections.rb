@@ -88,59 +88,50 @@ module Documents
             grapheme_diff.entered.id
           end
 
-          if source_list.first != first_bounding_grapheme
-            source_list.insert(0, first_bounding_grapheme)
-          end
-
-          if source_list.last != last_bounding_grapheme
-            source_list.push(last_bounding_grapheme)
-          end
-
+          entered_list.insert(0, first_bounding_grapheme)
           entered_list.push(last_bounding_grapheme)
 
-          checked_source_idx = 0
-          source_idx = 0
-          entered_idx = 0
-          current_source = nil
-          current_entered = nil
-          current_span = nil
-          diff_spans = [ ]
+          source_list.insert(0, first_bounding_grapheme)
+          source_list.push(last_bounding_grapheme)
 
-          while entered_idx < entered_list.count
-            if source_idx == source_list.count
-              entered_idx += 1
-              source_idx = checked_source_idx
+          initial_state = OpenStruct.new({ result: [ ], current_span: nil, previous: nil })
 
-              break if entered_idx == entered_list.count
-            end
-
-            current_entered = entered_list[ entered_idx ]
-            current_source = source_list[ source_idx ]
-
-            if diffs.has_key?( current_entered.id )
-              current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
-              current_span.open ||= current_source
-              current_span.diffs.push( diffs[ current_entered.id ].first )
-              entered_idx += 1
-              checked_source_idx = source_idx
+          diff_spans = entered_list.inject(initial_state) do |state, grapheme|
+            if diffs.has_key?(grapheme.id)
+              state.current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
+              state.current_span.open ||= state.previous
+              state.current_span.diffs.push(diffs[ grapheme.id ].first)
             else
-              if !graphemes_need_change( current_source, current_entered )
-                if current_span.present? && current_span.diffs.count > 0
-                  current_span.close = current_source
-                  diff_spans.push( current_span )
-                  current_span = nil
+              if state.current_span.present?
+                opening_word = source_words.find do |source_word|
+                  source_word.any? do |source_grapheme|
+                    !graphemes_need_change(source_grapheme, state.current_span.open)
+                  end
                 end
-                entered_idx += 1
-              else
-                source_idx += 1
+                if opening_word.nil?
+                  state.current_span.open = first_bounding_grapheme
+                else
+                  state.current_span.open = opening_word.sort_by { |g| g.position_weight }.reverse.first
+                end
+                closing_word = source_words.find do |source_word|
+                  source_word.any? do |source_grapheme|
+                    !graphemes_need_change(source_grapheme, grapheme)
+                  end
+                end
+                if closing_word.nil?
+                  state.current_span.close = last_bounding_grapheme
+                else
+                  state.current_span.close = closing_word.sort_by { |g| g.position_weight }.first
+                end
+                state.result.push(state.current_span)
+                state.current_span = nil
               end
             end
-          end
 
-          if current_span.present?
-            current_span.close = last_bounding_grapheme
-            diff_spans.push(current_span)
-          end
+            state.previous = grapheme
+
+            state
+          end.result
 
           diff_spans.map do |diff_span|
             grapheme_diffs = diff_span.diffs.sort_by { |diff| diff.entered.position_weight }
