@@ -53,6 +53,8 @@ module Documents
       end
 
       def graphemes_need_change(from, to)
+        return true if from.conflict? || to.conflict?
+
         value_differs = from.value != to.value
         area_differs = [
           from.area.ulx - to.area.ulx,
@@ -170,7 +172,7 @@ module Documents
 
           alignments = needleman_wunsch(visually_sorted_source_words, visually_sorted_entered_words,
                                         gap_penalty: gap) do |left, right|
-            if left.count != right.count
+            if left.any?(&:conflict?) || right.any?(&:conflict?) || left.count != right.count
               -1 * [ left.count, right.count ].max
             elsif left.zip(right).any? { |l, r| graphemes_need_change(l, r) }
               -1 * levenshtein(left.text, right.text)
