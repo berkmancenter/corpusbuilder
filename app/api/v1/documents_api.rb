@@ -179,6 +179,15 @@ class V1::DocumentsAPI < Grape::API
         action! Revisions::PointAtSameGraphemes, source: branch.revision, target: branch.working
       end
 
+      desc 'Removes the branch'
+      delete ':branch' do
+        infer_editor!
+
+        branch = @document.branches.where(name: params[:branch]).first
+
+        action! Branches::Remove, branch: branch, editor_id: @editor_id
+      end
+
       desc 'Commits changes from the working tree into the branch'
       put ':branch/commit' do
         branch = @document.branches.where(name: params[:branch]).first

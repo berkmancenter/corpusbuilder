@@ -10,6 +10,7 @@ import FetchDocumentBranches from '../../actions/FetchDocumentBranches';
 import FetchDocumentBranch from '../../actions/FetchDocumentBranch';
 import CreateDocumentBranch from '../../actions/CreateDocumentBranch';
 import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
+import RemoveDocumentBranch from '../../actions/RemoveDocumentBranch';
 import CommitDocumentChanges from '../../actions/CommitDocumentChanges';
 import CorrectDocumentPage from '../../actions/CorrectDocumentPage';
 import MergeDocumentBranches from '../../actions/MergeDocumentBranches';
@@ -26,6 +27,7 @@ import { DocumentOptions } from '../DocumentOptions'
 import { InlineEditor } from '../InlineEditor'
 import { NewBranchWindow } from '../NewBranchWindow'
 import { MergeBranchesWindow } from '../MergeBranchesWindow';
+import { RemoveBranchWindow } from '../RemoveBranchWindow';
 import { DiffOptions } from '../DiffOptions';
 import { Button } from '../Button';
 import { DiffLayer } from '../DiffLayer';
@@ -62,6 +64,9 @@ export default class Viewer extends React.Component {
 
     @observable
     showMergeWindow = false;
+
+    @observable
+    showBranchRemoval = false;
 
     @observable
     documentId = null;
@@ -346,6 +351,10 @@ export default class Viewer extends React.Component {
         );
     }
 
+    askForBranchRemoval() {
+        this.showBranchRemoval = true;
+    }
+
     commitChanges() {
        CommitDocumentChanges.run(
            this.props.appState,
@@ -438,6 +447,21 @@ export default class Viewer extends React.Component {
         });
     }
 
+    removeBranch() {
+        RemoveDocumentBranch.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion
+                }
+            }
+        ).then((_) => {
+            this.chooseBranch({ name: 'master' });
+            this.showBranchRemoval = false;
+        });
+    }
+
     saveNewBranch(name) {
         CreateDocumentBranch.run(
             this.props.appState,
@@ -461,6 +485,10 @@ export default class Viewer extends React.Component {
     hideInlineEditor() {
         this.showInlineEditor = false;
         this.forceEditingBoxes = null;
+    }
+
+    hideBranchRemoveWindow() {
+        this.showBranchRemoval = false;
     }
 
     hideNewBranchWindow() {
@@ -607,6 +635,7 @@ export default class Viewer extends React.Component {
                                    onToggleBackground={ this.toggleBackground.bind(this) }
                                    onToggleDiff={ this.toggleDiff.bind(this) }
                                    onResetChangesRequest={ this.resetChanges.bind(this) }
+                                   onRemoveBranchRequest={ this.askForBranchRemoval.bind(this) }
                                    onCommitRequest={ this.commitChanges.bind(this) }
                                    onNewBranchRequest={ this.onNewBranchRequested.bind(this) }
                                    />
@@ -644,6 +673,12 @@ export default class Viewer extends React.Component {
                                    currentVersion={ this.currentVersion }
                                    onCloseRequested={ this.hideNewBranchWindow.bind(this) }
                                    onSaveRequested={ this.saveNewBranch.bind(this) }
+                                   />
+                  <RemoveBranchWindow visible={ this.showBranchRemoval }
+                                   document={ doc }
+                                   currentVersion={ this.currentVersion }
+                                   onCloseRequested={ this.hideBranchRemoveWindow.bind(this) }
+                                   onRemoveBranchRequested={ this.removeBranch.bind(this) }
                                    />
                   <MergeBranchesWindow visible={ this.showMergeWindow }
                                    document={ doc }

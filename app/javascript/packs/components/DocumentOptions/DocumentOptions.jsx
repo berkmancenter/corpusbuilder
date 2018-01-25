@@ -146,6 +146,12 @@ export default class DocumentOptions extends React.Component {
                       Reset Changes
                   </button>
               </li>
+              <li>
+                  <button type="button" onClick={ this.props.onRemoveBranchRequest }
+                                        disabled={ this.props.currentVersion.branchVersion.name === 'master' || !this.props.currentVersion.editable }>
+                      Remove Branch
+                  </button>
+              </li>
               <BranchesMenu onBranchSwitch={ this.props.onBranchSwitch.bind(this) }
                             currentVersion={ this.props.currentVersion }
                             branches={ this.props.branches }

@@ -53,4 +53,5 @@ export default class Action {
 
     post = Request.post;
     put = Request.put;
+    delete = Request['delete'];
 }

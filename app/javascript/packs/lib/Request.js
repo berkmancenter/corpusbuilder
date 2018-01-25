@@ -47,4 +47,18 @@ export default class Request {
             });
         });
     }
+
+    static delete(url, data) {
+        return new Promise((resolve, reject) => {
+            qwest['delete'](url, JSON.stringify(data), { dataType: 'json' })
+              .then((response) => {
+                resolve(
+                   JSON.parse(response.responseText)
+                )
+              .catch((error) => {
+                reject(error);
+              });
+            });
+        });
+    }
 }
