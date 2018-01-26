@@ -1024,6 +1024,7 @@ describe V1::DocumentsAPI, type: :request do
             graphemes: [
               {
                 id: master_graphemes.first.id,
+                position_weight: master_graphemes.first.position_weight,
                 value: '1'
               },
               {
@@ -1039,9 +1040,9 @@ describe V1::DocumentsAPI, type: :request do
                 surface_number: 1,
                 position_weight: 3.5,
                 area: {
-                  ulx: 60,
+                  ulx: 260,
                   uly: 0,
-                  lrx: 70, lry: 10
+                  lrx: 270, lry: 10
                 }
               }
             ]
@@ -1054,6 +1055,7 @@ describe V1::DocumentsAPI, type: :request do
             graphemes: [
               {
                 id: master_graphemes[2].id,
+                position_weight: master_graphemes[2].position_weight,
                 value: '3'
               },
               {
@@ -1097,10 +1099,10 @@ describe V1::DocumentsAPI, type: :request do
 
       context "when applying changes with current revision changed with conflicts" do
         let(:corrections) do
-          development_branch.revision.graphemes << master_graphemes.uniq
-          development_branch.working.graphemes << master_graphemes.uniq
-          topic_branch.revision.graphemes << master_graphemes.uniq
-          topic_branch.working.graphemes << master_graphemes.uniq
+          development_branch.revision.graphemes = master_graphemes.uniq
+          development_branch.working.graphemes = master_graphemes.uniq
+          topic_branch.revision.graphemes = master_graphemes.uniq
+          topic_branch.working.graphemes = master_graphemes.uniq
 
           travel 1.week
           Documents::Correct.run! document: document,
@@ -1108,14 +1110,17 @@ describe V1::DocumentsAPI, type: :request do
             graphemes: [
               {
                 id: master_graphemes.first.id,
+                position_weight: master_graphemes.first.position_weight,
                 value: '1'
               },
               {
                 id: master_graphemes[4].id,
+                position_weight: master_graphemes[4].position_weight,
                 value: '9'
               }
             ]
 
+          travel 1.week
           Branches::Commit.run! branch: topic_branch
 
           travel 1.week
@@ -1128,26 +1133,32 @@ describe V1::DocumentsAPI, type: :request do
               },
               {
                 id: master_graphemes[4].id,
+                position_weight: master_graphemes[4].position_weight,
                 value: '3'
               }
             ]
 
+          travel 1.week
           Branches::Commit.run! branch: development_branch
         end
 
         let(:first_merge) do
+          travel 1.week
           Branches::Merge.run! branch: master_branch,
             other_branch: development_branch
         end
 
-        it "returns HTTP 409 CONFLICT along with the message about the need to resolve the merge conflicts" do
+        it "returns HTTP 209 CONFLICT along with the message about the need to resolve the merge conflicts" do
           corrections
+          travel 1.week
           first_merge
           master_branch.reload
+          travel 1.week
           valid_request
+          travel 1.week
           master_branch.reload
 
-          expect(response.status).to eq(409)
+          expect(response.status).to eq(209)
         end
 
         it "marks the working revision of the branch as being in conflict" do
@@ -1162,8 +1173,10 @@ describe V1::DocumentsAPI, type: :request do
 
         it "makes the working revision contain the conflict graphemes", focus: true do
           corrections
+          travel 1.week
           first_merge
           master_branch.reload
+          travel 1.week
           valid_request
           master_branch.reload
 

@@ -26,11 +26,12 @@ module Revisions
               path_intersection[1] as intersecting_id,
               array_position(path, path_intersection[1]) + array_position(other_tree_path, path_intersection[1]) as rank
             from (
-              with recursive tree(id, origin_id, parent_id, merged_with_id, path) as (
+              with recursive tree(id, origin_id, parent_id, merged_with_id, merge_stop, path) as (
                 select id,
                       id as origin_id,
                     parent_id,
                     merged_with_id,
+                    false,
                     array[id] as path
                 from revisions
                 where id in ('#{revision1.id}', '#{revision2.id}')
@@ -39,11 +40,12 @@ module Revisions
                       tree.origin_id,
                     revisions.parent_id,
                     revisions.merged_with_id,
+                    tree.merged_with_id is not null,
                     tree.path || revisions.id
                 from tree
                 inner join revisions
-                        on revisions.id = tree.parent_id
-                        or revisions.id = tree.merged_with_id
+                        on revisions.id = tree.parent_id and (not tree.merge_stop)
+                        or revisions.id = tree.merged_with_id and (not tree.merge_stop)
               )
               select tree.path,
                     other_tree.id as other_tree_id,

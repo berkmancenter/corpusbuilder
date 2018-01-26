@@ -12,6 +12,8 @@ module Documents
            grapheme_id: spec[:id]
          )
         else
+          raise ArgumentError, "Missing position_weight in correction spec!" if spec[:position_weight].nil?
+
           Graphemes::Create.run!(
             revision: revision,
             area: area(spec),

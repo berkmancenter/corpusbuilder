@@ -21,10 +21,10 @@ class Area
   def overlaps?(other)
     return false if other.nil?
 
-    @uly <= other.lry &&
-      @lry >= other.uly &&
-      @ulx <= other.lrx &&
-      @lrx >= other.ulx
+    @uly < other.lry &&
+      @lry > other.uly &&
+      @ulx < other.lrx &&
+      @lrx > other.ulx
   end
 
   def ==(other)

@@ -13,15 +13,15 @@ module Graphemes
               from graphemes
               inner join (
                 select gs.grapheme_id, array_agg(gs.inclusion) as inclusion
-              from (
-                select grapheme_id, 'left' as inclusion
-                from #{ branch_left.revision.graphemes_revisions_partition_table_name }
-                union all
-                select grapheme_id, 'right' as inclusion
-                from #{ branch_right.revision.graphemes_revisions_partition_table_name }
-              ) gs
-              group by grapheme_id
-              having array_length(array_agg(gs.inclusion), 1) < 2
+                from (
+                  select grapheme_id, 'left' as inclusion
+                  from #{ branch_left.revision.graphemes_revisions_partition_table_name }
+                  union all
+                  select grapheme_id, 'right' as inclusion
+                  from #{ branch_right.revision.graphemes_revisions_partition_table_name }
+                ) gs
+                group by grapheme_id
+                having array_length(array_agg(gs.inclusion), 1) < 2
               ) singles
               on singles.grapheme_id = graphemes.id
           )
