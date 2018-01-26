@@ -7,7 +7,6 @@ module Revisions
 
     def execute
       if revision1.id != revision2.id
-        byebug if Revision.find_by_sql(sql).first.nil?
         Revision.find_by_sql(sql).first
       else
         revision1

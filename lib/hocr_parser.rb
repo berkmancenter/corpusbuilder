@@ -160,61 +160,17 @@ class HocrParser < Parser
   end
 
   def word_node_to_elements(xml_node)
-    Rails.logger.debug "Node text: #{xml_node.text}"
-
     unordered = xml_node.text.chars
-    ordered = Bidi.to_visual(xml_node.text, direction(xml_node)).chars
-    ordered_codepoints = ordered.map(&:codepoints).flatten
-    count_all = ordered.count
+    count_all = unordered.count
 
-    Rails.logger.debug "Unordered list of graphemes: #{unordered.try(:inspect)}"
-    Rails.logger.debug "Ordered list of graphemes: #{ordered.try(:inspect)}"
+    visual_indices = Bidi.to_visual_indices(xml_node.text, direction(xml_node))
 
-    Rails.logger.debug "Unordered list of codepoints: #{unordered.join.codepoints}"
-    Rails.logger.debug "Ordered list of codepoints: #{ordered_codepoints}"
-
-    used_indexes = Set.new
-
-    indexes_map = Proc.new do |char|
-      codepoint = char.codepoints.first
-
-      ordered.each_index.lazy.select do |i|
-        ordered_codepoints[i] == codepoint
-      end
-    end
-
-    ordered_index = Proc.new do |char, depth = 0|
-      filtered = indexes_map.call(char).drop_while do |i|
-        used_indexes.include? i
-      end
-
-      index = begin
-        filtered.next
-      rescue StopIteration
-        Rails.logger.debug "StopIteration for the grapheme: ( #{char.codepoints.first} ) with depth: #{depth} for the unordered list being #{unordered} the ordered being #{ordered} and the used_indexes being #{used_indexes.inspect}"
-        Rails.logger.debug "The indexes map for the grapheme: #{indexes_map.call(char).to_a}"
-        Rails.logger.debug "The ordered codepoints: #{ordered.map(&:codepoints).flatten}"
-        byebug
-        #mirrored_codepoints = $mirrorMap[char.codepoints.first]
-
-       #if mirrored_codepoints.present?
-       #  mirrored_char = mirrored_codepoints.first.chr
-
-       #  ordered_index.call(mirrored_char, depth + 1)
-       #end
-      end
-
-      used_indexes << index
-
-      index
-    end
-
-    unordered.lazy.map do |char|
+    visual_indices.each_with_index.lazy.map do |visual_index, logical_index|
       Parser::Element.new(
-        area: node_area(xml_node, ordered_index.call(char), count_all),
+        area: node_area(xml_node, visual_index, count_all),
         name: "grapheme",
         certainty: node_certainty(xml_node),
-        value: char,
+        value: unordered[logical_index],
         grouping: xml_node.attr('title')
       )
     end
@@ -232,7 +188,6 @@ class HocrParser < Parser
 
     if index.present? and count_all.present?
       width = lrx - ulx
-      #byebug if ulx.is_a?(TrueClass) || index.is_a?(TrueClass)
       lrx = ulx + (index + 1) * width * 1.0 / count_all
       ulx = ulx + index       * width * 1.0 / count_all
     end
@@ -250,7 +205,7 @@ class HocrParser < Parser
 
   # todo: make sure the unicode script list here is exhaustive
   def direction(xml_node)
-    /(\p{Arabic}|\p{Hebrew}|\p{Syriac})/.match?(xml_node.text) ? "R" : "L"
+    /(\p{Arabic}|\p{Hebrew}|\p{Syriac})/.match?(xml_node.text) ? :rtl : :ltr
   end
 
   private

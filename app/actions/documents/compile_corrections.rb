@@ -103,25 +103,11 @@ module Documents
               state.current_span.diffs.push(diffs[ grapheme.id ].first)
             else
               if state.current_span.present?
-                opening_word = source_words.find do |source_word|
-                  source_word.any? do |source_grapheme|
-                    !graphemes_need_change(source_grapheme, state.current_span.open)
-                  end
+                state.current_span.open = source_list.find do |g|
+                  !graphemes_need_change(g, state.current_span.open)
                 end
-                if opening_word.nil?
-                  state.current_span.open = first_bounding_grapheme
-                else
-                  state.current_span.open = opening_word.sort_by { |g| g.position_weight }.reverse.first
-                end
-                closing_word = source_words.find do |source_word|
-                  source_word.any? do |source_grapheme|
-                    !graphemes_need_change(source_grapheme, grapheme)
-                  end
-                end
-                if closing_word.nil?
-                  state.current_span.close = last_bounding_grapheme
-                else
-                  state.current_span.close = closing_word.sort_by { |g| g.position_weight }.first
+                state.current_span.close = source_list.find do |g|
+                  !graphemes_need_change(g, grapheme)
                 end
                 state.result.push(state.current_span)
                 state.current_span = nil
@@ -209,7 +195,12 @@ module Documents
         @_entered_words ||= -> {
           visually_sorted_words = entered_sorted_visually_text_words_with_indices.sort_by { |w| w[0].visual_index }
           visually_sorted_words.each_with_index.map do |entered_chars, word_index|
-            sorted_visually_chars = entered_chars.sort_by { |char| char.visual_index }
+            sorted_logically_chars = entered_chars.sort_by(&:index)
+            sorted_visually_indices = Bidi.to_visual_indices(
+              sorted_logically_chars.map(&:char).join,
+              rtl? ? :rtl : :ltr
+            )
+            sorted_visually_chars = sorted_visually_indices.map { |ix| sorted_logically_chars[ix] }
 
             graphemes = sorted_visually_chars.each_with_index.map do |entered_char, local_index|
               box = sorted_boxes[word_index]
