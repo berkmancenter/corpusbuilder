@@ -3,6 +3,8 @@
   "actions/CommitDocumentChanges.js.map": "/packs/actions/CommitDocumentChanges.js.map",
   "actions/CorrectDocumentPage.js": "/packs/actions/CorrectDocumentPage.js",
   "actions/CorrectDocumentPage.js.map": "/packs/actions/CorrectDocumentPage.js.map",
+  "actions/CreateDocumentAnnotation.js": "/packs/actions/CreateDocumentAnnotation.js",
+  "actions/CreateDocumentAnnotation.js.map": "/packs/actions/CreateDocumentAnnotation.js.map",
   "actions/CreateDocumentBranch.js": "/packs/actions/CreateDocumentBranch.js",
   "actions/CreateDocumentBranch.js.map": "/packs/actions/CreateDocumentBranch.js.map",
   "actions/FetchDocumentBranch.js": "/packs/actions/FetchDocumentBranch.js",

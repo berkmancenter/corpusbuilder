@@ -19,7 +19,8 @@ class V1::AnnotationsAPI < Grape::API
 
           desc "Creates a new annotation within the document"
           params do
-          requires :content, type: String
+            requires :content, type: String
+            requires :surface_number, type: Integer
             requires :areas, type: Array do
               requires :ulx, type: Integer
               requires :lrx, type: Integer
@@ -27,10 +28,11 @@ class V1::AnnotationsAPI < Grape::API
               requires :lry, type: Integer
             end
           end
-          post  do
+          post do
             action! Annotations::Create, content: params[:content],
               editor_id: @editor_id,
-              revision: @revision,
+              surface_number: params[:surface_number],
+              revision: @revision || @branch.revision,
               areas: params[:areas].map { |a| Area.new(a) }
           end
         end

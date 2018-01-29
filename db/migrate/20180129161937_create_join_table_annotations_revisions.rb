@@ -1,8 +1,8 @@
 class CreateJoinTableAnnotationsRevisions < ActiveRecord::Migration[5.1]
   def change
-    create_join_table :annotations, :revisions do |t|
-      # t.index [:annotation_id, :revision_id]
-      # t.index [:revision_id, :annotation_id]
+    create_table :annotations_revisions, id: false do |t|
+      t.uuid :annotation_id, null: false
+      t.uuid :revision_id, null: false
     end
   end
 end

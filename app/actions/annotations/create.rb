@@ -1,6 +1,6 @@
 module Annotations
   class Create < Action::Base
-    attr_accessor :content, :editor_id, :areas, :revision_id, :revision
+    attr_accessor :content, :editor_id, :areas, :revision_id, :revision, :surface_number
 
     def execute
       revision.annotations << created_annotation
@@ -9,7 +9,8 @@ module Annotations
     def created_annotation
       @_created_annotation ||= Annotation.create! content: content,
         editor_id: editor_id,
-        areas: areas
+        areas: areas,
+        surface_number: surface_number
     end
 
     def revision

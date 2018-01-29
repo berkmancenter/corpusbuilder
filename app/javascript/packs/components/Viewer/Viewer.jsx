@@ -3,12 +3,14 @@ import { autorun, observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 
 import State from '../../stores/State'
+import GraphemesUtils from '../../lib/GraphemesUtils';
 
 import FetchDocumentPage from '../../actions/FetchDocumentPage';
 import FetchDocumentDiff from '../../actions/FetchDocumentDiff';
 import FetchDocumentBranches from '../../actions/FetchDocumentBranches';
 import FetchDocumentBranch from '../../actions/FetchDocumentBranch';
 import CreateDocumentBranch from '../../actions/CreateDocumentBranch';
+import CreateDocumentAnnotation from '../../actions/CreateDocumentAnnotation';
 import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
 import RemoveDocumentBranch from '../../actions/RemoveDocumentBranch';
 import CommitDocumentChanges from '../../actions/CommitDocumentChanges';
@@ -383,12 +385,25 @@ export default class Viewer extends React.Component {
     }
 
     saveAnnotation(annotation) {
-       //this.props.metadata.saveAnnotation(
-       //    this.documentId,
-       //    this.currentVersion,
-       //    annotation,
-       //    this.lastSelectedGraphemes
-       //);
+        let boxes = GraphemesUtils.lines(this.lastSelectedGraphemes)
+            .map(GraphemesUtils.wordToBox)
+            .map((b) => { b.graphemes = undefined; return b })
+
+        CreateDocumentAnnotation.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion,
+                    surfaceNumber: this.document.surfaces[0].number
+                },
+                content: annotation,
+                areas: boxes
+            }
+        ).then((_) => {
+            this.showAnnotationsEditor = false;
+            this.showAnnotations = true;
+        });
     }
 
     onEditDiffRequested(diffWord) {
