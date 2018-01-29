@@ -28,7 +28,7 @@ module Branches
         to_exclude_ids = self.exclude_ids
         conflict_graphemes.map(&:id).concat(branch_item_ids).
                                      concat(other_branch_ids).
-                                     uniq - to_exclude_ids - conflicting_ids - removed_ids
+                                     uniq - to_exclude_ids - removed_ids - conflicting_ids
       }.call
     end
 
@@ -50,28 +50,23 @@ module Branches
       }.call
     end
 
-    def removed_ids
-      @_removed_ids ||= -> {
-        branch_removed = branch_diff.select { |g| g.inclusion == 'left' }.
-                    reject { |g| other_branch_diff.any? { |g2| g2.area.overlaps?(g.area) } }
-        other_branch_removed = other_branch_diff.select { |g| g.inclusion == 'left' }.
-                    reject { |g| branch_diff.any? { |g2| g2.area.overlaps?(g.area) } }
-        branch_removed.concat(other_branch_removed).map(&:id)
-      }.call
+    def conflicting_ids
+      @_conflicting_ids ||= merge_conflicts.map(&:ids).flatten
     end
 
-    def conflicting_ids
-      @_conflicting_ids ||= merge_conflicts.map { |c| [c.grapheme.id, c.with.id] }.flatten
+    def removed_ids
+      @_removed_ids ||= branch_changes.concat(other_branch_changes).select(&:removal?).select do |change|
+        merge_conflicts.none? { |conflict| conflict.includes?(change) }
+      end.map(&:from).map(&:id).uniq
     end
 
     def conflict_graphemes
-      @_conflict_graphemes || -> {
-        theirs = merge_conflicts.reject(&:ours).select { |g| g.grapheme.inclusion == 'right' }
-        ours   = merge_conflicts.select(&:ours).select { |g| g.grapheme.inclusion == 'right' }
-
-        (theirs + ours).map do |conflict|
-          Grapheme.create! conflict.grapheme.attributes.without("id", "inclusion", "surface_number").
-                                                        merge("status" => Grapheme.statuses[:conflict])
+      @_conflict_graphemes ||= -> {
+        merge_conflicts.map do |conflict|
+          Grapheme.create! conflict.output_grapheme.
+            attributes.
+            without("id", "inclusion", "revision_id", "surface_number", "status").
+            merge("status" => Grapheme.statuses[:conflict])
         end
       }.call
     end
@@ -79,14 +74,53 @@ module Branches
     def branch_diff
       @_branch_diff ||= Graphemes::QueryDiff.run(
         revision_left: root,
-        revision_right: branch.revision
+        revision_right: branch.revision,
+        reject_mirrored: true
       ).result.uniq
+    end
+
+    def branch_changes
+      @_branch_changes ||= compile_changes(branch_diff)
+    end
+
+    def other_branch_changes
+      @_other_branch_changes ||= compile_changes(other_branch_diff)
+    end
+
+    def compile_changes(diffs)
+      results = []
+
+      roots = Set.new(diffs.select { |g| g.inclusion == 'left' })
+      rights = Set.new(diffs.select { |g| g.inclusion == 'right' })
+
+      roots.each do |root_grapheme|
+        found = rights.find { |g| g.area.overlaps?(root_grapheme.area) }
+
+        results.push(
+          Change.new(root_grapheme, found)
+        )
+
+        if found.present?
+          rights.delete(found)
+        end
+
+        roots.delete(root_grapheme)
+      end
+
+      rights.each do |right|
+        results.push(Change.new(nil, right))
+      end
+
+      rights.clear
+
+      results
     end
 
     def other_branch_diff
       @_other_branch_diff ||= Graphemes::QueryDiff.run(
         revision_left: root,
-        revision_right: other_branch.revision
+        revision_right: other_branch.revision,
+        reject_mirrored: true
       ).result.uniq
     end
 
@@ -98,30 +132,16 @@ module Branches
     end
 
     def merge_conflicts
-      @_merge_conflicts ||= branch_merge_conflicts.
-        concat(other_branch_merge_conflicts).
-        select { |c| c.with.present? }
-    end
+      @_merge_conflicts ||= -> {
+        branch_changes.map do |our_change|
+          found = other_branch_changes.find do |other_change|
+            our_change.area.overlaps? other_change.area
+          end
 
-    def other_branch_merge_conflicts
-      @_other_branch_merge_conflicts ||= -> {
-        other_branch_diff.select { |g| g.inclusion == 'right' }.map do |g1|
-          with = branch_diff.select do |g2|
-            g1.area.overlaps?(g2.area)
-          end.reject do |g2|
-            branch_merge_conflicts.any? { |c| g2.area.overlaps?(c.grapheme.area) }
-          end.first
-
-          Conflict.new(g1, with, true)
-        end
-      }.call
-    end
-
-    def branch_merge_conflicts
-      @_branch_merge_conflicts ||= -> {
-        branch_diff.select { |g| g.inclusion == 'right' }.map do |g1|
-          Conflict.new(g1, other_branch_diff.find { |g2| g1.area.overlaps?(g2.area) }, false)
-        end
+          found.present? ? [ our_change, found ] : nil
+        end.reject(&:nil?).map do |our_change, their_change|
+          Conflict.new(our_change, their_change)
+        end.reject(&:both_remove?)
       }.call
     end
 
@@ -146,13 +166,53 @@ module Branches
       true
     end
 
-    class Conflict
-      attr_accessor :grapheme, :with, :ours
+    class Change
+      attr_accessor :from, :to
 
-      def initialize(grapheme, with, ours)
-        @grapheme = grapheme
-        @with = with
-        @ours = ours
+      def initialize(from, to)
+        @from = from
+        @to = to
+      end
+
+      def area
+        from.try(:area) || to.try(:area)
+      end
+
+      def removal?
+        to.nil?
+      end
+
+      def inspect
+        "#{from.present? ? from.value : '∅'} --> #{to.present? ? to.value : '∅'}"
+      end
+    end
+
+    class Conflict
+      attr_accessor :our_change, :their_change
+
+      def initialize(our_change, their_change)
+        @our_change = our_change
+        @their_change = their_change
+      end
+
+      def includes?(change)
+        our_change == change || their_change == change
+      end
+
+      def both_remove?
+        our_change.removal? && their_change.removal?
+      end
+
+      def output_grapheme
+        their_change.to || our_change.to || our_change.from
+      end
+
+      def ids
+        [ our_change.to.try(:id), their_change.to.try(:id) ].reject(&:nil?)
+      end
+
+      def inspect
+        "<Conflict our={ #{our_change.inspect} } their={ #{their_change.inspect} }>"
       end
     end
   end

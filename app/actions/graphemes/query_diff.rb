@@ -1,11 +1,15 @@
 module Graphemes
   class QueryDiff < Action::Base
-    attr_accessor :revision_left, :revision_right
+    attr_accessor :revision_left, :revision_right, :reject_mirrored
 
     validates :revision_right, presence: true
 
     def execute
-      all_diffs.reject { |g| has_mirrored?(g) }
+      if reject_mirrored == true
+        all_diffs.reject { |g| has_mirrored?(g) }
+      else
+        all_diffs
+      end
     end
 
     def all_diffs
@@ -13,6 +17,7 @@ module Graphemes
         sql = <<-sql
           select g.grapheme_id as id,
                 g.inclusion[1],
+                g.revision_ids[1] as revision_id,
                 graphemes.status,
                 graphemes.value,
                 graphemes.area,
@@ -22,12 +27,14 @@ module Graphemes
               graphemes.parent_ids,
               surfaces.number as surface_number
           from (
-            select gs.grapheme_id, array_agg(gs.inclusion) as inclusion
+            select gs.grapheme_id,
+                   array_agg(gs.inclusion) as inclusion,
+                   array_agg(gs.revision_id) as revision_ids
             from (
-              select grapheme_id, 'left' as inclusion
+              select grapheme_id, 'left' as inclusion, revision_id
               from #{revision_left.graphemes_revisions_partition_table_name}
               union all
-              select grapheme_id, 'right' as inclusion
+              select grapheme_id, 'right' as inclusion, revision_id
               from #{revision_right.graphemes_revisions_partition_table_name}
             ) gs
             group by grapheme_id
