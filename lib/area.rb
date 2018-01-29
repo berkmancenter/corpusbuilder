@@ -70,4 +70,22 @@ class Area
       "((#{value.lrx},#{value.lry}),(#{value.ulx},#{value.uly}))"
     end
   end
+
+  class ArraySerializer
+    def self.load(value)
+      return nil if value.nil?
+
+      arr = value.is_a?(Array) ? value : value.gsub(/\{|\}/, '').split(';')
+
+      arr.map do |string|
+        Serializer.load(string)
+      end
+    end
+
+    def self.dump(value)
+      return nil if value.nil?
+
+      "{#{value.map { |area| Serializer.dump(area) }.join(';')}}"
+    end
+  end
 end
