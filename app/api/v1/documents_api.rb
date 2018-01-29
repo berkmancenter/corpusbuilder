@@ -1,45 +1,6 @@
 class V1::DocumentsAPI < Grape::API
   include V1Base
 
-  helpers do
-    def infer_revision!
-      @revision_options = {}
-      if uuid_pattern.match?(params[:revision])
-        if @document.revisions.where(id: params[:revision]).empty?
-          error!('Revision doesn\'t exist', 422)
-        end
-
-        @revision_options[:revision_id] = params[:revision]
-      else
-        if @document.branches.where(name: params[:revision]).empty?
-          error!('Branch doesn\'t exist', 422)
-        end
-
-        @revision_options[:branch_name] = params[:revision]
-      end
-    end
-
-    def revision_from_params(params_name = :revision, options = { required: true })
-      if uuid_pattern.match?(params[params_name])
-        revision = @document.revisions.where(id: params[params_name]).first
-
-        if !revision.present? && options[:required]
-          error!('Revision doesn\'t exist', 422)
-        else
-          return revision
-        end
-      else
-        branch = @document.branches.where(name: params[params_name]).first
-
-        if !branch.present? && options[:required]
-          error!("Branch doesn't exist", 422)
-        end
-
-        return branch.try(:revision)
-      end
-    end
-  end
-
   resources :documents do
     desc %Q{Starts up the process of the document creation.
             The resulting document initially is in the
@@ -79,13 +40,7 @@ class V1::DocumentsAPI < Grape::API
 
     namespace ':id', requirements: { id: uuid_pattern } do
       before do
-        authorize!
-
-        @document = Document.find(params[:id])
-
-        if @current_app.id != @document.app_id
-          error!('You don\'t own the document', 403)
-        end
+        fetch_and_authorize_document!
       end
 
       desc "Returns document info"

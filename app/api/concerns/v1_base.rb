@@ -94,6 +94,65 @@ module V1Base
         end
         error!("Oops! Something went wrong", 500)
       end
+
+      def infer_revision!(options = {})
+        @revision_options = {}
+        if uuid_pattern.match?(params[:revision])
+          if @document.revisions.where(id: params[:revision]).empty?
+            error!('Revision doesn\'t exist', 422)
+          end
+
+          @revision_options[:revision_id] = params[:revision]
+
+          if options.fetch(:fetch, false)
+            @revision = Revision.find(@revision_options[:revision_id])
+            @branch = nil
+          end
+        else
+          if @document.branches.where(name: params[:revision]).empty?
+            error!('Branch doesn\'t exist', 422)
+          end
+
+          @revision_options[:branch_name] = params[:revision]
+
+          if options.fetch(:fetch, false)
+            error!('Expected document when fetching required branch', 500) if @document.nil?
+
+            @revision = nil
+            @branch = @document.branches.where(name: params[:revision]).first
+          end
+        end
+      end
+
+      def revision_from_params(params_name = :revision, options = { required: true })
+        if uuid_pattern.match?(params[params_name])
+          revision = @document.revisions.where(id: params[params_name]).first
+
+          if !revision.present? && options[:required]
+            error!('Revision doesn\'t exist', 422)
+          else
+            return revision
+          end
+        else
+          branch = @document.branches.where(name: params[params_name]).first
+
+          if !branch.present? && options[:required]
+            error!("Branch doesn't exist", 422)
+          end
+
+          return branch.try(:revision)
+        end
+      end
+
+      def fetch_and_authorize_document!
+        authorize!
+
+        @document = Document.find(params[:id])
+
+        if @current_app.id != @document.app_id
+          error!('You don\'t own the document', 403)
+        end
+      end
     end
   end
 
