@@ -8,6 +8,7 @@ class Revision < ApplicationRecord
 
   has_many :branches, dependent: :destroy
   has_and_belongs_to_many :graphemes, dependent: :destroy
+  has_and_belongs_to_many :annotations, dependent: :destroy
 
   scope :working, -> {
     where(status: [
