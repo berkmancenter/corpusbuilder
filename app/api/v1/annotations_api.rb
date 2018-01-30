@@ -35,6 +35,18 @@ class V1::AnnotationsAPI < Grape::API
               revision: @revision || @branch.revision,
               areas: params[:areas].map { |a| Area.new(a) }
           end
+
+          desc "Lists annotations"
+          params do
+            requires :surface_number, type: Integer
+          end
+          get do
+            @annotations = action! Annotations::QueryAll,
+              surface_number: params[:surface_number],
+              revision: @revision || @branch.revision
+
+            present @annotations, with: Annotation::Simple
+          end
         end
       end
     end

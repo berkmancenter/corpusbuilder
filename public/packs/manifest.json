@@ -7,6 +7,8 @@
   "actions/CreateDocumentAnnotation.js.map": "/packs/actions/CreateDocumentAnnotation.js.map",
   "actions/CreateDocumentBranch.js": "/packs/actions/CreateDocumentBranch.js",
   "actions/CreateDocumentBranch.js.map": "/packs/actions/CreateDocumentBranch.js.map",
+  "actions/FetchDocumentAnnotations.js": "/packs/actions/FetchDocumentAnnotations.js",
+  "actions/FetchDocumentAnnotations.js.map": "/packs/actions/FetchDocumentAnnotations.js.map",
   "actions/FetchDocumentBranch.js": "/packs/actions/FetchDocumentBranch.js",
   "actions/FetchDocumentBranch.js.map": "/packs/actions/FetchDocumentBranch.js.map",
   "actions/FetchDocumentBranches.js": "/packs/actions/FetchDocumentBranches.js",

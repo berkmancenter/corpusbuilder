@@ -16,54 +16,36 @@ export default class Annotations extends React.Component {
 
     @computed
     get annotations() {
-        return [ ]; // todo: implement me
-       // return this.props.metadata.annotations(
-       //     this.props.document.id,
-       //     this.props.version
-       // );
-    }
-
-    @computed
-    get page() {
-        return this.props.page;
+        return this.props.annotations;
     }
 
     @computed
     get surface() {
         return this.document.surfaces.find(
             (surface) => {
-                return surface.number == this.page;
+                return surface.number == this.props.page;
             }
         );
     }
 
     @computed
-    get graphemes() {
-        return this.surface.graphemes;
+    get surfaceWidth() {
+        return this.surface.area.lrx - this.surface.area.ulx;
     }
 
-    annotationGraphemes(ids) {
-        let firstId = ids[0];
-        let lastId  = ids[ids.length - 1];
-        let sawFirst = false;
-        let sawLast = false;
+    @computed
+    get ratio() {
+        return this.props.width / this.surfaceWidth;
+    }
 
-        return this.graphemes.filter((grapheme) => {
-            if(sawLast) {
-                return false;
-            }
-
-            if(grapheme.id === firstId) {
-                sawFirst = true;
-            }
-
-            if(grapheme.id === lastId) {
-                sawLast = true;
-            }
-
-            if(sawFirst) {
-                return true;
-            }
+    coordsFor(annotation) {
+        return annotation.areas.map((area) => {
+            return {
+                top: area.uly * this.ratio,
+                bottom: area.lry * this.ratio,
+                left: area.ulx * this.ratio,
+                right: area.lrx * this.ratio
+            };
         });
     }
 
@@ -78,12 +60,12 @@ export default class Annotations extends React.Component {
                     this.annotations.map((annotation, index) => {
                         return (
                             <Highlight key={ `annotation-${index}` }
-                                       graphemes={ this.annotationGraphemes(annotation.graphemeIds) }
+                                       lineCoords={ this.coordsFor(annotation) }
                                        document={ this.props.document }
                                        mainPageTop={ this.props.mainPageTop }
                                        page={ this.props.page }
                                        width={ this.props.width }
-                                       content={ annotation.text }
+                                       content={ annotation.content }
                                        />
                         );
                     })

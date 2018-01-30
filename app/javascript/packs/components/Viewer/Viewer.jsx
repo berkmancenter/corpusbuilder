@@ -9,6 +9,7 @@ import FetchDocumentPage from '../../actions/FetchDocumentPage';
 import FetchDocumentDiff from '../../actions/FetchDocumentDiff';
 import FetchDocumentBranches from '../../actions/FetchDocumentBranches';
 import FetchDocumentBranch from '../../actions/FetchDocumentBranch';
+import FetchDocumentAnnotations from '../../actions/FetchDocumentAnnotations';
 import CreateDocumentBranch from '../../actions/CreateDocumentBranch';
 import CreateDocumentAnnotation from '../../actions/CreateDocumentAnnotation';
 import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
@@ -207,6 +208,22 @@ export default class Viewer extends React.Component {
             }
           }
         );
+    }
+
+    @computed
+    get annotations() {
+        if(this.showAnnotations) {
+            return FetchDocumentAnnotations.run(
+                this.props.appState,
+                {
+                    select: {
+                        document: { id: this.documentId },
+                        version: this.currentVersion,
+                        surfaceNumber: this.document.surfaces[0].number
+                    }
+                }
+            );
+        }
     }
 
     @computed
@@ -713,6 +730,7 @@ export default class Viewer extends React.Component {
                                     />
                   <Annotations visible={ this.showAnnotations }
                                document={ doc }
+                               annotations={ this.annotations }
                                version={ this.currentVersion }
                                page={ page }
                                width={ width }

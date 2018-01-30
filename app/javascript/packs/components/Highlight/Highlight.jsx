@@ -19,6 +19,12 @@ export default class Highlight extends React.Component {
 
     @computed
     get lines() {
+        if(this.props.graphemes === undefined || this.props.graphemes === null ||
+           this.props.graphemes.length === 0)
+        {
+            return [ ];
+        }
+
         let initialState = {
             result: [ [] ],
         };
@@ -44,7 +50,7 @@ export default class Highlight extends React.Component {
     get lineCoords() {
         let special = [ 0x202c, 0x200e, 0x200f ];
 
-        return this.lines.filter((gs) => { return gs.length > 0 }).map((graphemes) => {
+        return this.props.lineCoords || this.lines.filter((gs) => { return gs.length > 0 }).map((graphemes) => {
             let concrete = graphemes.filter((grapheme) => {
                 return special.indexOf(grapheme.value.codePointAt(0)) === -1;
             });
@@ -110,8 +116,7 @@ export default class Highlight extends React.Component {
     }
 
     render() {
-        if(this.props.graphemes === null || this.props.graphemes === undefined ||
-           this.props.graphemes.length === 0) {
+        if(this.lineCoords.length === 0) {
             return null;
         }
 

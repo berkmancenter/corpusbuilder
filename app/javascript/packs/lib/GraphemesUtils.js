@@ -14,12 +14,13 @@ export default class GraphemesUtils {
         };
 
         return graphemes.reduce((state, grapheme) => {
-            state.result[ state.result.length - 1 ].push( grapheme );
-
             // if we're seeing the pop-directionality grapheme then
             // it's a mark of the end of line:
             if(grapheme.value.charCodeAt(0) === this.popDirectionalityMark) {
                 state.result.push( [ ] );
+            }
+            else {
+                state.result[ state.result.length - 1 ].push( grapheme );
             }
 
             return state;
