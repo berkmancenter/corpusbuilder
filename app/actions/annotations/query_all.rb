@@ -4,7 +4,8 @@ module Annotations
 
     def execute
       revision.annotations.
-        where(surface_number: surface_number)
+        where(surface_number: surface_number).
+        uniq
     end
   end
 end

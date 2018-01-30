@@ -9,6 +9,7 @@ module Branches
         target: branch.working
 
       branch.working.update_attributes!(merged_with_id: other_branch.revision_id)
+      branch.working.annotations << other_branch.revision.annotations
 
       if no_conflicts?
         Branches::Commit.run! branch: branch

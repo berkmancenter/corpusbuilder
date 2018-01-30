@@ -27,6 +27,11 @@ export default class MergeDocumentBranches extends Action {
                     document: { id: selector.document.id }
                 })
             );
+            state.invalidate(
+                new Selector('FetchDocumentAnnotations', {
+                    document: { id: selector.document.id }
+                })
+            );
         });
 
         return this.put(`${state.baseUrl}/api/documents/${selector.document.id}/${branchVersion.branchName}/merge`, payload)

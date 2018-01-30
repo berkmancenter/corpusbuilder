@@ -6,6 +6,8 @@ module Branches
     validate :working_exists
 
     def execute
+      working.annotations << branch.revision.annotations
+
       working.regular!
       new_regular = working
 
@@ -16,6 +18,7 @@ module Branches
       ).result
 
       Revisions::PointAtSameGraphemes.run!(source: new_regular, target: new_working)
+      new_working.annotations = new_regular.annotations
 
       branch.update_attributes!(revision_id: new_regular.id)
 
