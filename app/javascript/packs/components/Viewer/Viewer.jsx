@@ -104,9 +104,6 @@ export default class Viewer extends React.Component {
     @observable
     showAnnotations = false;
 
-    @observable
-    showTagsEditor = false;
-
     @computed
     get hasConflict() {
         if(this.document !== null && this.document !== undefined) {
@@ -531,11 +528,6 @@ export default class Viewer extends React.Component {
         this.showMergeWindow = false;
     }
 
-    editTags() {
-        this.showPopup = false;
-        this.showTagsEditor = true;
-    }
-
     onLineClick(line, text, number, editing) {
         if(editing) {
             this.showInlineEditor = true;
@@ -760,10 +752,7 @@ export default class Viewer extends React.Component {
                            onClickedOutside={ this.onPopupClickedOutside.bind(this) }
                            >
                   <Button onClick={ this.editAnnotation.bind(this) }>
-                    { '✐' }
-                  </Button>
-                  <Button onClick={ this.editTags.bind(this) }>
-                    { '#' }
+                    { '✐ Annotate' }
                   </Button>
                 </PopupMenu>
               </div>

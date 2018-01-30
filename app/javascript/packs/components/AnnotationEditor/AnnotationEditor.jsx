@@ -4,7 +4,11 @@ import { inject, observer } from 'mobx-react'
 
 import { Highlight } from '../Highlight';
 import { FloatingWindow } from '../FloatingWindow';
+import { Button } from '../Button';
 
+import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
+
+import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
 import styles from './AnnotationEditor.scss'
 
 @observer
@@ -73,6 +77,11 @@ export default class AnnotationEditor extends React.Component {
                                 ref={ (textArea) => this.textArea = textArea  }
                                 rows="5">
                       </textarea>
+                      <div className="corpusbuilder-annotation-editor-buttons">
+                          <Button onClick={ this.onAnnotateEditorSave.bind(this) }>
+                            Save
+                          </Button>
+                      </div>
                   </div>
                 </FloatingWindow>,
                 <Highlight graphemes={ this.props.graphemes }
