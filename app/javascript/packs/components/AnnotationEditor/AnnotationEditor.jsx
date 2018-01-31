@@ -14,6 +14,8 @@ import styles from './AnnotationEditor.scss'
 @observer
 export default class AnnotationEditor extends React.Component {
 
+    form = null;
+
     @observable
     editedAnnotation = "";
 
@@ -29,35 +31,106 @@ export default class AnnotationEditor extends React.Component {
         isOpen: false,
         title: (() => { return this.currentMode.title }),
         comment: { title: 'Comment' },
-        category: { title: 'Category' },
+        category: {
+            title: 'Category',
+            render: () => { return <input placeholder="Category" name="category"></input> },
+        },
         structural: {
             meta: true,
             isOpen: false,
             title: 'Structure',
-            h1: { title: 'Header 1' },
-            h2: { title: 'Header 2' },
-            h3: { title: 'Header 3' },
-            h4: { title: 'Header 4' },
-            h5: { title: 'Header 5' },
-            p:  { title: 'Paragraph' }
+            h1: { title: 'Header 1', render: null},
+            h2: { title: 'Header 2', render: null},
+            h3: { title: 'Header 3', render: null},
+            h4: { title: 'Header 4', render: null},
+            h5: { title: 'Header 5', render: null},
+            p:  { title: 'Paragraph', render: null }
         },
         biographical: {
             meta: true,
             isOpen: false,
             title: 'Biography',
-            man: { title: 'Biography of a man' },
-            woman: { title: 'Biography of a woman' },
-            year_birth: { title: 'Year of birth' },
-            year_death: { title: 'Year of death' },
-            age: { title: 'Age in years' },
-            person: { title: 'Person' }
+            biography: {
+                title: 'Biography',
+                render: () => {
+                    return (
+                        <select name="sex">
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                        </select>
+                    )
+                }
+            },
+            year_birth: {
+                title: 'Year of birth',
+                render: () => {
+                    return <input placeholder="Year of birth" type="number" name="year" />
+                }
+            },
+            year_death: {
+                title: 'Year of death',
+                render: () => {
+                    return <input placeholder="Year of death" type="number" name="year" />
+                }
+            },
+            age: {
+                title: 'Age in years',
+                render: () => {
+                    return <input placeholder="Age" type="number" name="age" />
+                }
+            },
+            person: {
+                title: 'Person',
+                render: () => {
+                    return (
+                        <select name="sex">
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                        </select>
+                    )
+                }
+            }
         },
         analytical: {
             meta: true,
             isOpen: false,
             title: 'Analysis',
-            administrative: { title: 'Administrative division' },
-            route: { title: 'Route' }
+            administrative: {
+                title: 'Administrative division',
+                render: () => {
+                    return (
+                        <div>
+                            <div>
+                                <input placeholder="Province" name="province"></input>
+                            </div>
+                            <div>
+                                <input placeholder="Region" name="region"></input>
+                            </div>
+                            <div>
+                                <input placeholder="Settlement" name="settlement"></input>
+                            </div>
+                        </div>
+                    );
+                }
+            },
+            route: {
+                title: 'Route',
+                render: () => {
+                    return (
+                        <div>
+                            <div>
+                                <input placeholder="From" name="from"></input>
+                            </div>
+                            <div>
+                                <input placeholder="Towards" name="towards"></input>
+                            </div>
+                            <div>
+                                <input placeholder="Distance" name="distance"></input>
+                            </div>
+                        </div>
+                    )
+                }
+            }
         }
     }
 
@@ -94,13 +167,24 @@ export default class AnnotationEditor extends React.Component {
     }
 
     onAnnotateEditorSave() {
+        let payload = {};
+        let formItems = this.form.querySelectorAll("input, select, textarea");
+
+        for(let element of formItems) {
+            payload[ element.name ] = element.value;
+        }
+
         this.requestClose();
 
         if(this.props.onSaveRequested !== null && this.props.onSaveRequested !== undefined) {
-            this.props.onSaveRequested(this.editedAnnotation);
+            this.props.onSaveRequested(this.editedAnnotation, this.currentMode.key, payload);
         }
 
         this.editedAnnotation = "";
+    }
+
+    captureForm(form) {
+        this.form = form;
     }
 
     extractMenuItems(level) {
@@ -118,6 +202,11 @@ export default class AnnotationEditor extends React.Component {
     renderMenu(menu = { root: this.modes }) {
         let key = Object.keys(menu)[0];
         let level = menu[ key ];
+
+        if(typeof level === 'object') {
+            level.key = key;
+        }
+
         let toggle = ((on = false) => { level.isOpen = on }).bind(this);
         let menuSpec = {
             isOpen: level.isOpen === true,
@@ -169,6 +258,25 @@ export default class AnnotationEditor extends React.Component {
         }
     }
 
+    renderModeForm() {
+        if(this.currentMode.render !== undefined && this.currentMode.render !== null) {
+            return (
+                <form ref={ this.captureForm.bind(this) }>
+                    { this.currentMode.render() }
+                </form>
+            );
+        }
+        else if(this.currentMode.render !== null) {
+            return (
+                <textarea onChange={ this.onAnnotationChanged.bind(this) }
+                          onKeyUp={ this.onEditorKeyUp.bind(this) }
+                          value={ this.editedAnnotation }
+                          rows="5">
+                </textarea>
+            );
+        }
+    }
+
     render() {
         if(!this.props.visible) {
             return null;
@@ -184,11 +292,7 @@ export default class AnnotationEditor extends React.Component {
                           { this.renderMenu() }
                           <b>CTRL-Enter to save</b>
                       </div>
-                      <textarea onChange={ this.onAnnotationChanged.bind(this) }
-                                onKeyUp={ this.onEditorKeyUp.bind(this) }
-                                value={ this.editedAnnotation }
-                                rows="5">
-                      </textarea>
+                      { this.renderModeForm() }
                       <div className="corpusbuilder-annotation-editor-buttons">
                           <Button onClick={ this.onAnnotateEditorSave.bind(this) }>
                             Save

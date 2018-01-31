@@ -398,7 +398,9 @@ export default class Viewer extends React.Component {
         }, 0);
     }
 
-    saveAnnotation(annotation) {
+    saveAnnotation(content, mode, payload) {
+        console.log(content, mode, payload);
+        return;
         let boxes = GraphemesUtils.lines(this.lastSelectedGraphemes)
             .map(GraphemesUtils.wordToBox)
             .map((b) => { b.graphemes = undefined; return b })
