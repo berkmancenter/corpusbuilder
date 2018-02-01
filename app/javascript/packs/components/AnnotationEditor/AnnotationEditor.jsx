@@ -14,7 +14,7 @@ import styles from './AnnotationEditor.scss'
 @observer
 export default class AnnotationEditor extends React.Component {
 
-    form = null;
+    root = null;
 
     @observable
     editedAnnotation = "";
@@ -168,7 +168,7 @@ export default class AnnotationEditor extends React.Component {
 
     onAnnotateEditorSave() {
         let payload = {};
-        let formItems = this.form.querySelectorAll("input, select, textarea");
+        let formItems = this.root.querySelectorAll("form input, form select, form textarea");
 
         for(let element of formItems) {
             payload[ element.name ] = element.value;
@@ -183,8 +183,8 @@ export default class AnnotationEditor extends React.Component {
         this.editedAnnotation = "";
     }
 
-    captureForm(form) {
-        this.form = form;
+    captureRoot(div) {
+        this.root = div;
     }
 
     extractMenuItems(level) {
@@ -261,7 +261,7 @@ export default class AnnotationEditor extends React.Component {
     renderModeForm() {
         if(this.currentMode.render !== undefined && this.currentMode.render !== null) {
             return (
-                <form ref={ this.captureForm.bind(this) }>
+                <form>
                     { this.currentMode.render() }
                 </form>
             );
@@ -283,7 +283,7 @@ export default class AnnotationEditor extends React.Component {
         }
 
         return (
-            <div>
+            <div ref={ this.captureRoot.bind(this) }>
                 <FloatingWindow visible={ this.props.visible }
                                 onCloseRequested={ this.onClickedOutside.bind(this) }
                                 >

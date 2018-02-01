@@ -20,6 +20,40 @@ export default class Annotations extends React.Component {
     }
 
     @computed
+    get activeAnnotations() {
+        return this.props.annotations.filter((annotation) => {
+            return this.allowedModes.indexOf(annotation.mode) !== -1;
+        });
+    }
+
+    @computed
+    get allowedModes() {
+        let modes = [ ];
+
+        if(this.props.showComments) {
+            modes.push("comment");
+        }
+
+        if(this.props.showCategories) {
+            modes.push("category");
+        }
+
+        if(this.props.showStructure) {
+            modes = modes.concat(["h1", "h2", "h3", "h4", "h5", "p"]);
+        }
+
+        if(this.props.showBiography) {
+            modes = modes.concat(["biography", "year_birth", "year_death", "age", "person"]);
+        }
+
+        if(this.props.showAnalysis) {
+            modes = modes.concat(["administrative", "route"]);
+        }
+
+        return modes;
+    }
+
+    @computed
     get surface() {
         return this.document.surfaces.find(
             (surface) => {
@@ -57,10 +91,11 @@ export default class Annotations extends React.Component {
         return (
             <div className="corpusbuilder-annotations">
                 {
-                    this.annotations.map((annotation, index) => {
+                    this.activeAnnotations.map((annotation, index) => {
                         return (
                             <Highlight key={ `annotation-${index}` }
                                        lineCoords={ this.coordsFor(annotation) }
+                                       variantClassName={ annotation.mode }
                                        document={ this.props.document }
                                        mainPageTop={ this.props.mainPageTop }
                                        page={ this.props.page }

@@ -4,7 +4,9 @@ module Annotations
 
     def execute
       revision.annotations.
+        joins(:editor).
         where(surface_number: surface_number).
+        select("annotations.*, editors.email as editor_email").
         uniq
     end
   end

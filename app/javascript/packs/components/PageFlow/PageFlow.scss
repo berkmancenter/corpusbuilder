@@ -1,0 +1,12 @@
+.corpusbuilder {
+  &-pageflow {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    &-canvas {
+      height: 100%;
+      transition: transform 0.75s ease-in-out, -webkit-transform 0.75s ease-in-out;
+    }
+  }
+}

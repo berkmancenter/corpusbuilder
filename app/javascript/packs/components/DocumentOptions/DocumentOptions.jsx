@@ -3,6 +3,7 @@ import React from 'react';
 import { default as Dropdown } from 'react-simple-dropdown';
 import { Button } from '../Button';
 import { BranchesMenu } from '../BranchesMenu';
+import { SettingsMenu } from '../SettingsMenu';
 
 import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react';
@@ -176,15 +177,25 @@ export default class DocumentOptions extends React.Component {
                 Edit
             </Button>,
             <div key={ 'edit-separator' } className={ 'corpusbuilder-options-separator' }>&nbsp;</div>
-        ]
+        ];
+    }
+
+    renderSettings() {
+        return <SettingsMenu visible={ true }
+                             onStructuralTaggingSettingsRequested={ this.props.onStructuralTaggingSettingsRequested }
+                             />;
     }
 
     render() {
         return (
-            <div>
+            <div className="corpusbuilder-document-options">
                 { this.renderEdit() }
                 { this.renderViewMenu() }
                 { this.renderVersionMenu() }
+
+                <div className="corpusbuilder-document-options-aside">
+                    { this.renderSettings() }
+                </div>
             </div>
         );
     }

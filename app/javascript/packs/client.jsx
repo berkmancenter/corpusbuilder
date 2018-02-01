@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+
 import { WindowManager } from './components/WindowManager'
 
 class CorpusBuilder {

@@ -4,7 +4,6 @@ import { observer } from 'mobx-react'
 import state from '../../stores/State'
 import s from './DocumentPage.scss'
 
-import PagePositioningHelper from '../../lib/PagePositioningHelper'
 import { DocumentLine } from '../DocumentLine'
 import { FakePage } from '../FakePage'
 import { SelectionManager } from '../SelectionManager'
@@ -167,6 +166,10 @@ export default class DocumentPage extends React.Component {
     }
 
     render() {
+        if(!this.props.visible) {
+            return null;
+        }
+
         let page1Style = {
             width: this.width,
             height: this.documentMaxHeight,

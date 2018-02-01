@@ -1,0 +1,58 @@
+.corpusbuilder-annotations {
+    .corpusbuilder-highlight-line {
+      &-category {
+        background: orange;
+      }
+
+      &-category:first-child:after {
+        display: inline-block;
+        font: normal normal normal 14px/1 FontAwesome;
+        font-size: inherit;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        content: "\F0c5";
+        position: absolute;
+        left: -15px;
+        bottom: -15px;
+        font-size: 12px;
+        padding: 2px;
+        background-color: orange;
+        color: black;
+      }
+
+      &-comment:first-child:after {
+        display: inline-block;
+        font: normal normal normal 14px/1 FontAwesome;
+        font-size: inherit;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        content: "\F086";
+        position: absolute;
+        left: -15px;
+        top: -15px;
+        font-size: 12px;
+        padding: 2px;
+        background-color: yellow;
+        color: black;
+      }
+
+      $structural_tags: h1 h2 h3 h4 h5 p;
+      @each $tag in $structural_tags {
+        &-#{$tag} {
+          background-color: blue;
+        }
+
+        &-#{$tag}:first-child:after {
+          content: "#{$tag}";
+          position: absolute;
+          right: -15px;
+          top: -15px;
+          font-size: 10px;
+          font-weight: bold;
+          padding: 2px;
+          background-color: blue;
+          color: white;
+        }
+      }
+    }
+}

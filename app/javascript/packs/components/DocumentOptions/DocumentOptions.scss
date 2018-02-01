@@ -6,6 +6,12 @@
     bottom: 0px;
   }
 
+  &-document-options {
+    &-aside {
+      float: right;
+    }
+  }
+
   &-options, &-window-manager-options {
     height: 35px;
     padding-top: 12px;

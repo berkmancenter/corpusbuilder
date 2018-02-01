@@ -27,13 +27,17 @@ class V1::AnnotationsAPI < Grape::API
               requires :uly, type: Integer
               requires :lry, type: Integer
             end
+            requires :mode, type: String
+            optional :payload, type: JSON
           end
           post do
             action! Annotations::Create, content: params[:content],
               editor_id: @editor_id,
               surface_number: params[:surface_number],
               revision: @revision || @branch.revision,
-              areas: params[:areas].map { |a| Area.new(a) }
+              areas: params[:areas].map { |a| Area.new(a) },
+              mode: params[:mode],
+              payload: params[:payload]
           end
 
           desc "Lists annotations"
@@ -45,7 +49,7 @@ class V1::AnnotationsAPI < Grape::API
               surface_number: params[:surface_number],
               revision: @revision || @branch.revision
 
-            present @annotations, with: Annotation::Simple
+            present @annotations, with: Annotation::WithEditor
           end
         end
       end

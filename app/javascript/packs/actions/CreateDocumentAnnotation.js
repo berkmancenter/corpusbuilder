@@ -8,7 +8,9 @@ export default class CreateDocumentAnnotation extends Action {
         let payload = {
             content: params.content,
             areas: params.areas,
-            surface_number: selector.surfaceNumber
+            surface_number: selector.surfaceNumber,
+            mode: params.mode,
+            payload: JSON.stringify(params.payload)
         };
 
         return this.post(`${state.baseUrl}/api/documents/${selector.document.id}/${selector.version.identifier}/annotations`, payload)

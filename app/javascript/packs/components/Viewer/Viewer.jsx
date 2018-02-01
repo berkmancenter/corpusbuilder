@@ -27,11 +27,13 @@ import { Annotations } from '../Annotations'
 import { DocumentPage } from '../DocumentPage'
 import { DocumentPageSwitcher } from '../DocumentPageSwitcher'
 import { DocumentOptions } from '../DocumentOptions'
+import { AnnotationsSettings } from '../AnnotationsSettings';
+import { DiffOptions } from '../DiffOptions';
+import { AnnotationsOptions } from '../AnnotationsOptions';
 import { InlineEditor } from '../InlineEditor'
 import { NewBranchWindow } from '../NewBranchWindow'
 import { MergeBranchesWindow } from '../MergeBranchesWindow';
 import { RemoveBranchWindow } from '../RemoveBranchWindow';
-import { DiffOptions } from '../DiffOptions';
 import { Button } from '../Button';
 import { DiffLayer } from '../DiffLayer';
 import { Spinner } from '../Spinner';
@@ -43,6 +45,12 @@ import s from './Viewer.scss'
 export default class Viewer extends React.Component {
 
     div = null;
+
+    @observable
+    showDocumentPage = true;
+
+    @observable
+    showAnnotationsSettings = false;
 
     @observable
     currentVersion = null;
@@ -102,7 +110,37 @@ export default class Viewer extends React.Component {
     showNewBranchWindow = false;
 
     @observable
-    showAnnotations = false;
+    showComments = false;
+
+    @observable
+    showCategories = false;
+
+    @observable
+    showStructure = false;
+
+    @observable
+    showBiography = false;
+
+    @observable
+    showAnalysis = false;
+
+    @computed
+    get showAnnotations() {
+        return this.showComments || this.showStructure ||
+            this.showBiography || this.showAnalysis || this.showCategories;
+    }
+
+    set showAnnotations(value) {
+        if(value) {
+            if(!this.showAnnotations) {
+                this.showComments = true;
+            }
+        }
+        else {
+            this.showComments = this.showCategories = this.showBiography =
+                this.showStructure = this.showAnalysis = false;
+        }
+    }
 
     @computed
     get hasConflict() {
@@ -303,6 +341,11 @@ export default class Viewer extends React.Component {
         }
     }
 
+    switchToDocumentPage() {
+        this.showAnnotationsSettings = false;
+        this.showDocumentPage = true;
+    }
+
     chooseBranch(branch) {
         this.currentVersion = FetchDocumentBranch.run(
             this.props.appState,
@@ -390,6 +433,11 @@ export default class Viewer extends React.Component {
         this.showNewBranchWindow = true;
     }
 
+    onStructuralTaggingSettingsRequested() {
+        this.showDocumentPage = false;
+        this.showAnnotationsSettings = true;
+    }
+
     editAnnotation() {
         // make sure the mouse event bubbling comes first
         setTimeout(() => {
@@ -399,8 +447,6 @@ export default class Viewer extends React.Component {
     }
 
     saveAnnotation(content, mode, payload) {
-        console.log(content, mode, payload);
-        return;
         let boxes = GraphemesUtils.lines(this.lastSelectedGraphemes)
             .map(GraphemesUtils.wordToBox)
             .map((b) => { b.graphemes = undefined; return b })
@@ -413,8 +459,10 @@ export default class Viewer extends React.Component {
                     version: this.currentVersion,
                     surfaceNumber: this.document.surfaces[0].number
                 },
-                content: annotation,
-                areas: boxes
+                content: content,
+                areas: boxes,
+                mode: mode,
+                payload: payload
             }
         ).then((_) => {
             this.showAnnotationsEditor = false;
@@ -607,6 +655,24 @@ export default class Viewer extends React.Component {
                 </div>
             );
         }
+        else if(this.showAnnotations) {
+            return (
+                <div className="corpusbuilder-viewer-subcontext">
+                    <AnnotationsOptions document={ this.document }
+                                        showComments={ this.showComments }
+                                        showCategories={ this.showCategories }
+                                        showStructure={ this.showStructure }
+                                        showBiography={ this.showBiography }
+                                        showAnalysis={ this.showAnalysis }
+                                        onToggleComments={ ((on) => { this.showComments = on }).bind(this) }
+                                        onToggleCategories={ ((on) => { this.showCategories = on }).bind(this) }
+                                        onToggleStructure={ ((on) => { this.showStructure = on }).bind(this) }
+                                        onToggleBiography={ ((on) => { this.showBiography = on }).bind(this) }
+                                        onToggleAnalysis={ ((on) => { this.showAnalysis = on }).bind(this) }
+                                        />
+                </div>
+            );
+        }
 
         return null;
     }
@@ -623,6 +689,19 @@ export default class Viewer extends React.Component {
                             </Button>
                         </div>
                     </div>
+                </div>
+            );
+        }
+    }
+
+    renderOptionsBottom() {
+        if(this.showDocumentPage) {
+            return (
+                <div className="corpusbuilder-options bottom">
+                  <DocumentPageSwitcher document={ this.document }
+                      page={ this.page || doc.surfaces[0].number }
+                      onPageSwitch={ this.navigate.bind(this) }
+                      />
                 </div>
             );
         }
@@ -664,6 +743,7 @@ export default class Viewer extends React.Component {
                                    onRemoveBranchRequest={ this.askForBranchRemoval.bind(this) }
                                    onCommitRequest={ this.commitChanges.bind(this) }
                                    onNewBranchRequest={ this.onNewBranchRequested.bind(this) }
+                                   onStructuralTaggingSettingsRequested={ this.onStructuralTaggingSettingsRequested.bind(this) }
                                    />
                 </div>
                 { this.renderSubmenu() }
@@ -671,6 +751,7 @@ export default class Viewer extends React.Component {
                   <div className="corpusbuilder-viewer-contents-wrapper">
                     <DocumentPage document={ doc }
                                   page={ page }
+                                  visible={ this.showDocumentPage }
                                   width={ width }
                                   editing={ this.editing }
                                   mainPageTop={ mainPageTop }
@@ -681,6 +762,10 @@ export default class Viewer extends React.Component {
                                   onLineClick={ this.onLineClick.bind(this) }
                                   >
                     </DocumentPage>
+                    <AnnotationsSettings visible={ this.showAnnotationsSettings }
+                                         onBackRequest={ this.switchToDocumentPage.bind(this) }
+                                         >
+                    </AnnotationsSettings>
                   </div>
                   <InlineEditor visible={ this.showInlineEditor }
                                 document={ doc }
@@ -726,6 +811,11 @@ export default class Viewer extends React.Component {
                                document={ doc }
                                annotations={ this.annotations }
                                version={ this.currentVersion }
+                               showComments={ this.showComments }
+                               showCategories={ this.showCategories }
+                               showStructure={ this.showStructure }
+                               showBiography={ this.showBiography }
+                               showAnalysis={ this.showAnalysis }
                                page={ page }
                                width={ width }
                                mainPageTop={ mainPageTop }
@@ -744,12 +834,7 @@ export default class Viewer extends React.Component {
                   { otherContent }
                 </div>
                 { this.renderStatus() }
-                <div className="corpusbuilder-options bottom">
-                  <DocumentPageSwitcher document={ doc }
-                      page={ page }
-                      onPageSwitch={ this.navigate.bind(this) }
-                      />
-                </div>
+                { this.renderOptionsBottom() }
                 <PopupMenu visible={ this.showPopup }
                            onClickedOutside={ this.onPopupClickedOutside.bind(this) }
                            >
