@@ -42,14 +42,6 @@ export default class Annotations extends React.Component {
             modes = modes.concat(["h1", "h2", "h3", "h4", "h5", "p"]);
         }
 
-        if(this.props.showBiography) {
-            modes = modes.concat(["biography", "year_birth", "year_death", "age", "person"]);
-        }
-
-        if(this.props.showAnalysis) {
-            modes = modes.concat(["administrative", "route"]);
-        }
-
         return modes;
     }
 

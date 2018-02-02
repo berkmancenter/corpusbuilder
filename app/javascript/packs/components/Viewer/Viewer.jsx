@@ -118,16 +118,9 @@ export default class Viewer extends React.Component {
     @observable
     showStructure = false;
 
-    @observable
-    showBiography = false;
-
-    @observable
-    showAnalysis = false;
-
     @computed
     get showAnnotations() {
-        return this.showComments || this.showStructure ||
-            this.showBiography || this.showAnalysis || this.showCategories;
+        return this.showComments || this.showStructure || this.showCategories;
     }
 
     set showAnnotations(value) {
@@ -137,8 +130,7 @@ export default class Viewer extends React.Component {
             }
         }
         else {
-            this.showComments = this.showCategories = this.showBiography =
-                this.showStructure = this.showAnalysis = false;
+            this.showComments = this.showCategories = this.showStructure = false;
         }
     }
 
@@ -446,8 +438,8 @@ export default class Viewer extends React.Component {
         }, 0);
     }
 
-    saveAnnotation(content, mode, payload) {
-        let boxes = GraphemesUtils.lines(this.lastSelectedGraphemes)
+    saveAnnotation(selection, content, mode, payload) {
+        let boxes = GraphemesUtils.lines(this.selection)
             .map(GraphemesUtils.wordToBox)
             .map((b) => { b.graphemes = undefined; return b })
 
@@ -662,13 +654,9 @@ export default class Viewer extends React.Component {
                                         showComments={ this.showComments }
                                         showCategories={ this.showCategories }
                                         showStructure={ this.showStructure }
-                                        showBiography={ this.showBiography }
-                                        showAnalysis={ this.showAnalysis }
                                         onToggleComments={ ((on) => { this.showComments = on }).bind(this) }
                                         onToggleCategories={ ((on) => { this.showCategories = on }).bind(this) }
                                         onToggleStructure={ ((on) => { this.showStructure = on }).bind(this) }
-                                        onToggleBiography={ ((on) => { this.showBiography = on }).bind(this) }
-                                        onToggleAnalysis={ ((on) => { this.showAnalysis = on }).bind(this) }
                                         />
                 </div>
             );
@@ -814,8 +802,6 @@ export default class Viewer extends React.Component {
                                showComments={ this.showComments }
                                showCategories={ this.showCategories }
                                showStructure={ this.showStructure }
-                               showBiography={ this.showBiography }
-                               showAnalysis={ this.showAnalysis }
                                page={ page }
                                width={ width }
                                mainPageTop={ mainPageTop }

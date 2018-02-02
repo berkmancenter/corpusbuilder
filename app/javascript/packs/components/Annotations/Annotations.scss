@@ -1,5 +1,7 @@
 .corpusbuilder-annotations {
     .corpusbuilder-highlight-line {
+      cursor: pointer;
+
       &-category {
         background: orange;
       }

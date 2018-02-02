@@ -29,18 +29,6 @@ export default class AnnotationsOptions extends React.Component {
                         >
                   Structure
                 </Button>
-                <Button onToggle={ (on) => this.props.onToggleBiography(on) }
-                        toggles={ true }
-                        toggled={ this.props.showBiography }
-                        >
-                  Biography
-                </Button>
-                <Button onToggle={ (on) => this.props.onToggleAnalysis(on) }
-                        toggles={ true }
-                        toggled={ this.props.showAnalysis }
-                        >
-                  Analysis
-                </Button>
             </div>
       );
     }

@@ -177,10 +177,12 @@ export default class DocumentPage extends React.Component {
             transform: `rotate(${this.page1Rotate}deg)`
         };
 
+        let surfHeight = Math.floor(this.surfaceHeight * this.ratio);
+
         let page2Style = {
             width: this.width,
-            top: this.props.mainPageTop,
-            height: Math.floor(this.surfaceHeight * this.ratio),
+            top: this.props.mainPageTop / 2,
+            height: this.documentMaxHeight - ((this.documentMaxHeight - surfHeight) / 2),
             transform: `rotate(${this.page2Rotate}deg)`
         };
 

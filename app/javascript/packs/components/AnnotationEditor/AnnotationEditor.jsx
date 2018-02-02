@@ -7,6 +7,7 @@ import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
 
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
+import GraphemesUtils from '../../lib/GraphemesUtils';
 
 import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
 import styles from './AnnotationEditor.scss'
@@ -33,104 +34,35 @@ export default class AnnotationEditor extends React.Component {
         comment: { title: 'Comment' },
         category: {
             title: 'Category',
-            render: () => { return <input placeholder="Category" name="category"></input> },
+            render: () => { return <input placeholder="Category" name="category"></input> }
         },
         structural: {
             meta: true,
             isOpen: false,
             title: 'Structure',
-            h1: { title: 'Header 1', render: null},
-            h2: { title: 'Header 2', render: null},
-            h3: { title: 'Header 3', render: null},
-            h4: { title: 'Header 4', render: null},
-            h5: { title: 'Header 5', render: null},
-            p:  { title: 'Paragraph', render: null }
-        },
-        biographical: {
-            meta: true,
-            isOpen: false,
-            title: 'Biography',
-            biography: {
-                title: 'Biography',
-                render: () => {
-                    return (
-                        <select name="sex">
-                            <option value="female">Female</option>
-                            <option value="male">Male</option>
-                        </select>
-                    )
-                }
-            },
-            year_birth: {
-                title: 'Year of birth',
-                render: () => {
-                    return <input placeholder="Year of birth" type="number" name="year" />
-                }
-            },
-            year_death: {
-                title: 'Year of death',
-                render: () => {
-                    return <input placeholder="Year of death" type="number" name="year" />
-                }
-            },
-            age: {
-                title: 'Age in years',
-                render: () => {
-                    return <input placeholder="Age" type="number" name="age" />
-                }
-            },
-            person: {
-                title: 'Person',
-                render: () => {
-                    return (
-                        <select name="sex">
-                            <option value="female">Female</option>
-                            <option value="male">Male</option>
-                        </select>
-                    )
-                }
-            }
-        },
-        analytical: {
-            meta: true,
-            isOpen: false,
-            title: 'Analysis',
-            administrative: {
-                title: 'Administrative division',
-                render: () => {
-                    return (
-                        <div>
-                            <div>
-                                <input placeholder="Province" name="province"></input>
-                            </div>
-                            <div>
-                                <input placeholder="Region" name="region"></input>
-                            </div>
-                            <div>
-                                <input placeholder="Settlement" name="settlement"></input>
-                            </div>
-                        </div>
-                    );
-                }
-            },
-            route: {
-                title: 'Route',
-                render: () => {
-                    return (
-                        <div>
-                            <div>
-                                <input placeholder="From" name="from"></input>
-                            </div>
-                            <div>
-                                <input placeholder="Towards" name="towards"></input>
-                            </div>
-                            <div>
-                                <input placeholder="Distance" name="distance"></input>
-                            </div>
-                        </div>
-                    )
-                }
-            }
+            h1: { title: 'Header 1', render: null, lines: true},
+            h2: { title: 'Header 2', render: null, lines: true},
+            h3: { title: 'Header 3', render: null, lines: true},
+            h4: { title: 'Header 4', render: null, lines: true},
+            h5: { title: 'Header 5', render: null, lines: true},
+            p:  { title: 'Paragraph', render: null, lines: true }
+        }
+    }
+
+    @computed
+    get firstLine() {
+        return GraphemesUtils.lines(this.props.document.surfaces[0].graphemes).find((line) => {
+            return line.find((g) => { return g.id === this.props.graphemes[0].id }) !== undefined;
+        });
+    }
+
+    @computed
+    get selection() {
+        if(this.currentMode.lines === true) {
+            return this.firstLine;
+        }
+        else {
+            return this.props.graphemes;
         }
     }
 
@@ -177,7 +109,7 @@ export default class AnnotationEditor extends React.Component {
         this.requestClose();
 
         if(this.props.onSaveRequested !== null && this.props.onSaveRequested !== undefined) {
-            this.props.onSaveRequested(this.editedAnnotation, this.currentMode.key, payload);
+            this.props.onSaveRequested(this.selection, this.editedAnnotation, this.currentMode.key, payload);
         }
 
         this.editedAnnotation = "";
@@ -300,12 +232,12 @@ export default class AnnotationEditor extends React.Component {
                       </div>
                   </div>
                 </FloatingWindow>,
-                <Highlight graphemes={ this.props.graphemes }
-                            document={ this.props.document }
-                            page={ this.props.page }
-                            width={ this.props.width }
-                            mainPageTop={ this.props.mainPageTop }
-                            />
+                <Highlight graphemes={ this.selection }
+                           document={ this.props.document }
+                           page={ this.props.page }
+                           width={ this.props.width }
+                           mainPageTop={ this.props.mainPageTop }
+                           />
             </div>
         );
     }
