@@ -1080,7 +1080,8 @@ describe V1::DocumentsAPI, type: :request do
 
         let(:first_merge) do
           Branches::Merge.run! branch: master_branch,
-            other_branch: development_branch
+            other_branch: development_branch,
+            current_editor_id: editor.id
         end
 
         it "makes current revision point at the revisions from other and the ones added other way", focus: true do
@@ -1145,7 +1146,8 @@ describe V1::DocumentsAPI, type: :request do
         let(:first_merge) do
           travel 1.week
           Branches::Merge.run! branch: master_branch,
-            other_branch: development_branch
+            other_branch: development_branch,
+            current_editor_id: editor.id
         end
 
         it "returns HTTP 209 CONFLICT along with the message about the need to resolve the merge conflicts" do

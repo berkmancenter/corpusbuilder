@@ -1,7 +1,10 @@
 module Branches
   class Merge < Action::Base
-    attr_accessor :branch, :other_branch
+    attr_accessor :branch, :other_branch, :current_editor_id
 
+    validates :branch, presence: true
+    validates :other_branch, presence: true
+    validates :current_editor_id, presence: true
     validate :branches_not_in_conflicts
 
     def execute
@@ -9,7 +12,12 @@ module Branches
         target: branch.working
 
       branch.working.update_attributes!(merged_with_id: other_branch.revision_id)
-      branch.working.annotations << other_branch.revision.annotations
+
+      Annotations::Merge.run!(
+        revision: branch.revision,
+        other_revision: other_branch.revision,
+        current_editor_id: current_editor_id
+      )
 
       if no_conflicts?
         Branches::Commit.run! branch: branch

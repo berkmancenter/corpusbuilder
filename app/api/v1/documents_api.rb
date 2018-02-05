@@ -12,7 +12,6 @@ class V1::DocumentsAPI < Grape::API
       end
       requires :metadata, type: JSON do
         requires :title, type: String
-        optional :author, type: String
         optional :authority, type: String
         optional :date, type: String
         optional :editor, type: String
@@ -115,12 +114,15 @@ class V1::DocumentsAPI < Grape::API
         requires :other_branch, type: String
       end
       put ':branch/merge' do
+        infer_editor!
+
         current_branch = @document.branches.where(name: params[:branch]).first
         other_branch = @document.branches.where(name: params[:other_branch]).first
 
-        updated_branch = action! Branches::Merge, branch: current_branch, other_branch: other_branch
-
-        Rails.logger.debug "Merge action finished"
+        updated_branch = action! Branches::Merge,
+          branch: current_branch,
+          other_branch: other_branch,
+          current_editor_id: @editor_id
 
         if !updated_branch.is_a?(ActiveModel::Errors) && updated_branch.conflict?
           error!('Merge Conflict!', 209)
