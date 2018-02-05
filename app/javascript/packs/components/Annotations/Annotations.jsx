@@ -75,6 +75,14 @@ export default class Annotations extends React.Component {
         });
     }
 
+    statusesFor(annotation) {
+        if(annotation.status === 'conflict') {
+            return [ 'conflict', annotation.mode ];
+        }
+
+        return [ annotation.mode ];
+    }
+
     render() {
         if(!this.props.visible || this.annotations === null || this.annotations === undefined) {
             return null;
@@ -87,7 +95,7 @@ export default class Annotations extends React.Component {
                         return (
                             <Highlight key={ `annotation-${index}` }
                                        lineCoords={ this.coordsFor(annotation) }
-                                       variantClassName={ annotation.mode }
+                                       variantClassName={ this.statusesFor(annotation) }
                                        document={ this.props.document }
                                        mainPageTop={ this.props.mainPageTop }
                                        page={ this.props.page }

@@ -6,7 +6,7 @@ module Branches
     validate :working_exists
 
     def execute
-      working.annotations << branch.revision.annotations
+      working.annotations = branch.revision.annotations
 
       working.regular!
       new_regular = working

@@ -12,16 +12,13 @@ class Annotation < ApplicationRecord
   belongs_to :editor
 
   def structural?
-    mode == :h1 || mode == :h2 ||
-      mode == :h3 || mode == :h4 ||
-      mode == :h5 || mode == :p
+    h1? || h2? || h3? || h4? || h5? || p?
   end
 
   def overlaps?(other)
     areas.any? do |a1|
       other.areas.any? do |a2|
-        a1.surface_number === a2.surface_number &&
-          a1.overlaps?(a2)
+        a1.overlaps?(a2)
       end
     end
   end
@@ -31,6 +28,9 @@ class Annotation < ApplicationRecord
     expose :areas
     expose :mode do |annotation|
       annotation.mode
+    end
+    expose :status do |annotation|
+      annotation.status
     end
     expose :payload
     expose :editor_email

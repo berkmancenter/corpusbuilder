@@ -5,7 +5,7 @@ module Annotations
     attr_accessor :revision, :other_revision, :current_editor_id
 
     def execute
-      revision.annotations = merged_annotations
+      revision.annotations = merged_annotations.flatten
     end
 
     def merged_annotations
@@ -16,7 +16,7 @@ module Annotations
     end
 
     def all
-      @_all ||= ours.values + theirs.values
+      @_all ||= ours.values.flatten + theirs.values.flatten
     end
 
     def surface_numbers
@@ -25,6 +25,8 @@ module Annotations
 
     def conflicts
       @_conflicts ||= -> {
+        result = []
+
         surface_numbers.each do |surface_number|
           ours_structural = Set.new(
             ours[ surface_number ].select(&:structural?)
@@ -39,22 +41,26 @@ module Annotations
                 ours_structural.delete(our)
                 theirs_structural.delete(their)
 
-                yield Conflict.new(our, their)
+                result << Conflict.new(our, their, current_editor_id)
               end
             end
           end
         end
+
+        result.flatten
       }.call
     end
 
     def duplicates
       @_duplicates ||= -> {
+        result = [ ]
+
         surface_numbers.each do |surface_number|
           ours_set = Set.new(ours[ surface_number ])
           theirs_set = Set.new(theirs[ surface_number ])
 
-          ours.each do |our|
-            their.each do |their|
+          ours_set.each do |our|
+            theirs_set.each do |their|
               if our.mode == their.mode &&
                   our.areas.all? { |a1| their.areas.all? { |a2| a1 == a2 } } &&
                   our.payload == their.payload &&
@@ -62,12 +68,13 @@ module Annotations
                 ours_set.delete(our)
                 theirs_set.delete(their)
 
-                yield our
-                yield their
+                result << their
               end
             end
           end
         end
+
+        result.flatten
       }.call
     end
 
@@ -84,22 +91,27 @@ module Annotations
       # and have the same mode but have either areas not exactly
       # the same or the payload or content is different
 
-      left.mode == right.mode &&
         left.structural? &&
         left.overlaps?(right) &&
         (
           left.areas.any? { |a1| right.areas.any? { |a2| a1 != a2 } } ||
           left.payload != right.payload ||
-          left.content != right.content
+          left.content != right.content ||
+          left.mode != right.mode
         )
     end
 
-    class Conflict
-      attr_accessor :left, :right
+    def create_development_dumps?
+      true
+    end
 
-      def initialize(left, right)
+    class Conflict
+      attr_accessor :left, :right, :current_editor_id
+
+      def initialize(left, right, current_editor_id)
         @left = left
         @right = right
+        @current_editor_id = current_editor_id
       end
 
       def to_merged
@@ -113,8 +125,7 @@ module Annotations
       end
 
       def items
-        yield left
-        yield right
+        [ left, right ]
       end
     end
   end

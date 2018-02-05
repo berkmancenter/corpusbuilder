@@ -439,7 +439,7 @@ export default class Viewer extends React.Component {
     }
 
     saveAnnotation(selection, content, mode, payload) {
-        let boxes = GraphemesUtils.lines(this.selection)
+        let boxes = GraphemesUtils.lines(selection)
             .map(GraphemesUtils.wordToBox)
             .map((b) => { b.graphemes = undefined; return b })
 

@@ -38,6 +38,25 @@
         color: black;
       }
 
+      &-conflict:before {
+        content: "!";
+        z-index: 9;
+        position: absolute;
+        top: -22px;
+        right: -22px;
+        font-family: serif;
+        display: block;
+        background: rgba(200, 20, 20, 1);
+        color: white;
+        text-align: center;
+        font-size: 17px;
+        font-weight: bold;
+        width: 25px;
+        height: 25px;
+        border-radius: 100px 100px 100px 0px;
+        opacity: 1;
+      }
+
       $structural_tags: h1 h2 h3 h4 h5 p;
       @each $tag in $structural_tags {
         &-#{$tag} {
