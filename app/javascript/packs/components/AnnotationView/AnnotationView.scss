@@ -1,0 +1,29 @@
+.corpusbuilder {
+  &-annotation-view:not(:first-child) {
+    img {
+      position: relative;
+      top: 10px;
+    }
+  }
+
+  &-annotation-view {
+    display: table;
+    width: 100%;
+
+    &-author {
+      display: table-cell;
+      width: 45px;
+    }
+
+    &-body {
+      display: table-cell;
+      vertical-align: top;
+
+      b {
+        float: left;
+        position: relative;
+        top: 8px;
+      }
+    }
+  }
+}

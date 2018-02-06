@@ -115,6 +115,24 @@ export default class Highlight extends React.Component {
         }
     }
 
+    onMouseEnter() {
+        if(typeof this.props.onMouseEnter === 'function') {
+            this.props.onMouseEnter();
+        }
+    }
+
+    onMouseLeave() {
+        if(typeof this.props.onMouseLeave === 'function') {
+            this.props.onMouseLeave();
+        }
+    }
+
+    onHighlightClick() {
+        if(typeof this.props.onHighlightClick === 'function') {
+            this.props.onHighlightClick();
+        }
+    }
+
     render() {
         if(this.lineCoords.length === 0) {
             return null;
@@ -140,7 +158,12 @@ export default class Highlight extends React.Component {
         });
 
         return (
-            <div className="corpusbuilder-highlight" title={ this.props.content }>
+            <div className="corpusbuilder-highlight"
+                 title={ this.props.content }
+                 onMouseEnter={ this.onMouseEnter.bind(this) }
+                 onMouseLeave={ this.onMouseLeave.bind(this) }
+                 onClick={ this.onHighlightClick.bind(this) }
+                 >
               { lines }
             </div>
         );

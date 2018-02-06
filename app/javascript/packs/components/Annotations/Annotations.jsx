@@ -1,13 +1,26 @@
 import React from 'react';
 import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
+
 import { Highlight } from '../Highlight';
+import { AnnotationsViewer } from '../AnnotationsViewer';
+
+import BoxesUtils from '../../lib/BoxesUtils';
 
 import styles from './Annotations.scss'
 
 @inject('appState')
 @observer
 export default class Annotations extends React.Component {
+
+    @observable
+    highlightedAnnotations = [ ];
+
+    @observable
+    selectedAnnotation = null;
+
+    @observable
+    chosenAnnotations = [ ];
 
     @computed
     get document() {
@@ -21,9 +34,14 @@ export default class Annotations extends React.Component {
 
     @computed
     get activeAnnotations() {
-        return this.props.annotations.filter((annotation) => {
-            return this.allowedModes.indexOf(annotation.mode) !== -1;
-        });
+        if(this.selectedAnnotation !== null) {
+            return [ this.selectedAnnotation ];
+        }
+        else {
+            return this.props.annotations.filter((annotation) => {
+                return this.allowedModes.indexOf(annotation.mode) !== -1;
+            });
+        }
     }
 
     @computed
@@ -76,11 +94,60 @@ export default class Annotations extends React.Component {
     }
 
     statusesFor(annotation) {
+        let statuses = [ annotation.mode ];
+
         if(annotation.status === 'conflict') {
-            return [ 'conflict', annotation.mode ];
+            statuses.push('conflict');
         }
 
-        return [ annotation.mode ];
+        if(this.highlightedAnnotations.indexOf(annotation) !== -1) {
+            statuses.push('highlighted');
+        }
+
+        if(this.selectedAnnotation === annotation) {
+            statuses.push('selected');
+        }
+
+        return statuses;
+    }
+
+    crossSelectionBy(annotation) {
+        return this.activeAnnotations.filter((ann) => {
+            if(annotation.surface_number === ann.surface_number) {
+                for(let box1 of annotation.areas) {
+                    for(let box2 of ann.areas) {
+                        if(BoxesUtils.boxesOverlap(box1, box2)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    onHighlightMouseEnter(annotation) {
+        this.highlightedAnnotations = this.crossSelectionBy(annotation);
+    }
+
+    onHighlightMouseLeave(annotation) {
+        this.highlightedAnnotations = [ ];
+    }
+
+    onHighlightClick(annotation) {
+        this.chosenAnnotations = this.crossSelectionBy(annotation);
+    }
+
+    onAnnotationSelected(annotation) {
+        this.selectedAnnotation = annotation;
+    }
+
+    onAnnotationDeselected() {
+        this.selectedAnnotation = null;
+    }
+
+    hideAnnotationViewer() {
+        this.chosenAnnotations = [ ];
     }
 
     render() {
@@ -101,10 +168,20 @@ export default class Annotations extends React.Component {
                                        page={ this.props.page }
                                        width={ this.props.width }
                                        content={ annotation.content }
+                                       onMouseEnter={ this.onHighlightMouseEnter.bind(this, annotation) }
+                                       onMouseLeave={ this.onHighlightMouseLeave.bind(this, annotation) }
+                                       onHighlightClick={ this.onHighlightClick.bind(this, annotation) }
                                        />
                         );
                     })
                 }
+                <AnnotationsViewer visible={ this.chosenAnnotations.length > 0 }
+                                   annotations={ this.chosenAnnotations }
+                                   ratio={ this.ratio }
+                                   onAnnotationSelected={ this.onAnnotationSelected.bind(this) }
+                                   onAnnotationDeselected={ this.onAnnotationDeselected.bind(this) }
+                                   onCloseRequested={ this.hideAnnotationViewer.bind(this) }
+                                   />
             </div>
         );
     }

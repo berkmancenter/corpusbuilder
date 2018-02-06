@@ -2,6 +2,14 @@
     .corpusbuilder-highlight-line {
       cursor: pointer;
 
+      &-selected {
+        background-color: purple !important;
+      }
+
+      &-highlighted {
+        background-color: purple !important;
+      }
+
       &-category {
         background: orange;
       }

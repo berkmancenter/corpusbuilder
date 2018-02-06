@@ -29,10 +29,10 @@ module Annotations
 
         surface_numbers.each do |surface_number|
           ours_structural = Set.new(
-            ours[ surface_number ].select(&:structural?)
+            (ours[ surface_number ] || []).select(&:structural?)
           )
           theirs_structural = Set.new(
-            theirs[ surface_number ].select(&:structural?)
+            (theirs[ surface_number ] || []).select(&:structural?)
           )
 
           ours_structural.each do |our|
