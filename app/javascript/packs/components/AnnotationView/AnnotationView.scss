@@ -7,17 +7,21 @@
   }
 
   &-annotation-view {
-    display: table;
+    display: flex;
+    flex-direction: row;
     width: 100%;
 
     &-author {
-      display: table-cell;
       width: 45px;
     }
 
+    &-controls {
+      align-self: center;
+    }
+
     &-body {
-      display: table-cell;
       vertical-align: top;
+      flex-grow: 2;
 
       b {
         float: left;

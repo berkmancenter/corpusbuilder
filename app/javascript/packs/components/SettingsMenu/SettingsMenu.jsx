@@ -27,7 +27,7 @@ export default class SettingsMenu extends React.Component {
 
     renderOptions() {
         return [
-            <li>
+            <li key={ 1 }>
                 <button type="button"
                         onClick={ this.props.onStructuralTaggingSettingsRequested }
                         >

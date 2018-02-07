@@ -10,6 +10,7 @@ class CorpusBuilder {
                            documentId={ options.documentId }
                            allowImages={ options.allowImages || false }
                            host={ element }
+                           editorEmail={ options.editorEmail }
                            />,
             element
         );

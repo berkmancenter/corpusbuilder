@@ -5,9 +5,11 @@ import { inject, observer } from 'mobx-react'
 import AnnotationsUtils from '../../lib/AnnotationsUtils';
 
 import { Gravatar } from '../Gravatar';
+import { Button } from '../Button';
 
 import styles from './AnnotationView.scss'
 
+@inject('editorEmail')
 @observer
 export default class AnnotationView extends React.Component {
 
@@ -20,6 +22,10 @@ export default class AnnotationView extends React.Component {
         if(typeof this.props.onSelected === 'function') {
             this.props.onSelected();
         }
+    }
+
+    editAnnotation() {
+        console.log("Edit annotation requested");
     }
 
     renderStructural() {
@@ -35,6 +41,20 @@ export default class AnnotationView extends React.Component {
               { this.props.annotation.content }
             </div>
         ]
+    }
+
+    renderControls() {
+        if(this.props.editorEmail === this.props.annotation.editor_email) {
+            return <div className="corpusbuilder-annotation-view-controls">
+                <Button toggles={ false }
+                        onClick={ this.editAnnotation.bind(this) }
+                        >
+                  Edit
+                </Button>
+            </div>
+        }
+
+        return null
     }
 
     render() {
@@ -53,6 +73,7 @@ export default class AnnotationView extends React.Component {
                             this.kind === 'structural' ? this.renderStructural() : this.renderComment()
                         }
                     </div>
+                    { this.renderControls() }
                 </div>
             );
         }

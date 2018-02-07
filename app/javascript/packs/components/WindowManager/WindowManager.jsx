@@ -59,7 +59,8 @@ export default class WindowManager extends React.Component {
     @computed
     get sharedContext() {
         return {
-            appState: this.appState
+            appState: this.appState,
+            editorEmail: this.props.editorEmail
         };
     }
 
