@@ -1,5 +1,9 @@
 .corpusbuilder {
   &-annotation-editor {
+    b {
+      float: right !important;
+    }
+
     &-buttons {
       margin-top: 10px;
       float: right;

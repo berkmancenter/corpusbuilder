@@ -71,6 +71,21 @@ export default class AnnotationEditor extends React.Component {
         return this.chosenMode || this.modes.comment;
     }
 
+    initProps(props) {
+        if(props.annotation !== undefined) {
+            this.editedAnnotation = props.annotation.content;
+            this.chooseMode(props.annotation.mode);
+        }
+    }
+
+    componentWillMount() {
+        this.initProps(this.props);
+    }
+
+    componentWillReceiveProps(props) {
+        this.initProps(props);
+    }
+
     requestClose() {
         if(this.props.onCloseRequested !== undefined && this.props.onCloseRequested !== null) {
             this.props.onCloseRequested();
@@ -78,13 +93,38 @@ export default class AnnotationEditor extends React.Component {
     }
 
     chooseMode(mode) {
-        this.chosenMode = mode;
+        if(typeof mode === 'string') {
+            let lookup = (name, object) => {
+                if(typeof object !== 'object') {
+                    return undefined;
+                }
+                else if(object[ name ] !== undefined) {
+                    return object[ name ];
+                }
+                else {
+                    return Object.keys(object).map((key) => {
+                        return lookup(name, object[ key ]);
+                    }).filter((o) => { return o !== undefined })[0];
+                }
+            };
+
+            this.chosenMode = lookup(mode, this.modes);
+        }
+        else {
+            this.chosenMode = mode;
+        }
     }
 
     onClickedOutside() {
         if(this.props.visible) {
             this.editedAnnotation = "";
             this.requestClose();
+        }
+    }
+
+    onCancelRequested() {
+        if(typeof this.props.onCancel === 'function') {
+            this.props.onCancel();
         }
     }
 
@@ -209,36 +249,57 @@ export default class AnnotationEditor extends React.Component {
         }
     }
 
+    renderMain() {
+        return (
+          <div className="corpusbuilder-annotation-editor">
+              <div className="corpusbuilder-annotation-editor-menu">
+                  { this.renderMenu() }
+                  { this.props.inline ? null : <b>CTRL-Enter to save</b> }
+              </div>
+              { this.renderModeForm() }
+              <div className="corpusbuilder-annotation-editor-buttons">
+                  <Button onClick={ this.onCancelRequested.bind(this) }
+                          visible={ this.props.inline }
+                          >
+                    Cancel
+                  </Button>
+                  <Button onClick={ this.onAnnotateEditorSave.bind(this) }>
+                    Save
+                  </Button>
+              </div>
+          </div>
+        );
+    }
+
     render() {
         if(!this.props.visible) {
             return null;
         }
 
-        return (
-            <div ref={ this.captureRoot.bind(this) }>
-                <FloatingWindow visible={ this.props.visible }
-                                onCloseRequested={ this.onClickedOutside.bind(this) }
-                                >
-                  <div className="corpusbuilder-annotation-editor">
-                      <div className="corpusbuilder-annotation-editor-menu">
-                          { this.renderMenu() }
-                          <b>CTRL-Enter to save</b>
-                      </div>
-                      { this.renderModeForm() }
-                      <div className="corpusbuilder-annotation-editor-buttons">
-                          <Button onClick={ this.onAnnotateEditorSave.bind(this) }>
-                            Save
-                          </Button>
-                      </div>
-                  </div>
-                </FloatingWindow>,
-                <Highlight graphemes={ this.selection }
-                           document={ this.props.document }
-                           page={ this.props.page }
-                           width={ this.props.width }
-                           mainPageTop={ this.props.mainPageTop }
-                           />
-            </div>
-        );
+        if(this.props.inline === true) {
+            return (
+                <div ref={ this.captureRoot.bind(this) }>
+                    { this.renderMain() }
+                </div>
+            );
+        }
+        else {
+            return (
+                <div ref={ this.captureRoot.bind(this) }>
+                    <FloatingWindow visible={ this.props.visible }
+                                    onCloseRequested={ this.onClickedOutside.bind(this) }
+                                    >
+                        { this.renderMain() }
+                    </FloatingWindow>
+                    <Highlight graphemes={ this.selection }
+                              document={ this.props.document }
+                              page={ this.props.page }
+                              width={ this.props.width }
+                              mainPageTop={ this.props.mainPageTop }
+                              />
+                </div>
+            );
+        }
+
     }
 }

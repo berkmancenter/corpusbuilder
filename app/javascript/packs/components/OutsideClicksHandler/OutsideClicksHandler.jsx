@@ -31,7 +31,7 @@ export default class OutsideClicksHandler extends React.Component {
             if(this.rootNode !== null && e.target.parentNode !== null && !this.nodeWithin(e.target)) {
                 this.props.onClick();
             }
-        }, false);
+        }, true);
     }
 
     render() {

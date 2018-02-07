@@ -6,12 +6,16 @@ import AnnotationsUtils from '../../lib/AnnotationsUtils';
 
 import { Gravatar } from '../Gravatar';
 import { Button } from '../Button';
+import { AnnotationEditor } from '../AnnotationEditor';
 
 import styles from './AnnotationView.scss'
 
 @inject('editorEmail')
 @observer
 export default class AnnotationView extends React.Component {
+
+    @observable
+    editing = false;
 
     @computed
     get kind() {
@@ -24,8 +28,12 @@ export default class AnnotationView extends React.Component {
         }
     }
 
+    onEditorCancel() {
+        this.editing = false;
+    }
+
     editAnnotation() {
-        console.log("Edit annotation requested");
+        this.editing = true;
     }
 
     renderStructural() {
@@ -44,17 +52,32 @@ export default class AnnotationView extends React.Component {
     }
 
     renderControls() {
-        if(this.props.editorEmail === this.props.annotation.editor_email) {
-            return <div className="corpusbuilder-annotation-view-controls">
-                <Button toggles={ false }
-                        onClick={ this.editAnnotation.bind(this) }
-                        >
-                  Edit
-                </Button>
-            </div>
+        if(!this.editing && this.props.editorEmail === this.props.annotation.editor_email) {
+            return (
+              <div className="corpusbuilder-annotation-view-controls">
+                  <Button toggles={ false }
+                          onClick={ this.editAnnotation.bind(this) }
+                          >
+                    Edit
+                  </Button>
+              </div>
+            );
         }
 
-        return null
+        return null;
+    }
+
+    renderBody() {
+        if(this.editing) {
+            return <AnnotationEditor visible={ true }
+                                     inline={ true }
+                                     annotation={ this.props.annotation }
+                                     onCancel={ this.onEditorCancel.bind(this) }
+                                     />;
+        }
+        else {
+            return this.kind === 'structural' ? this.renderStructural() : this.renderComment();
+        }
     }
 
     render() {
@@ -70,7 +93,7 @@ export default class AnnotationView extends React.Component {
                     </div>
                     <div className="corpusbuilder-annotation-view-body">
                         {
-                            this.kind === 'structural' ? this.renderStructural() : this.renderComment()
+                            this.renderBody()
                         }
                     </div>
                     { this.renderControls() }
