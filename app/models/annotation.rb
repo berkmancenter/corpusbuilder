@@ -36,4 +36,20 @@ class Annotation < ApplicationRecord
     expose :payload
     expose :editor_email
   end
+
+  class Diff < Grape::Entity
+    expose :id
+    expose :inclusion
+    expose :revision_id
+    expose :content
+    expose :areas
+    expose :mode do |annotation|
+      annotation.mode
+    end
+    expose :status do |annotation|
+      annotation.status
+    end
+    expose :payload
+    expose :editor_email
+  end
 end

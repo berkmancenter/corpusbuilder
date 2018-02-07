@@ -129,6 +129,7 @@ export default class Viewer extends React.Component {
             if(!this.showAnnotations) {
                 this.showComments = true;
             }
+            this.showDiff = false;
         }
         else {
             this.showComments = this.showCategories = this.showStructure = false;
@@ -383,12 +384,17 @@ export default class Viewer extends React.Component {
 
         if(this.showDiff) {
             this.onDiffSwitch(1);
+            this.showAnnotations = false;
         }
     }
 
     toggleShowConflictDiff() {
         this.showDiff = !this.showDiff;
         this.toggleBranchMode(this.showDiff);
+
+        if(this.showDiff) {
+            this.showAnnotations = false;
+        }
     }
 
     resetChanges() {

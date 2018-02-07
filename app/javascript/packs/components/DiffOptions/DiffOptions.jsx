@@ -75,26 +75,44 @@ export default class DiffOptions extends React.Component {
     render() {
         return (
             <div className="corpusbuilder-diff-options">
-                <div className="corpusbuilder-document-diff-switcher">
-                    { this.renderPager() }
-                    <BranchesMenu onBranchSwitch={ this.props.onDiffBranchSwitch.bind(this) }
-                                  currentVersion={ this.props.currentDiffVersion }
-                                  branches={ this.props.branches }
-                                  >
-                    </BranchesMenu>
+                <div className="corpusbuilder-diff-options-layers">
+                    <Button onClick={ () => { console.log('click!') } }
+                            toggles={ true }
+                            >
+                        Words
+                    </Button>
+                    <Button onClick={ () => { console.log('click!') } }
+                            toggles={ true }
+                            >
+                        Annotations
+                    </Button>
                 </div>
-                <Button onClick={ () => this.props.onMergeRequested(this.currentVersion) }
-                        visible={ this.hasDifferentVersions && !this.showsWorkingData }
-                        disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 }
-                        >
-                  Merge
-                </Button>
-                <Button onClick={ () => this.props.onCommitRequested(this.currentVersion) }
-                        visible={ this.hasWorkingDiff }
-                        disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 }
-                        >
-                  Commit
-                </Button>
+                <div className="corpusbuilder-document-diff-switcher">
+                    <div>
+                        { this.renderPager() }
+                    </div>
+                    <div className="corpusbuilder-diff-options-branches">
+                        <BranchesMenu onBranchSwitch={ this.props.onDiffBranchSwitch.bind(this) }
+                                      currentVersion={ this.props.currentDiffVersion }
+                                      branches={ this.props.branches }
+                                      >
+                        </BranchesMenu>
+                    </div>
+                    <div className="corpusbuilder-diff-options-buttons">
+                        <Button onClick={ () => this.props.onMergeRequested(this.currentVersion) }
+                                visible={ this.hasDifferentVersions && !this.showsWorkingData }
+                                disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 }
+                                >
+                          Merge
+                        </Button>
+                        <Button onClick={ () => this.props.onCommitRequested(this.currentVersion) }
+                                visible={ this.hasWorkingDiff }
+                                disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 }
+                                >
+                          Commit
+                        </Button>
+                    </div>
+                </div>
             </div>
       );
     }

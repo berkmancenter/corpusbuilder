@@ -1,8 +1,32 @@
 .corpusbuilder {
   &-diff-options {
     .corpusbuilder-document-diff-switcher {
-      display: inline-block;
+      display: flex;
       margin-right: 5px;
+
+      .corpusbuilder-diff-options-buttons {
+        button {
+          font-size: 14px !important;
+          margin-left: 5px;
+        }
+      }
     }
+
+    &-branches {
+      flex-grow: 2;
+
+      .dd-menu {
+        width: 100%;
+      }
+
+      .corpusbuilder-button {
+        width: 100%;
+      }
+    }
+
+    &-layers {
+      margin-bottom: 5px;
+    }
+
   }
 }

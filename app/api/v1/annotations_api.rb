@@ -66,6 +66,21 @@ class V1::AnnotationsAPI < Grape::API
 
             present @annotations, with: Annotation::WithEditor
           end
+
+          desc "Lists annotations by which both revisions differ"
+          params do
+            requires :other_revision, type: String
+          end
+          get 'diff' do
+            revision1 = revision_from_params :revision
+            revision2 = revision_from_params(:other_version, required: true)
+
+            present Annotations::QueryDiff.run!(
+                revision_left: revision1,
+                revision_right: revision2
+              ).result,
+              with: Annotation::Diff
+          end
         end
       end
     end
