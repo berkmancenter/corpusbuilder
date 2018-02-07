@@ -12,6 +12,7 @@ import FetchDocumentBranch from '../../actions/FetchDocumentBranch';
 import FetchDocumentAnnotations from '../../actions/FetchDocumentAnnotations';
 import CreateDocumentBranch from '../../actions/CreateDocumentBranch';
 import CreateDocumentAnnotation from '../../actions/CreateDocumentAnnotation';
+import CorrectDocumentAnnotation from '../../actions/CorrectDocumentAnnotation';
 import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
 import RemoveDocumentBranch from '../../actions/RemoveDocumentBranch';
 import CommitDocumentChanges from '../../actions/CommitDocumentChanges';
@@ -462,6 +463,26 @@ export default class Viewer extends React.Component {
         });
     }
 
+    updateAnnotation(annotation, content, mode, payload) {
+        CorrectDocumentAnnotation.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion,
+                    surfaceNumber: this.document.surfaces[0].number
+                },
+                id: annotation.id,
+                content: content,
+                mode: mode,
+                payload: payload
+            }
+        ).then((_) => {
+            this.showAnnotationsEditor = false;
+            this.showAnnotations = true;
+        });
+    }
+
     onEditDiffRequested(diffWord) {
         ObserveMousePosition.run(
             this.props.appState,
@@ -805,6 +826,7 @@ export default class Viewer extends React.Component {
                                page={ page }
                                width={ width }
                                mainPageTop={ mainPageTop }
+                               onSaveRequested={ this.updateAnnotation.bind(this) }
                                />
                   <DiffLayer diffWords={ this.diffWords }
                              document={ doc }

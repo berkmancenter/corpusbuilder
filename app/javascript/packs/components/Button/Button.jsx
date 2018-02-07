@@ -6,10 +6,16 @@ import styles from './Button.scss';
 export default class Button extends React.Component {
 
     @observable
-    visible = true;
-
-    @observable
     toggled = false;
+
+    @computed
+    get visible() {
+        if(this.props.visible === undefined) {
+            return true;
+        }
+
+        return this.props.visible;
+    }
 
     componentWillMount() {
         this.initProps(this.props);
@@ -21,7 +27,6 @@ export default class Button extends React.Component {
 
     initProps(props) {
         this.toggled = props.toggled || false;
-        this.visible = props.visible === undefined ? true : props.visible;
     }
 
     @computed

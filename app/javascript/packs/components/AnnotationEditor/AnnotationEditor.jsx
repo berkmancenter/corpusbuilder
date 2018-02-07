@@ -51,19 +51,27 @@ export default class AnnotationEditor extends React.Component {
 
     @computed
     get firstLine() {
-        return GraphemesUtils.lines(this.props.document.surfaces[0].graphemes).find((line) => {
-            return line.find((g) => { return g.id === this.props.graphemes[0].id }) !== undefined;
-        });
+        if(this.props.graphemes !== undefined) {
+            return GraphemesUtils.lines(this.props.document.surfaces[0].graphemes).find((line) => {
+                return line.find((g) => { return g.id === this.props.graphemes[0].id }) !== undefined;
+            });
+        }
+
+        return [ ];
     }
 
     @computed
     get selection() {
-        if(this.currentMode.lines === true) {
-            return this.firstLine;
+        if(this.props.graphemes !== undefined) {
+            if(this.currentMode.lines === true) {
+                return this.firstLine;
+            }
+            else {
+                return this.props.graphemes;
+            }
         }
-        else {
-            return this.props.graphemes;
-        }
+
+        return [ ];
     }
 
     @computed
@@ -80,10 +88,6 @@ export default class AnnotationEditor extends React.Component {
 
     componentWillMount() {
         this.initProps(this.props);
-    }
-
-    componentWillReceiveProps(props) {
-        this.initProps(props);
     }
 
     requestClose() {
@@ -259,7 +263,7 @@ export default class AnnotationEditor extends React.Component {
               { this.renderModeForm() }
               <div className="corpusbuilder-annotation-editor-buttons">
                   <Button onClick={ this.onCancelRequested.bind(this) }
-                          visible={ this.props.inline }
+                          visible={ this.props.inline === true }
                           >
                     Cancel
                   </Button>

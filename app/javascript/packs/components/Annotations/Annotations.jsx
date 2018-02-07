@@ -40,6 +40,20 @@ export default class Annotations extends React.Component {
         else {
             return this.props.annotations.filter((annotation) => {
                 return this.allowedModes.indexOf(annotation.mode) !== -1;
+            })
+            .sort((a1, a2) => {
+                let area1 = a1.areas[0];
+                let area2 = a2.areas[0];
+
+                if(area1.uly < area2.uly || ( area1.uly === area2.uly && area1.ulx < area2.ulx)) {
+                    return -1;
+                }
+                else if(area2.uly < area1.uly || ( area2.uly === area1.uly && area2.ulx < area1.ulx)) {
+                    return 1;
+                }
+                else {
+                    return 0;
+                }
             });
         }
     }
@@ -146,6 +160,14 @@ export default class Annotations extends React.Component {
         this.selectedAnnotation = null;
     }
 
+    onSaveRequested(annotation, content, mode, payload) {
+        if(typeof this.props.onSaveRequested === 'function') {
+            this.props.onSaveRequested(annotation, content, mode, payload);
+        }
+        this.chosenAnnotations = [ ];
+        this.selectedAnnotation = null;
+    }
+
     hideAnnotationViewer() {
         this.chosenAnnotations = [ ];
     }
@@ -176,11 +198,13 @@ export default class Annotations extends React.Component {
                     })
                 }
                 <AnnotationsViewer visible={ this.chosenAnnotations.length > 0 }
+                                   document={ this.props.document }
                                    annotations={ this.chosenAnnotations }
                                    ratio={ this.ratio }
                                    onAnnotationSelected={ this.onAnnotationSelected.bind(this) }
                                    onAnnotationDeselected={ this.onAnnotationDeselected.bind(this) }
                                    onCloseRequested={ this.hideAnnotationViewer.bind(this) }
+                                   onSaveRequested={ this.onSaveRequested.bind(this) }
                                    />
             </div>
         );

@@ -24,6 +24,7 @@ class Annotation < ApplicationRecord
   end
 
   class WithEditor < Grape::Entity
+    expose :id
     expose :content
     expose :areas
     expose :mode do |annotation|

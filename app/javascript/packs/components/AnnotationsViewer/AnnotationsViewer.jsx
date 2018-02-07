@@ -25,6 +25,12 @@ export default class AnnotationsViewer extends React.Component {
         }
     }
 
+    onSaveRequested(annotation, content, mode, payload) {
+        if(typeof this.props.onSaveRequested === 'function') {
+            this.props.onSaveRequested(annotation, content, mode, payload);
+        }
+    }
+
     deselectAnnotation() {
         if(typeof this.props.onAnnotationDeselected === 'function') {
             this.props.onAnnotationDeselected();
@@ -59,8 +65,10 @@ export default class AnnotationsViewer extends React.Component {
                             {
                                 this.props.annotations.map((annotation, index) => {
                                     return <AnnotationView visible={ true }
+                                                           document={ this.props.document }
                                                            annotation={ annotation }
                                                            onSelected={ this.onAnnotationSelected.bind(this, annotation) }
+                                                           onSaveRequested={ this.onSaveRequested.bind(this) }
                                                            key={ index }
                                                            />
                                 })

@@ -40,6 +40,21 @@ class V1::AnnotationsAPI < Grape::API
               payload: params[:payload]
           end
 
+          desc "Corrects an annotation for a given version"
+          params do
+            requires :content, type: String
+            requires :mode, type: String
+            optional :payload, type: JSON
+          end
+          put ':annotation_id' do
+            action! Annotations::Correct, id: params[:annotation_id],
+              editor_id: @editor_id,
+              content: params[:content],
+              revision: @revision || @branch.revision,
+              mode: params[:mode],
+              payload: params[:payload]
+          end
+
           desc "Lists annotations"
           params do
             requires :surface_number, type: Integer

@@ -1,6 +1,8 @@
 {
   "actions/CommitDocumentChanges.js": "/packs/actions/CommitDocumentChanges.js",
   "actions/CommitDocumentChanges.js.map": "/packs/actions/CommitDocumentChanges.js.map",
+  "actions/CorrectDocumentAnnotation.js": "/packs/actions/CorrectDocumentAnnotation.js",
+  "actions/CorrectDocumentAnnotation.js.map": "/packs/actions/CorrectDocumentAnnotation.js.map",
   "actions/CorrectDocumentPage.js": "/packs/actions/CorrectDocumentPage.js",
   "actions/CorrectDocumentPage.js.map": "/packs/actions/CorrectDocumentPage.js.map",
   "actions/CreateDocumentAnnotation.js": "/packs/actions/CreateDocumentAnnotation.js",

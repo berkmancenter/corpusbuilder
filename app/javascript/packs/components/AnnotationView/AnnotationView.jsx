@@ -32,6 +32,13 @@ export default class AnnotationView extends React.Component {
         this.editing = false;
     }
 
+    onSave(selection, content, mode, payload) {
+        if(typeof this.props.onSaveRequested === 'function') {
+            this.props.onSaveRequested(this.props.annotation, content, mode, payload);
+        }
+        this.editing = false;
+    }
+
     editAnnotation() {
         this.editing = true;
     }
@@ -71,8 +78,10 @@ export default class AnnotationView extends React.Component {
         if(this.editing) {
             return <AnnotationEditor visible={ true }
                                      inline={ true }
+                                     document={ this.props.document }
                                      annotation={ this.props.annotation }
                                      onCancel={ this.onEditorCancel.bind(this) }
+                                     onSaveRequested={ this.onSave.bind(this) }
                                      />;
         }
         else {
