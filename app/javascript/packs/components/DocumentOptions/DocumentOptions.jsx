@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { default as Dropdown } from 'react-simple-dropdown';
 import { Button } from '../Button';
 import { BranchesMenu } from '../BranchesMenu';
 import { SettingsMenu } from '../SettingsMenu';

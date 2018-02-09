@@ -21,6 +21,16 @@
       margin: 0 auto;
       background-color: #ddd;
 
+      .dd-menu {
+        .corpusbuilder-button {
+          font-size: 12px !important;
+        }
+
+        .dd-menu-items {
+          width: 100%;
+        }
+      }
+
       .dropdown__content {
         bottom: 30px;
       }
