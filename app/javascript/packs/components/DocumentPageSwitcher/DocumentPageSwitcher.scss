@@ -12,5 +12,16 @@
     button {
       font-size: 8px !important;
     }
+
+    .dd-menu .corpusbuilder-button {
+      font-size: 12px !important;
+    }
+
   }
+
+}
+
+.corpusbuilder-nestedmenu-downwards span.dd-item-ignore {
+  top: 0 !important;
+  bottom: initial;
 }

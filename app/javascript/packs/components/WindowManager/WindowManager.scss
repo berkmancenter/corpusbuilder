@@ -11,12 +11,14 @@
     }
 
     &-options {
-      width: auto;
+      width: 162px;
       height: auto;
       padding: 10px;
       position: absolute;
-      left: 415px;
+      left: 0px;
+      right: 0px;
       bottom: 0px;
+      margin: 0 auto;
       background-color: #ddd;
 
       .dropdown__content {

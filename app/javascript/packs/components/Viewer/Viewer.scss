@@ -1,6 +1,6 @@
 .corpusbuilder {
   &-viewer:nth-child(2) {
-    box-shadow: -1px 0px 0px #ddd;
+    border-left: 1px solid #ddd;
   }
 
   &-viewer {
@@ -9,8 +9,8 @@
     box-sizing: content-box;
     font-family: sans-serif;
     flex: auto;
-    padding-bottom: 45px;
-    position: relative;
+    flex-basis: 50%;
+    flex-grow: 0;
 
     &-subcontext {
       padding: 5px 20px 5px;

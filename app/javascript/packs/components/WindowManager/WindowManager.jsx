@@ -72,8 +72,8 @@ export default class WindowManager extends React.Component {
     get modes() {
         return [
             { name: 'follow-next', title: 'Follow Next' },
-            { name: 'follow-current', title: 'Follow Current' },
-            { name: 'independent', title: 'Independent Panes' }
+            { name: 'follow-current', title: 'Follow Page' },
+            { name: 'independent', title: 'Independent' }
         ];
     }
 

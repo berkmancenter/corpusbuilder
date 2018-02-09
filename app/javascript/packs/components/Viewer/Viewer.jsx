@@ -863,14 +863,10 @@ export default class Viewer extends React.Component {
             content = <Spinner />;
         }
 
-        let viewerStyle = {
-            minWidth: `${this.props.width}px`
-        };
-
         return (
             <div ref={ this.reportElement.bind(this) }
                  className={ `corpusbuilder-viewer ${ this.editing ? 'corpusbuilder-viewer-editing' : '' }` }
-                 style={ viewerStyle }>
+                 >
                 <MouseManager>
                     { content }
                 </MouseManager>

@@ -1,20 +1,118 @@
 import React from 'react';
 
-import { default as Dropdown } from 'react-simple-dropdown'
-import { DropdownTrigger, DropdownContent } from 'react-simple-dropdown'
+import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
+import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
+
 import { Button } from '../Button';
 
 import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react'
 
 import s from './DocumentPageSwitcher.scss'
-import dropdownStyles from 'react-simple-dropdown/styles/Dropdown.css'
 
 @observer
 export default class DocumentPageSwitcher extends React.Component {
 
-    constructor(props) {
-        super(props);
+    @observable
+    menuOpen = false;
+
+    @computed
+    get menu()  {
+        return {
+            isOpen: this.menuOpen,
+            close: (() => { this.menuOpen = false }).bind(this),
+            toggle: (
+              <Button toggles={ true }
+                      onToggle={ (() => { this.menuOpen = !this.menuOpen }).bind(this) }>
+                  Page: { this.props.page } / { this.props.document.global.surfaces_count }
+              </Button>
+            ),
+            align: 'left',
+            upwards: true
+        };
+    };
+
+    periods(from, to) {
+        let nP10 = (n, base = 0) => {
+            if(n > Math.pow(10, base)) {
+                return nP10(n, base + 1);
+            }
+            else {
+                return Math.pow(10, base);
+            }
+        };
+
+        let upperBound = nP10(to);
+        let step = upperBound / 10;
+        let results = [ ];
+        let lastFrom = 0;
+        let lastTo = from - 1;
+        let iter = 1;
+
+        while(lastTo < to) {
+            lastFrom = lastTo + 1;
+            lastTo = from + iter++ * step - 1;
+
+            results.push([ lastFrom, Math.min(lastTo, to) ]);
+        }
+
+        return results;
+    }
+
+    renderOptions(from = null, to = null) {
+        from = from === null ? 1 : from;
+        to   = to   === null ? this.props.document.global.surfaces_count : to;
+
+        return this.periods(from, to).map((period, ix) => {
+            let periodFrom = period[0];
+            let periodTo   = period[1];
+            let submenu = null;
+            submenu = observable({
+                isOpen: false,
+                close: (() => { submenu.isOpen = false }).bind(this),
+                toggle: (
+                    <Button toggles={ true }
+                            onToggle={ (() => { submenu.isOpen = !submenu.isOpen }).bind(this) }>
+                        { periodFrom } - { periodTo }
+                    </Button>
+                ),
+                align: 'left',
+                menuAlign: 'center'
+            });
+            let className = ix < 5 ? "corpusbuilder-nestedmenu-downwards" : "";
+
+            if(periodTo - periodFrom < 10) {
+                let subItems = (new Array(periodTo - periodFrom + 1)).fill(0).map((_, i) => {
+                    let currentNumber = periodFrom + i;
+
+                    return (
+                      <li key={ `page-dropdown-${ period.join('-') }-${ i }` }>
+                          <button type="button"
+                                  onClick={ () => this.props.onPageSwitch(currentNumber) }
+                                  >
+                              { currentNumber === this.props.page ? `➜  ${ currentNumber }` : currentNumber }
+                          </button>
+                      </li>
+                    )
+                });
+                return (
+                    <div className={ className }>
+                        <NestedDropdownMenu {...submenu}>
+                            { subItems }
+                        </NestedDropdownMenu>
+                    </div>
+                );
+            }
+            else {
+                return (
+                    <div className={ className }>
+                        <NestedDropdownMenu {...submenu}>
+                            { this.renderOptions( periodFrom, periodTo ) }
+                        </NestedDropdownMenu>
+                    </div>
+                );
+            }
+        });
     }
 
     render() {
@@ -22,22 +120,8 @@ export default class DocumentPageSwitcher extends React.Component {
           return null;
       }
 
-      let doc = this.props.document;
-      let firstSurface = this.props.document.surfaces[0];
       let page = this.props.page;
-      let countPages = doc.global.surfaces_count;
-
-      let pageOptions = (new Array(this.props.document.global.surfaces_count - 1)).fill(0).map(
-          (_, surface) => {
-              return (
-                  <li key={ `page-dropdown-${ surface }` }
-                      onClick={ () => this.props.onPageSwitch(surface + 1) }
-                      >
-                      { surface.number === page ? `➜ ${ surface + 1 }` : (surface + 1) }
-                  </li>
-              );
-          }
-      );
+      let countPages = this.props.document.global.surfaces_count;
 
       return (
           <div className="corpusbuilder-document-page-switcher">
@@ -51,14 +135,9 @@ export default class DocumentPageSwitcher extends React.Component {
                     >
               { '◀' }
             </Button>
-            <Dropdown>
-              <DropdownTrigger>Page: { page } / { doc.global.surfaces_count }</DropdownTrigger>
-              <DropdownContent>
-                <ul>
-                  { pageOptions }
-                </ul>
-              </DropdownContent>
-            </Dropdown>
+            <DropdownMenu {...this.menu}>
+                { this.renderOptions() }
+            </DropdownMenu>
             <Button onClick={ () => this.props.onPageSwitch(page + 1) } disabled={ page == countPages }>
               { '▶' }
             </Button>

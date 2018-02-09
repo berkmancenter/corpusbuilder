@@ -75,7 +75,8 @@ export default class DiffOptions extends React.Component {
     render() {
         return (
             <div className="corpusbuilder-diff-options">
-                <div className="corpusbuilder-diff-options-layers">
+                <div style={ { display: "none" } } className="corpusbuilder-diff-options-layers">
+                    <span>Show differences in:&nbsp;</span>
                     <Button onClick={ () => { console.log('click!') } }
                             toggles={ true }
                             >
@@ -84,7 +85,7 @@ export default class DiffOptions extends React.Component {
                     <Button onClick={ () => { console.log('click!') } }
                             toggles={ true }
                             >
-                        Annotations
+                        Structure
                     </Button>
                 </div>
                 <div className="corpusbuilder-document-diff-switcher">
