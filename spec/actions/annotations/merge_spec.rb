@@ -95,33 +95,4 @@ describe Annotations::Merge do
 
     expect(revision1.annotations.count).to eq(5)
   end
-
-  it "includes merge conflicts if mode belongs to structural taggings and theres an overlap with value differences" do
-    left = [
-      annotation(mode: :h1, areas: [ { ulx: 0, lrx: 100, uly: 0, lry: 100 } ]),
-      annotation(mode: :h2, areas: [ { ulx: 100, lrx: 200, uly: 100, lry: 200 } ]),
-      annotation(mode: :h3, areas: [ { ulx: 200, lrx: 300, uly: 200, lry: 300 } ])
-    ]
-    right = [
-      annotation(mode: :h1, areas: [ { ulx: 200, lrx: 300, uly: 200, lry: 300 } ]),
-      annotation(mode: :h4, areas: [ { ulx: 300, lrx: 300, uly: 200, lry: 300 } ])
-    ]
-    revision1.annotations = left
-    revision2.annotations = right
-
-    expect(
-      Annotations::Merge.run!(
-        revision: revision1,
-        other_revision: revision2,
-        current_editor_id: editor.id
-      )
-    ).to be_valid
-
-    conflicts = revision1.annotations.where(status: Annotation.statuses[:conflict])
-
-    expect(revision1.annotations.count).to eq(4)
-    expect(conflicts.count).to eq(1)
-    expect(conflicts.first.mode).to eq("h1")
-  end
-
 end

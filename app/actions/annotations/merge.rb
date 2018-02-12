@@ -24,7 +24,10 @@ module Annotations
     end
 
     def conflicts
-      @_conflicts ||= -> {
+      # as per the 09.02.2018 call - we're ignoring the conflicts
+      # and just concatenate all annotations / tags
+      # the code that follows is left here for future decisions
+      @_conflicts ||= [ ] || -> {
         result = []
 
         surface_numbers.each do |surface_number|
