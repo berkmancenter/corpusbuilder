@@ -92,9 +92,14 @@ export default class AnnotationEditor extends React.Component {
     initProps(props) {
         if(props.annotation !== undefined) {
             this.editedAnnotation = props.annotation.content;
+            this.categories = (props.annotation.payload.categories || []).map((name, ix) => {
+                return { text: name, id: ix };
+            });
             this.chooseMode(props.annotation.mode);
         }
-        this.categories = [ ];
+        else {
+            this.categories = [ ];
+        }
     }
 
     componentWillMount() {
