@@ -13,6 +13,7 @@ import FetchDocumentAnnotations from '../../actions/FetchDocumentAnnotations';
 import CreateDocumentBranch from '../../actions/CreateDocumentBranch';
 import CreateDocumentAnnotation from '../../actions/CreateDocumentAnnotation';
 import CorrectDocumentAnnotation from '../../actions/CorrectDocumentAnnotation';
+import DeleteDocumentAnnotation from '../../actions/DeleteDocumentAnnotation';
 import ResetDocumentBranch from '../../actions/ResetDocumentBranch';
 import RemoveDocumentBranch from '../../actions/RemoveDocumentBranch';
 import CommitDocumentChanges from '../../actions/CommitDocumentChanges';
@@ -494,6 +495,20 @@ export default class Viewer extends React.Component {
         });
     }
 
+    deleteAnnotation(annotation) {
+        DeleteDocumentAnnotation.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion,
+                    surfaceNumber: this.document.surfaces[0].number
+                },
+                id: annotation.id
+            }
+        )
+    }
+
     onEditDiffRequested(diffWord) {
         ObserveMousePosition.run(
             this.props.appState,
@@ -838,6 +853,7 @@ export default class Viewer extends React.Component {
                                width={ width }
                                mainPageTop={ mainPageTop }
                                onSaveRequested={ this.updateAnnotation.bind(this) }
+                               onDeleteRequested={ this.deleteAnnotation.bind(this) }
                                />
                   <DiffLayer diffWords={ this.diffWords }
                              document={ doc }

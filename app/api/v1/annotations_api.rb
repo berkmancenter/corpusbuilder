@@ -64,6 +64,12 @@ class V1::AnnotationsAPI < Grape::API
               payload: params[:payload]
           end
 
+          desc "Unlinks annotation from revision"
+          delete ':annotation_id' do
+            action! Annotations::Unlink, id: params[:annotation_id],
+              revision: @revision || @branch.revision
+          end
+
           desc "Lists annotations"
           params do
             requires :surface_number, type: Integer

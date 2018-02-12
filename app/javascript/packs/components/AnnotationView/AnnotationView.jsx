@@ -43,6 +43,12 @@ export default class AnnotationView extends React.Component {
         this.editing = true;
     }
 
+    deleteAnnotation() {
+        if(typeof this.props.onDeleteRequested === 'function') {
+            this.props.onDeleteRequested(this.props.annotation);
+        }
+    }
+
     renderStructural() {
         return (
             <b>{ AnnotationsUtils.title(this.props.annotation) }</b>
@@ -79,6 +85,11 @@ export default class AnnotationView extends React.Component {
                           onClick={ this.editAnnotation.bind(this) }
                           >
                     Edit
+                  </Button>
+                  <Button toggles={ false }
+                          onClick={ this.deleteAnnotation.bind(this) }
+                          >
+                    Delete
                   </Button>
               </div>
             );

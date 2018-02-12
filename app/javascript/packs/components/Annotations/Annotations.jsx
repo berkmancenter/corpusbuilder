@@ -168,6 +168,14 @@ export default class Annotations extends React.Component {
         this.selectedAnnotation = null;
     }
 
+    onDeleteRequested(annotation) {
+        if(typeof this.props.onDeleteRequested === 'function') {
+            this.props.onDeleteRequested(annotation);
+        }
+        this.chosenAnnotations = [ ];
+        this.selectedAnnotation = null;
+    }
+
     hideAnnotationViewer() {
         this.chosenAnnotations = [ ];
     }
@@ -205,6 +213,7 @@ export default class Annotations extends React.Component {
                                    onAnnotationDeselected={ this.onAnnotationDeselected.bind(this) }
                                    onCloseRequested={ this.hideAnnotationViewer.bind(this) }
                                    onSaveRequested={ this.onSaveRequested.bind(this) }
+                                   onDeleteRequested={ this.onDeleteRequested.bind(this) }
                                    />
             </div>
         );

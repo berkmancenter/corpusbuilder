@@ -31,6 +31,12 @@ export default class AnnotationsViewer extends React.Component {
         }
     }
 
+    onDeleteRequested(annotation) {
+        if(typeof this.props.onDeleteRequested === 'function') {
+            this.props.onDeleteRequested(annotation);
+        }
+    }
+
     deselectAnnotation() {
         if(typeof this.props.onAnnotationDeselected === 'function') {
             this.props.onAnnotationDeselected();
@@ -69,6 +75,7 @@ export default class AnnotationsViewer extends React.Component {
                                                            annotation={ annotation }
                                                            onSelected={ this.onAnnotationSelected.bind(this, annotation) }
                                                            onSaveRequested={ this.onSaveRequested.bind(this) }
+                                                           onDeleteRequested={ this.onDeleteRequested.bind(this) }
                                                            key={ index }
                                                            />
                                 })
