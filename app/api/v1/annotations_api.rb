@@ -7,6 +7,15 @@ class V1::AnnotationsAPI < Grape::API
         fetch_and_authorize_document!
       end
 
+      resource :annotations do
+        desc "Lists used categories in the document"
+        get 'categories' do
+          present Annotations::QueryCategories.run!(
+            document: @document
+          ).result
+        end
+      end
+
       namespace ':revision' do
         before do
           infer_revision! fetch: true
@@ -65,21 +74,6 @@ class V1::AnnotationsAPI < Grape::API
               revision: @revision || @branch.revision
 
             present @annotations, with: Annotation::WithEditor
-          end
-
-          desc "Lists annotations by which both revisions differ"
-          params do
-            requires :other_revision, type: String
-          end
-          get 'diff' do
-            revision1 = revision_from_params :revision
-            revision2 = revision_from_params(:other_version, required: true)
-
-            present Annotations::QueryDiff.run!(
-                revision_left: revision1,
-                revision_right: revision2
-              ).result,
-              with: Annotation::Diff
           end
         end
       end

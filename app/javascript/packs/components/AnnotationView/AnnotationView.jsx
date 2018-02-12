@@ -58,6 +58,19 @@ export default class AnnotationView extends React.Component {
         ]
     }
 
+    renderCategory() {
+        return [
+            <span key={ 1 }>{ this.props.annotation.payload.categories.length > 1 ? 'Categories' : 'Category' }:</span>,
+            <div className="corpusbuilder-annotation-view-body-category" key={ 2 }>
+              {
+                  this.props.annotation.payload.categories.map((category, ix) => {
+                      return <b key={ `${category}-${ix}` }>{ category }</b>
+                  })
+              }
+            </div>
+        ]
+    }
+
     renderControls() {
         if(!this.editing && this.props.editorEmail === this.props.annotation.editor_email) {
             return (
@@ -85,7 +98,15 @@ export default class AnnotationView extends React.Component {
                                      />;
         }
         else {
-            return this.kind === 'structural' ? this.renderStructural() : this.renderComment();
+            if(this.kind === 'structural') {
+                return this.renderStructural();
+            }
+            else if(this.kind === 'comment') {
+                return this.renderComment();
+            }
+            else {
+                return this.renderCategory();
+            }
         }
     }
 

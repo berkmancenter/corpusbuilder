@@ -32,6 +32,13 @@
         position: relative;
         top: 8px;
       }
+
+      &-category {
+        b {
+          padding: 5px;
+          margin-bottom: 10px;
+        }
+      }
     }
   }
 }

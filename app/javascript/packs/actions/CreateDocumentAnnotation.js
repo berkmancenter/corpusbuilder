@@ -23,6 +23,11 @@ export default class CreateDocumentAnnotation extends Action {
                                 surfaceNumber: selector.surfaceNumber
                             })
                         );
+                        state.invalidate(
+                            new Selector('FetchDocumentCategories', {
+                                document: { id: selector.document.id }
+                            })
+                        );
                     }
                 )
             );

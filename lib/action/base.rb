@@ -93,6 +93,14 @@ module Action
       raise ActionError, { action: self.class, messages: [ "no execute method implemented!" ] }
     end
 
+    def memoized(&block)
+      loc = caller_locations(1, 1).first
+      @_memoized ||= {}
+      @_memoized["#{loc.path}:#{loc.lineno}"] ||= -> {
+        block.call
+      }.call
+    end
+
     private
 
     class ActionError < StandardError

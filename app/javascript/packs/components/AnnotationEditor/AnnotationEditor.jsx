@@ -5,6 +5,7 @@ import { inject, observer } from 'mobx-react'
 import { Highlight } from '../Highlight';
 import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
+import { CategoriesInput } from '../CategoriesInput';
 
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 import GraphemesUtils from '../../lib/GraphemesUtils';
@@ -29,6 +30,9 @@ export default class AnnotationEditor extends React.Component {
     chosenMode = null;
 
     @observable
+    castegories = [ ];
+
+    @observable
     modes = {
         meta: true,
         isOpen: false,
@@ -36,7 +40,14 @@ export default class AnnotationEditor extends React.Component {
         comment: { title: 'Comment' },
         category: {
             title: 'Category',
-            render: () => { return <input placeholder="Category" name="category"></input> }
+            render: () => {
+                return <CategoriesInput placeholder="Category"
+                                        name="category"
+                                        document={ this.props.document }
+                                        categories={ this.categories }
+                                        onChange={ this.onCategoriesChange.bind(this) }
+                                        />
+            }
         },
         structural: {
             meta: true,
@@ -83,6 +94,7 @@ export default class AnnotationEditor extends React.Component {
             this.editedAnnotation = props.annotation.content;
             this.chooseMode(props.annotation.mode);
         }
+        this.categories = [ ];
     }
 
     componentWillMount() {
@@ -125,6 +137,10 @@ export default class AnnotationEditor extends React.Component {
         }
     }
 
+    onCategoriesChange(categories) {
+        this.categories = categories;
+    }
+
     onCancelRequested() {
         if(typeof this.props.onCancel === 'function') {
             this.props.onCancel();
@@ -146,7 +162,14 @@ export default class AnnotationEditor extends React.Component {
         let formItems = this.root.querySelectorAll("form input, form select, form textarea");
 
         for(let element of formItems) {
-            payload[ element.name ] = element.value;
+            if(element.name !== null && element.name !== undefined && element.name !== '') {
+                if(element.name === 'categories') {
+                    payload[ element.name ] = element.value.split(', ');
+                }
+                else {
+                    payload[ element.name ] = element.value;
+                }
+            }
         }
 
         this.requestClose();
@@ -156,6 +179,7 @@ export default class AnnotationEditor extends React.Component {
         }
 
         this.editedAnnotation = "";
+        this.categories = [ ];
     }
 
     captureRoot(div) {

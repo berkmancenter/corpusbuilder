@@ -40,6 +40,7 @@
     "react-content-loader": "^1.4.1",
     "react-dd-menu": "^2.0.2",
     "react-dom": "^15.6.1",
+    "react-tag-input": "^4.7.3",
     "react-transition-group": "^2.2.1",
     "resolve-url-loader": "^2.1.0",
     "sass-loader": "^6.0.6",

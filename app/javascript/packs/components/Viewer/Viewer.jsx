@@ -442,6 +442,11 @@ export default class Viewer extends React.Component {
         setTimeout(() => {
             this.showPopup = false;
             this.showAnnotationEditor = true;
+            if ( document.selection ) {
+                document.selection.empty();
+            } else if ( window.getSelection ) {
+                window.getSelection().removeAllRanges();
+            }
         }, 0);
     }
 
