@@ -65,7 +65,7 @@
         opacity: 1;
       }
 
-      $structural_tags: h1 h2 h3 h4 h5 p;
+      $structural_tags: header p blockquote;
       @each $tag in $structural_tags {
         &-#{$tag} {
           background-color: blue;

@@ -3,7 +3,7 @@ class Annotation < ApplicationRecord
 
   enum mode: [
     :comment, :category,
-    :h1, :h2, :h3, :h4, :h5, :p,
+    :header, :blockquote, :p,
   ]
 
   enum status: [ :regular, :conflict ]
@@ -12,7 +12,7 @@ class Annotation < ApplicationRecord
   belongs_to :editor
 
   def structural?
-    h1? || h2? || h3? || h4? || h5? || p?
+    header? || blockquote? || paragraph?
   end
 
   def overlaps?(other)

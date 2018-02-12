@@ -9,6 +9,8 @@ import { Button } from '../Button';
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 import GraphemesUtils from '../../lib/GraphemesUtils';
 
+import AnnotationsUtils from '../../lib/AnnotationsUtils';
+
 import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
 import styles from './AnnotationEditor.scss'
 
@@ -40,12 +42,9 @@ export default class AnnotationEditor extends React.Component {
             meta: true,
             isOpen: false,
             title: 'Structure',
-            h1: { title: 'Header 1', render: null, lines: true},
-            h2: { title: 'Header 2', render: null, lines: true},
-            h3: { title: 'Header 3', render: null, lines: true},
-            h4: { title: 'Header 4', render: null, lines: true},
-            h5: { title: 'Header 5', render: null, lines: true},
-            p:  { title: 'Paragraph', render: null, lines: true }
+            header: { render: null, lines: true},
+            blockquote: { render: null },
+            p:  { render: null, lines: true }
         }
     }
 
@@ -165,7 +164,7 @@ export default class AnnotationEditor extends React.Component {
 
     extractMenuItems(level) {
         return Object.keys(level)
-                     .filter((key) => { return key !== 'meta' && key !== 'title' && key !== 'isOpen' })
+                     .filter((key) => { return key !== 'meta' && key !== 'title' && key !== 'isOpen' && key !== 'render' && key !== 'key' })
                      .map((key) => {
                          let ret = {};
 
@@ -173,6 +172,10 @@ export default class AnnotationEditor extends React.Component {
 
                          return ret;
                      });
+    }
+
+    title(level, key) {
+        return typeof level.title === "function" ? level.title() : (level.title || AnnotationsUtils.modeTitle(level.key));
     }
 
     renderMenu(menu = { root: this.modes }) {
@@ -184,6 +187,13 @@ export default class AnnotationEditor extends React.Component {
         }
 
         let toggle = ((on = false) => { level.isOpen = on }).bind(this);
+        let title = '';
+        if(key === 'root') {
+            title = this.title(this.currentMode);
+        }
+        else {
+            title = this.title(level);
+        }
         let menuSpec = {
             isOpen: level.isOpen === true,
             close: toggle.bind(this, false),
@@ -193,7 +203,7 @@ export default class AnnotationEditor extends React.Component {
                       toggled={ level.isOpen === true }
                       onToggle={ toggle.bind(this, !level.isOpen) }
                       >
-                      { typeof level.title === "function" ? level.title() : level.title }
+                          { title }
               </Button>
             )
         };
@@ -226,7 +236,7 @@ export default class AnnotationEditor extends React.Component {
                 return (
                     <li key={ key }>
                         <button type="button" onClick={ this.chooseMode.bind(this, level) }>
-                            { level.title }
+                            { level.title || AnnotationsUtils.modeTitle(key) }
                         </button>
                     </li>
                 );

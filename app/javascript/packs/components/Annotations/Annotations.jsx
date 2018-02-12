@@ -71,7 +71,7 @@ export default class Annotations extends React.Component {
         }
 
         if(this.props.showStructure) {
-            modes = modes.concat(["h1", "h2", "h3", "h4", "h5", "p"]);
+            modes = modes.concat(["header", "blockquote", "p"]);
         }
 
         return modes;
