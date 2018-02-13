@@ -80,6 +80,12 @@ export default class InlineEditor extends React.Component {
         return result;
     }
 
+    deleteLine() {
+        if(typeof this.props.onDeleteLineRequested === 'function') {
+            this.props.onDeleteLineRequested(this.props.line);
+        }
+    }
+
     removeBox(e) {
         let items = this.boxes.filter((b) => {
             return !(
@@ -202,6 +208,10 @@ export default class InlineEditor extends React.Component {
                             boxesHelp
                         }
                         <div className="corpusbuilder-inline-editor-buttons">
+                            <Button onClick={ this.deleteLine.bind(this) }
+                                    >
+                              Delete Line
+                            </Button>
                             <Button onToggle={ this.onToggleBoxes.bind(this) }
                               toggles={ true }
                               toggled={ this.showBoxes }

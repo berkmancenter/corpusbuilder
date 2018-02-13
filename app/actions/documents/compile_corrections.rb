@@ -3,8 +3,6 @@ module Documents
     attr_accessor :grapheme_ids, :text, :boxes, :branch_name, :revision_id, :document
 
     validates :grapheme_ids, presence: true
-    validates :text, presence: true
-    validates :boxes, presence: true
     validate :revision_given
 
     def execute

@@ -532,6 +532,24 @@ export default class Viewer extends React.Component {
         this.showDiffMousePosition = GetMousePosition.run(this.props.appState, { select: '' });
     }
 
+    deleteLine(line) {
+        CorrectDocumentPage.run(
+            this.props.appState,
+            {
+                select: {
+                    document: { id: this.documentId },
+                    version: this.currentVersion,
+                    pageNumber: this.page
+                },
+                line: line,
+                text: '',
+                boxes: []
+            }
+        ).then((_) => {
+            this.showInlineEditor = false;
+        });
+    }
+
     saveLine(doc, line, editedText, boxes) {
         CorrectDocumentPage.run(
             this.props.appState,
@@ -813,6 +831,7 @@ export default class Viewer extends React.Component {
                                 mainPageTop={ mainPageTop }
                                 onCloseRequested={ this.hideInlineEditor.bind(this) }
                                 onSaveRequested={ this.saveLine.bind(this) }
+                                onDeleteLineRequested={ this.deleteLine.bind(this) }
                                 />
                   <NewBranchWindow visible={ this.showNewBranchWindow }
                                    document={ doc }
