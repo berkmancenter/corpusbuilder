@@ -1,8 +1,8 @@
 module Documents
   class CompileCorrections < Action::Base
-    attr_accessor :grapheme_ids, :text, :boxes, :branch_name, :revision_id, :document
+    attr_accessor :grapheme_ids, :text, :boxes, :branch_name, :revision_id, :document,
+      :surface_number
 
-    validates :grapheme_ids, presence: true
     validate :revision_given
 
     def execute
@@ -26,7 +26,7 @@ module Documents
     end
 
     def line_diff
-      @_line_diff ||= LineDiff.new(grapheme_ids, text, boxes, revision)
+      @_line_diff ||= LineDiff.new(grapheme_ids, text, boxes, revision, surface_number)
     end
 
     class CorrectionDiff
@@ -66,13 +66,14 @@ module Documents
     end
 
     class LineDiff < CorrectionDiff
-      attr_accessor :grapheme_ids, :text, :boxes, :revision
+      attr_accessor :grapheme_ids, :text, :boxes, :revision, :surface_number
 
-      def initialize(grapheme_ids, text, boxes, revision)
+      def initialize(grapheme_ids, text, boxes, revision, surface_number)
         @grapheme_ids = grapheme_ids
         @text = text
         @boxes = boxes
         @revision = revision
+        @_surface_number = surface_number
       end
 
       def specs
@@ -250,7 +251,13 @@ module Documents
       end
 
       def ltr?
-        @_ltr ||= first_bounding_grapheme.value.codepoints.first === 0x200e
+        @_ltr ||= -> {
+          if source_graphemes.empty?
+            text.codepoints.first === 0x200e
+          else
+            first_bounding_grapheme.value.codepoints.first === 0x200e
+          end
+        }
       end
 
       def source_graphemes
@@ -290,6 +297,7 @@ module Documents
       end
 
       def grapheme_special?(grapheme)
+        #byebug if grapheme.nil?
         codepoint = grapheme.value.codepoints.first
 
         codepoint == 0x200e || codepoint == 0x200f || codepoint == 0x202c
@@ -303,26 +311,42 @@ module Documents
 
       def first_bounding_grapheme
         @_first_bounding_grapheme || -> {
-          if grapheme_special?(source_graphemes.first)
-            source_graphemes.first
-          else
-            revision.graphemes.
-              where("position_weight < ?", source_graphemes.first.position_weight).
-              reorder("position_weight desc").
+          if source_graphemes.empty?
+            revision.graphemes.joins(zone: :surface).
+              where(zones: { surfaces: { number: surface_number } }).
+              where("(graphemes.area[0])[1] < ?", sorted_boxes.map { |b| b[:uly] }.min).
+              reorder('graphemes.position_weight desc').
               first
+          else
+            if grapheme_special?(source_graphemes.first)
+              source_graphemes.first
+            else
+              revision.graphemes.
+                where("position_weight < ?", source_graphemes.first.position_weight).
+                reorder("position_weight desc").
+                first
+            end
           end
         }.call
       end
 
       def last_bounding_grapheme
         @_last_bounding_grapheme || -> {
-          if grapheme_special?(source_graphemes.last)
-            source_graphemes.last
-          else
-            revision.graphemes.
-              where("position_weight > ?", source_graphemes.last.position_weight).
-              reorder("position_weight asc").
+          if source_graphemes.empty?
+            revision.graphemes.joins(zone: :surface).
+              where(zones: { surfaces: { number: surface_number } }).
+              where("(graphemes.area[1])[1] > ?", sorted_boxes.map { |b| b[:lry] }.max).
+              reorder('graphemes.position_weight asc').
               first
+          else
+            if grapheme_special?(source_graphemes.last)
+              source_graphemes.last
+            else
+              revision.graphemes.
+                where("position_weight > ?", source_graphemes.last.position_weight).
+                reorder("position_weight asc").
+                first
+            end
           end
         }.call
       end

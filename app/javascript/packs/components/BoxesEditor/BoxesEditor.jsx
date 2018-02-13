@@ -18,6 +18,11 @@ export default class BoxesEditor extends React.Component {
     boxSelected = null;
 
     @computed
+    get previewToSurfaceRatio() {
+        return this.props.previewToSurfaceRatio;
+    }
+
+    @computed
     get allowNewBoxes() {
         return this.props.allowNewBoxes;
     }
@@ -157,6 +162,11 @@ export default class BoxesEditor extends React.Component {
 
     @computed
     get origLineY() {
+        if(this.props.visual !== undefined && this.props.visual !== null) {
+            return (this.props.visual.y / this.props.visual.ratio) *
+                this.previewToSurfaceRatio;
+        }
+
         return this.props.line.reduce((min, grapheme) => {
             return Math.min(min, grapheme.area.uly);
         }, this.props.line[0].area.uly);
@@ -171,6 +181,11 @@ export default class BoxesEditor extends React.Component {
 
     @computed
     get origLineHeight() {
+        if(this.props.visual !== undefined && this.props.visual !== null) {
+            return (this.props.visual.height / this.props.visual.ratio) *
+                this.previewToSurfaceRatio;
+        }
+
         return this.origLineBottomY - this.origLineY;
     }
 
@@ -244,6 +259,12 @@ export default class BoxesEditor extends React.Component {
             target.style.cursor = document.documentElement.style.cursor;
         }
 
+        if ( document.selection ) {
+            document.selection.empty();
+        } else if ( window.getSelection ) {
+            window.getSelection().removeAllRanges();
+        }
+
         event.stopPropagation();
     }
 
@@ -254,6 +275,12 @@ export default class BoxesEditor extends React.Component {
 
         if(event.ctrlKey || event.metaKey) {
             event.target.style.cursor = 'crosshair';
+
+            if ( document.selection ) {
+                document.selection.empty();
+            } else if ( window.getSelection ) {
+                window.getSelection().removeAllRanges();
+            }
         }
         else {
             event.target.style.cursor = 'auto';

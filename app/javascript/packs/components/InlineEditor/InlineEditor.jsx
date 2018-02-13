@@ -5,7 +5,9 @@ import { FloatingWindow } from '../FloatingWindow';
 import { Button } from '../Button';
 import { Highlight } from '../Highlight';
 import { VisualPreview } from '../VisualPreview';
+
 import GraphemeUtils from '../../lib/GraphemesUtils';
+import PlatformUtils from '../../lib/PlatformUtils';
 
 import styles from './InlineEditor.scss'
 
@@ -46,17 +48,12 @@ export default class InlineEditor extends React.Component {
     }
 
     @computed
-    get specialKeyName() {
-        if ( navigator.appVersion.indexOf("Mac") !== -1) {
-            return 'Meta';
-        }
-        else {
-            return 'Ctrl';
-        }
-    }
-
-    @computed
     get dir() {
+        // todo: add ability to choose it from UI
+        if(this.props.line === undefined || this.props.line === null || this.props.line.length === 0) {
+            return "rtl";
+        }
+
         return this.props.line[0].value.codePointAt(0) === 0x200f ? "rtl" : "ltr";
     }
 
@@ -148,6 +145,13 @@ export default class InlineEditor extends React.Component {
 
     requestSave() {
         if(this.props.onSaveRequested !== undefined && this.props.onSaveRequested !== null) {
+            if(this.props.line === undefined || this.props.line === null || this.props.line.length === 0) {
+                let start = this.dir === "rtl" ? GraphemeUtils.rtlMark : GraphemeUtils.ltrMark;
+                let end   = GraphemeUtils.popDirectionalityMark;
+
+                this.editedText = `${String.fromCharCode(start)} ${this.editedText} ${String.fromCharCode(end)}`;
+            }
+
             this.props.onSaveRequested(this.props.document, this.props.line, this.editedText, this.boxes);
         }
     }
@@ -166,7 +170,7 @@ export default class InlineEditor extends React.Component {
             let boxesHelp = null;
             if(this.showBoxes && this.allowNewBoxes) {
                 boxesHelp = <div className="corpusbuilder-inline-editor-help">
-                  Hold { this.specialKeyName } to start drawing or select
+                  Hold { PlatformUtils.specialKeyName() } to start drawing or select
                 </div>
             }
             let messageBox = null;
@@ -191,6 +195,7 @@ export default class InlineEditor extends React.Component {
                         { messageBox }
                         <VisualPreview pageImageUrl={ this.pageImageUrl }
                                        line={ this.props.line }
+                                       visual={ this.props.visual }
                                        document={ this.props.document }
                                        editable={ true }
                                        boxes={ this.boxes }

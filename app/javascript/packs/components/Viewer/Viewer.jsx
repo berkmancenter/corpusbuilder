@@ -3,7 +3,9 @@ import { autorun, observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 
 import State from '../../stores/State'
+
 import GraphemesUtils from '../../lib/GraphemesUtils';
+import PlatformUtils from '../../lib/PlatformUtils';
 
 import FetchDocumentPage from '../../actions/FetchDocumentPage';
 import FetchDocumentDiff from '../../actions/FetchDocumentDiff';
@@ -95,6 +97,9 @@ export default class Viewer extends React.Component {
 
     @observable
     editingText = null;
+
+    @observable
+    editingVisual = null;
 
     @observable
     showCertainties = false;
@@ -443,6 +448,7 @@ export default class Viewer extends React.Component {
         setTimeout(() => {
             this.showPopup = false;
             this.showAnnotationEditor = true;
+
             if ( document.selection ) {
                 document.selection.empty();
             } else if ( window.getSelection ) {
@@ -637,10 +643,18 @@ export default class Viewer extends React.Component {
 
     onLineClick(line, text, number, editing) {
         if(editing) {
-            this.showInlineEditor = true;
             this.editingLine = line;
             this.editingText = text;
+            this.editingVisual = null;
+            this.showInlineEditor = true;
         }
+    }
+
+    onLineDrew(y, height, ratio) {
+        this.editingLine = [ ];
+        this.editingText = "";
+        this.editingVisual = { y: y, height: height, ratio: ratio };
+        this.showInlineEditor = true;
     }
 
     onDiffSwitch(page) {
@@ -745,6 +759,15 @@ export default class Viewer extends React.Component {
                 </div>
             );
         }
+        else if(this.editing) {
+            return (
+                <div className="corpusbuilder-viewer-status">
+                    <div className="corpusbuilder-viewer-status-conflict">
+                        Hold { PlatformUtils.specialKeyName() } to draw new lines
+                    </div>
+                </div>
+            );
+        }
     }
 
     renderOptionsBottom() {
@@ -813,6 +836,7 @@ export default class Viewer extends React.Component {
                                   showImage={ this.showImage }
                                   onSelected={ this.onSelected.bind(this) }
                                   onLineClick={ this.onLineClick.bind(this) }
+                                  onLineDrew={ this.onLineDrew.bind(this) }
                                   >
                     </DocumentPage>
                     <AnnotationsSettings visible={ this.showAnnotationsSettings }
@@ -824,6 +848,7 @@ export default class Viewer extends React.Component {
                                 document={ doc }
                                 line={ this.editingLine }
                                 text={ this.editingText }
+                                visual={ this.editingVisual }
                                 showBoxes={ this.forceEditingBoxes }
                                 allowNewBoxes={ !this.forceEditingBoxes }
                                 page={ page }

@@ -163,6 +163,7 @@ class V1::DocumentsAPI < Grape::API
             requires :lry, type: String
           end
           requires :text, type: String
+          optional :surface_number, type: Integer
         end
         optional :graphemes, type: Array do
           optional :id, type: String
@@ -190,6 +191,7 @@ class V1::DocumentsAPI < Grape::API
                         grapheme_ids: params[:edit_spec][:grapheme_ids],
                         boxes: params[:edit_spec][:boxes],
                         text: params[:edit_spec][:text],
+                        surface_number: params[:edit_spec][:surface_number],
                         branch_name: @revision_options[:branch_name],
                         revision_id: @revision_options[:revision_id],
                         document: @document

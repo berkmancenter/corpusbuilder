@@ -13,9 +13,13 @@ import MathUtils from '../../lib/MathUtils'
 export default class DocumentPage extends React.Component {
 
     rulerCache = new Map();
+    pageRoot = null;
 
     // using @computed ensures that the values are cached and not re-computed
     // even though they are not mobx related
+
+    @observable
+    visualSelection = null;
 
     @computed
     get document() {
@@ -117,6 +121,10 @@ export default class DocumentPage extends React.Component {
         return document.getElementById(this.rulerId);
     }
 
+    capturePageRoot(el) {
+        this.pageRoot = el;
+    }
+
     onLineClick(line, text, number, editing) {
         return this.props.onLineClick(line, text, number, editing);
     }
@@ -163,6 +171,80 @@ export default class DocumentPage extends React.Component {
     @computed
     get page2Rotate() {
         return this.graphemes && Math.random() * (3 - -3) + -3;
+    }
+
+    draw(y) {
+        if(this.visualSelection === null) {
+            this.visualSelection = observable({ top: y, height: 1 });
+        }
+        else {
+            if(y < this.visualSelection.top) {
+                this.visualSelection.top = y;
+            }
+            else {
+                this.visualSelection.height = y - this.visualSelection.top;
+            }
+        }
+
+        if ( document.selection ) {
+            document.selection.empty();
+        } else if ( window.getSelection ) {
+            window.getSelection().removeAllRanges();
+        }
+    }
+
+    endDraw() {
+        if(this.visualSelection !== null) {
+            if(typeof this.props.onLineDrew === 'function') {
+                this.props.onLineDrew(
+                    this.visualSelection.top,
+                    this.visualSelection.height,
+                    this.ratio
+                );
+            }
+        }
+
+        this.visualSelection = null;
+    }
+
+    onPageMouseUp() {
+        this.endDraw();
+    }
+
+    onPageMouseMove(event) {
+        if(event.ctrlKey || event.metaKey) {
+            event.target.style.cursor = 'crosshair';
+        }
+        else {
+            event.target.style.cursor = 'auto';
+        }
+
+        if(event.buttons === 1 && (event.ctrlKey || event.metaKey)) {
+            let rect = this.pageRoot.getBoundingClientRect();
+            let y = event.clientY - rect.y;
+
+            this.draw(y);
+        }
+        else {
+            if(this.newBox !== null) {
+                this.endDraw();
+            }
+        }
+    }
+
+    renderVisualSelection() {
+        if(this.visualSelection !== null) {
+            let style = {
+                top: this.visualSelection.top,
+                height: this.visualSelection.height
+            };
+
+            return (
+                <div className="corpusbuilder-document-page-visual-selection" style={ style } />
+            );
+        }
+
+        return null;
     }
 
     render() {
@@ -214,6 +296,9 @@ export default class DocumentPage extends React.Component {
             </FakePage>
             <div className={ `corpusbuilder-document-page ${ this.props.showImage ? '' : 'simple' }` }
                  style={ pageStyle }
+                 ref={ this.capturePageRoot.bind(this) }
+                 onMouseMove={ this.onPageMouseMove.bind(this) }
+                 onMouseUp={ this.onPageMouseUp.bind(this) }
                  >
               <SelectionManager graphemes={ this.graphemes }
                                 onSelected={ this.onSelected.bind(this) }
@@ -235,6 +320,7 @@ export default class DocumentPage extends React.Component {
                   )
                 }
               </SelectionManager>
+              { this.renderVisualSelection() }
               <div id={ this.rulerId } className={ 'corpusbuilder-document-page-ruler' }>&nbsp;</div>
             </div>
           </div>

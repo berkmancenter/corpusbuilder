@@ -31,6 +31,11 @@ export default class VisualPreview extends React.Component {
 
     @computed
     get lineY() {
+        if(this.props.visual !== undefined && this.props.visual !== null) {
+            return (this.props.visual.y / this.props.visual.ratio) *
+                this.previewToSurfaceRatio;
+        }
+
         return this.line.reduce((min, grapheme) => {
             return Math.min(min, grapheme.area.uly);
         }, this.line[0].area.uly) * this.previewToSurfaceRatio;
@@ -50,6 +55,11 @@ export default class VisualPreview extends React.Component {
 
     @computed
     get lineHeight() {
+        if(this.props.visual !== undefined && this.props.visual !== null) {
+            return (this.props.visual.height / this.props.visual.ratio) *
+                this.previewToSurfaceRatio;
+        }
+
         return this.lineBottomY - this.lineY;
     }
 
@@ -154,6 +164,8 @@ export default class VisualPreview extends React.Component {
                     <canvas className="corpusbuilder-visual-preview-preview" />
                     <BoxesEditor line={ this.props.line }
                                  visible={ this.props.showBoxes }
+                                 previewToSurfaceRatio={ this.previewToSurfaceRatio }
+                                 visual={ this.props.visual }
                                  document={ this.props.document }
                                  editable={ this.editable }
                                  boxes={ this.props.boxes }

@@ -18,6 +18,14 @@
     background-size: cover;
     position: relative;
     transition: transform 0.75s ease-in-out;
+
+    &-visual-selection {
+      position: absolute;
+      background: rgba(50, 80, 200, 0.5);
+      border: 1px solid rgba(50, 80, 200, 0.9);
+      left: 0px;
+      right: 0px;
+    }
   }
 
   &-document-page:nth-child(1) {
