@@ -18,6 +18,15 @@ class Area
     end
   end
 
+  def self.span_boxes(boxes)
+    ulx = boxes.map { |box| box[:ulx] }.min
+    uly = boxes.map { |box| box[:uly] }.min
+    lrx = boxes.map { |box| box[:lrx] }.max
+    lry = boxes.map { |box| box[:lry] }.max
+
+    new ulx: ulx, uly: uly, lrx: lrx, lry: lry
+  end
+
   def overlaps?(other)
     return false if other.nil?
 

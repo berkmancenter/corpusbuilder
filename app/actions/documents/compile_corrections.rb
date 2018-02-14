@@ -95,45 +95,88 @@ module Documents
 
           initial_state = OpenStruct.new({ result: [ ], current_span: nil, previous: nil })
 
-          diff_spans = entered_list.inject(initial_state) do |state, grapheme|
-            if diffs.has_key?(grapheme.id)
-              state.current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
-              state.current_span.open ||= state.previous
-              state.current_span.diffs.push(diffs[ grapheme.id ].first)
-            else
-              if state.current_span.present?
-                state.current_span.open = source_list.find do |g|
-                  !graphemes_need_change(g, state.current_span.open)
+          diff_spans = if new_line? or deleting_line?
+            [
+              OpenStruct.new({
+                open: first_bounding_grapheme,
+                close: last_bounding_grapheme,
+                diffs: diffs.values.flatten
+              })
+            ]
+          else
+            entered_list.inject(initial_state) do |state, grapheme|
+              if diffs.has_key?(grapheme.id)
+                state.current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
+                state.current_span.open ||= state.previous
+                state.current_span.diffs.push(diffs[ grapheme.id ].first)
+              else
+                if state.current_span.present?
+                  state.current_span.open = source_list.find do |g|
+                    !graphemes_need_change(g, state.current_span.open)
+                  end
+                  state.current_span.close = source_list.find do |g|
+                    !graphemes_need_change(g, grapheme)
+                  end
+                  state.result.push(state.current_span)
+                  state.current_span = nil
                 end
-                state.current_span.close = source_list.find do |g|
-                  !graphemes_need_change(g, grapheme)
-                end
-                state.result.push(state.current_span)
-                state.current_span = nil
               end
-            end
 
-            state.previous = grapheme
+              state.previous = grapheme
 
-            state
-          end.result
+              state
+            end.result
+          end
 
           diff_spans.map do |diff_span|
             grapheme_diffs = diff_span.diffs.sort_by { |diff| diff.entered.position_weight }
 
             addmod_specs = grapheme_diffs.map(&:to_spec)
 
+            open_position_weight = diff_span.open.try(:position_weight) || -> {
+              revision.graphemes.reorder('position_weight asc').first.position_weight - diff_span.diffs.count
+            }.call
+
+            close_position_weight = diff_span.close.try(:position_weight) || -> {
+              revision.graphemes.reorder('position_weight desc').first.position_weight + diff_span.diffs.count
+            }.call
+
             addmod_specs.each_with_index do |addmod_spec, index|
-              addmod_spec[:position_weight] = diff_span.open.position_weight +
+              addmod_spec[:position_weight] = open_position_weight +
                 ( index + 1 ) * (
-                  ( diff_span.close.position_weight - diff_span.open.position_weight ) /
+                  ( close_position_weight - open_position_weight ) /
                   ( grapheme_diffs.count + 1.0 )
                 )
             end
 
-            addmod_specs
+            if new_line?
+              addmod_specs + [
+                {
+                  value: [ltr? ? 0x200e : 0x200f].pack('U*'),
+                  area: addmod_specs.first[:area],
+                  surface_number: surface_number,
+                  position_weight: open_position_weight
+                },
+                {
+                  value: [0x202c].pack('U*'),
+                  area: addmod_specs.last[:area],
+                  surface_number: surface_number,
+                  position_weight: close_position_weight
+                }
+              ]
+            else
+              addmod_specs
+            end
           end.flatten + all_diffs.select(&:deletion?).map(&:to_spec)
         }.call
+      end
+
+      def new_line?
+        source_graphemes.empty?
+      end
+
+      def deleting_line?
+        @text.strip.empty?
       end
 
       def word_diffs
@@ -214,7 +257,7 @@ module Documents
 
               Grapheme.new value: entered_char.char,
                 area: area,
-                zone_id: source_graphemes.first.zone_id,
+                zone_id: zone_id,
                 position_weight: entered_char.index,
                 id: SecureRandom.uuid
             end
@@ -222,6 +265,15 @@ module Documents
             Word.new(graphemes)
           end
         }.call
+      end
+
+      def zone_id
+        if source_graphemes.empty?
+          Zone.create! surface_id: @revision.document.surfaces.where(number: surface_number).first.id,
+            area: Area.span_boxes(sorted_boxes)
+        else
+          source_graphemes.first.zone_id
+        end
       end
 
       def visually_sorted_entered_words
@@ -297,7 +349,6 @@ module Documents
       end
 
       def grapheme_special?(grapheme)
-        #byebug if grapheme.nil?
         codepoint = grapheme.value.codepoints.first
 
         codepoint == 0x200e || codepoint == 0x200f || codepoint == 0x202c
@@ -312,11 +363,15 @@ module Documents
       def first_bounding_grapheme
         @_first_bounding_grapheme || -> {
           if source_graphemes.empty?
-            revision.graphemes.joins(zone: :surface).
+            ret = revision.graphemes.joins(zone: :surface).
               where(zones: { surfaces: { number: surface_number } }).
               where("(graphemes.area[0])[1] < ?", sorted_boxes.map { |b| b[:uly] }.min).
               reorder('graphemes.position_weight desc').
               first
+            ret || revision.graphemes.joins(zone: :surface).
+                where(zones: { surfaces: { number: surface_number - 1 } }).
+                reorder('graphemes.position_weight desc').
+                first
           else
             if grapheme_special?(source_graphemes.first)
               source_graphemes.first
@@ -333,11 +388,15 @@ module Documents
       def last_bounding_grapheme
         @_last_bounding_grapheme || -> {
           if source_graphemes.empty?
-            revision.graphemes.joins(zone: :surface).
+            ret = revision.graphemes.joins(zone: :surface).
               where(zones: { surfaces: { number: surface_number } }).
               where("(graphemes.area[1])[1] > ?", sorted_boxes.map { |b| b[:lry] }.max).
               reorder('graphemes.position_weight asc').
               first
+            ret || revision.graphemes.joins(zone: :surface).
+                where(zones: { surfaces: { number: surface_number + 1 } }).
+                reorder('graphemes.position_weight asc').
+                first
           else
             if grapheme_special?(source_graphemes.last)
               source_graphemes.last

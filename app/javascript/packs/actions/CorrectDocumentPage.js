@@ -9,6 +9,7 @@ export default class CorrectDocumentPage extends Action {
             edit_spec: {
                 grapheme_ids: params.line.map((g) => { return g.id; }),
                 text: params.text,
+                surface_number: params.surfaceNumber,
                 boxes: params.boxes.map((box) => {
                       return {
                           ulx: box.ulx,

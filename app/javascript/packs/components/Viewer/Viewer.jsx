@@ -567,6 +567,7 @@ export default class Viewer extends React.Component {
                 },
                 line: line,
                 text: editedText,
+                surfaceNumber: this.document.surfaces[0].number,
                 boxes: boxes
             }
         ).then((_) => {
