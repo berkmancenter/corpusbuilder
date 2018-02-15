@@ -164,7 +164,7 @@ export default class BoxesEditor extends React.Component {
     get origLineY() {
         if(this.props.visual !== undefined && this.props.visual !== null) {
             return (this.props.visual.y / this.props.visual.ratio) *
-                this.previewToSurfaceRatio;
+                1; //this.previewToSurfaceRatio;
         }
 
         return this.props.line.reduce((min, grapheme) => {
@@ -183,7 +183,7 @@ export default class BoxesEditor extends React.Component {
     get origLineHeight() {
         if(this.props.visual !== undefined && this.props.visual !== null) {
             return (this.props.visual.height / this.props.visual.ratio) *
-                this.previewToSurfaceRatio;
+                1; //this.previewToSurfaceRatio;
         }
 
         return this.origLineBottomY - this.origLineY;

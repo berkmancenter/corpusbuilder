@@ -19,6 +19,7 @@ module Documents
     def graphemes
       @_graphemes ||= -> {
         graphemes = []
+        zone_graphemes = []
 
         image_ocr_result.elements.each do |element|
           case element.name
@@ -26,16 +27,24 @@ module Documents
             @_surface = @document.surfaces.create! area: element.area,
               image_id: @image_id, number: image.order
           when "zone"
+            if zone_graphemes.count == 2
+              # we only have directionals here so we can get rid of them
+              # to have a cleaner document
+              graphemes -= zone_graphemes
+              @_zone.delete
+            end
+            zone_graphemes = []
             @_zone = @_surface.zones.create! area: element.area
           when "grapheme"
             g = @_zone.graphemes.new(
               id: SecureRandom.uuid,
-              area: element.area,
+              area: (element.grouping == "pop" ? graphemes.last.area : element.area),
               value: element.value,
               certainty: element.certainty,
               position_weight: graphemes.count + 1
             )
             graphemes << g
+            zone_graphemes << g
           else
             fail "Invalid OCR element name: #{element.name}"
           end

@@ -22,8 +22,6 @@ class HocrParser < Parser
   end
 
   def elements(node = xml_page_root, directional = nil)
-    Rails.logger.debug "HocrParser.elements with node being: #{node.class}"
-
     node_class = attr(node, "class")
 
     Enumerator::Lazy.new([ 0 ]) do |yielder, _|
@@ -78,7 +76,8 @@ class HocrParser < Parser
         area: empty_area,
         name: "grapheme",
         certainty: 1,
-        value: pop_directionality_value
+        value: pop_directionality_value,
+        grouping: "pop"
       )
   end
 
@@ -160,6 +159,8 @@ class HocrParser < Parser
   end
 
   def word_node_to_elements(xml_node)
+    return [] if word_empty?(xml_node)
+
     unordered = xml_node.text.chars
     count_all = unordered.count
 
@@ -174,6 +175,10 @@ class HocrParser < Parser
         grouping: xml_node.attr('title')
       )
     end
+  end
+
+  def word_empty?(xml_node)
+    xml_node.text.strip.codepoints.reject { |cp| cp == 0x200e || cp == 0x200f || cp == 0x202c }.empty?
   end
 
   def node_certainty(xml_node)

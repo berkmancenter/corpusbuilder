@@ -78,6 +78,12 @@ module Documents
 
       def specs
         @_specs ||= -> {
+          if deleting_line?
+            return source_graphemes.map do |grapheme|
+              GraphemeDiff.new(grapheme, nil, nil).to_spec
+            end
+          end
+
           source_list = source_graphemes.dup
           entered_list = entered_graphemes.dup
 
@@ -134,11 +140,11 @@ module Documents
             addmod_specs = grapheme_diffs.map(&:to_spec)
 
             open_position_weight = diff_span.open.try(:position_weight) || -> {
-              revision.graphemes.reorder('position_weight asc').first.position_weight - diff_span.diffs.count
+              revision.graphemes.reorder('position_weight asc').first.position_weight - diff_span.diffs.count - 1
             }.call
 
             close_position_weight = diff_span.close.try(:position_weight) || -> {
-              revision.graphemes.reorder('position_weight desc').first.position_weight + diff_span.diffs.count
+              revision.graphemes.reorder('position_weight desc').first.position_weight + diff_span.diffs.count + 1
             }.call
 
             addmod_specs.each_with_index do |addmod_spec, index|
@@ -155,13 +161,13 @@ module Documents
                   value: [ltr? ? 0x200e : 0x200f].pack('U*'),
                   area: addmod_specs.first[:area],
                   surface_number: surface_number,
-                  position_weight: open_position_weight
+                  position_weight: open_position_weight + 0.5*(addmod_specs.first[:position_weight] - open_position_weight)
                 },
                 {
                   value: [0x202c].pack('U*'),
                   area: addmod_specs.last[:area],
                   surface_number: surface_number,
-                  position_weight: close_position_weight
+                  position_weight: close_position_weight - 0.5*(close_position_weight - addmod_specs.last[:position_weight])
                 }
               ]
             else
@@ -309,7 +315,7 @@ module Documents
           else
             first_bounding_grapheme.value.codepoints.first === 0x200e
           end
-        }
+        }.call
       end
 
       def source_graphemes

@@ -125,6 +125,12 @@ export default class VisualPreview extends React.Component {
         this.props.onBoxSelectionChanged(box);
     }
 
+    onBoxesReported(boxes) {
+        if(typeof this.props.onBoxesReported === 'function') {
+            this.props.onBoxesReported(boxes);
+        }
+    }
+
     captureRoot(div) {
         if(this.rootElement === null) {
             this.rootElement = div;
@@ -171,7 +177,7 @@ export default class VisualPreview extends React.Component {
                                  boxes={ this.props.boxes }
                                  allowNewBoxes={ this.allowNewBoxes }
                                  onBoxSelectionChanged={ this.onBoxSelectionChanged.bind(this) }
-                                 onBoxesReported={ this.props.onBoxesReported.bind(this) }
+                                 onBoxesReported={ this.onBoxesReported.bind(this) }
                                  />
                 </div>
             </div>
