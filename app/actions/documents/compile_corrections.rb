@@ -156,7 +156,7 @@ module Documents
             end
 
             if new_line?
-              addmod_specs + [
+              addmod_specs += [
                 {
                   value: [ltr? ? 0x200e : 0x200f].pack('U*'),
                   area: addmod_specs.first[:area],
@@ -170,9 +170,25 @@ module Documents
                   position_weight: close_position_weight - 0.5*(close_position_weight - addmod_specs.last[:position_weight])
                 }
               ]
-            else
-              addmod_specs
             end
+
+            if first_bounding_grapheme.try(:conflict?) && first_bounding_grapheme.try(:special?)
+              addmod_specs << GraphemeDiff.new(
+                first_bounding_grapheme,
+                nil,
+                nil
+              ).to_spec
+            end
+
+            if last_bounding_grapheme.try(:conflict?) && last_bounding_grapheme.try(:special?)
+              addmod_specs << GraphemeDiff.new(
+                last_bounding_grapheme,
+                nil,
+                nil
+              ).to_spec
+            end
+
+            addmod_specs
           end.flatten + all_diffs.select(&:deletion?).map(&:to_spec)
         }.call
       end

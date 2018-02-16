@@ -8,6 +8,10 @@ class Grapheme < ApplicationRecord
 
   default_scope { order(:position_weight) }
 
+  def special?
+    [ 0x200f, 0x200e, 0x202c ].include? value.codepoints.first
+  end
+
   class Tree < Grape::Entity
     expose :area, with: Area::Tree
     expose :value

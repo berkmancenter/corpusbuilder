@@ -103,7 +103,9 @@ module Branches
       rights = Set.new(diffs.select { |g| g.inclusion == 'right' })
 
       roots.each do |root_grapheme|
-        found = rights.find { |g| g.area.overlaps?(root_grapheme.area) }
+        found = root_grapheme.special? ? nil : rights.find do |g|
+          !g.special? && g.area.overlaps?(root_grapheme.area)
+        end
 
         results.push(
           Change.new(root_grapheme, found)
