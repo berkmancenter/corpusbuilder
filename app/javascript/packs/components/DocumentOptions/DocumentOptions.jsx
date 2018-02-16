@@ -180,7 +180,7 @@ export default class DocumentOptions extends React.Component {
     }
 
     renderSettings() {
-        return <SettingsMenu visible={ true }
+        return <SettingsMenu visible={ false }
                              onStructuralTaggingSettingsRequested={ this.props.onStructuralTaggingSettingsRequested }
                              />;
     }

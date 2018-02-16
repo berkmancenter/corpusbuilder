@@ -48,7 +48,6 @@ export default class VisualPreview extends React.Component {
         }, this.line[0].area.lry) * this.previewToSurfaceRatio;
     }
 
-    @computed
     get previewImageWidth() {
         return this.image.naturalWidth;
     }
@@ -63,7 +62,6 @@ export default class VisualPreview extends React.Component {
         return this.lineBottomY - this.lineY;
     }
 
-    @computed
     get previewToSurfaceRatio() {
         let surface = this.props.document.surfaces[0];
 

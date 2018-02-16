@@ -751,7 +751,7 @@ export default class Viewer extends React.Component {
                 <div className="corpusbuilder-viewer-status">
                     <div className="corpusbuilder-viewer-status-conflict">
                         <div className="corpusbuilder-viewer-status-conflict-message">
-                            <span>Merge Conflict!</span>
+                            <span className="warning">Merge Conflict!</span>
                             <Button onClick={ this.toggleShowConflictDiff.bind(this) }>
                                 { this.showDiff ? 'Hide' : 'Show' } differing words
                             </Button>
@@ -763,8 +763,14 @@ export default class Viewer extends React.Component {
         else if(this.editing) {
             return (
                 <div className="corpusbuilder-viewer-status">
-                    <div className="corpusbuilder-viewer-status-conflict">
-                        Hold { PlatformUtils.specialKeyName() } to draw new lines
+                    <div className="corpusbuilder-viewer-status-editing">
+                        <span>
+                            <i className="fa fa-info-circle"></i>
+                            &nbsp;
+                            <b>Edit mode:</b>
+                            &nbsp;
+                            Hold { PlatformUtils.specialKeyName() } to draw new lines
+                        </span>
                     </div>
                 </div>
             );

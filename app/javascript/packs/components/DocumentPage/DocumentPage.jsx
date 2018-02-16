@@ -212,6 +212,10 @@ export default class DocumentPage extends React.Component {
     }
 
     onPageMouseMove(event) {
+        if(!this.props.editing) {
+            return;
+        }
+
         if(event.ctrlKey || event.metaKey) {
             event.target.style.cursor = 'crosshair';
         }
