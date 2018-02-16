@@ -14,6 +14,8 @@ import styles from './InlineEditor.scss'
 @observer
 export default class InlineEditor extends React.Component {
 
+    navigating = false;
+
     @observable
     editedText = "";
 
@@ -104,11 +106,28 @@ export default class InlineEditor extends React.Component {
         this.editedText = e.target.value;
     }
 
+    onKeyUp(e) {
+        if(e.keyCode === 38) {
+            this.onArrow(true);
+        }
+        else if(e.keyCode === 40) {
+            this.onArrow(false);
+        }
+    }
+
+    onArrow(up) {
+        if(typeof this.props.onArrow === 'function') {
+            this.navigating = true;
+            this.props.onArrow(up);
+        }
+    }
+
     onBoxesReported(boxes) {
         if(this.boxes.length === 0) {
             this.originalBoxes = boxes;
         }
         this.boxes.replace(boxes);
+        console.log('Boxes have been reported');
     }
 
     onBoxSelectionChanged(box) {
@@ -127,8 +146,11 @@ export default class InlineEditor extends React.Component {
     }
 
     componentWillUpdate(props) {
-        if(this.props.visible !== props.visible) {
+        if(this.props.visible !== props.visible || this.navigating ) {
             this.editedText = props.text;
+            this.navigating = false;
+            this.originalBoxes = [ ];
+            this.boxes = [ ];
         }
 
         if(this.props.visible === false) {
@@ -206,6 +228,7 @@ export default class InlineEditor extends React.Component {
                                        />
                         <input onChange={ this.onTextChanged.bind(this) }
                                value={ this.editedText }
+                               onKeyUp={ this.onKeyUp.bind(this) }
                                dir={ this.dir }
                                className="corpusbuilder-inline-editor-input"
                                />

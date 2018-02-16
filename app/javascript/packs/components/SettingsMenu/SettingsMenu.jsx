@@ -38,6 +38,10 @@ export default class SettingsMenu extends React.Component {
     }
 
     render() {
+        if(!this.props.visible) {
+            return null;
+        }
+
         if(this.props.nested === true) {
             return (
                 <NestedDropdownMenu {...this.menu}>

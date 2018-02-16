@@ -625,6 +625,29 @@ export default class Viewer extends React.Component {
         this.showAnnotationEditor = false;
     }
 
+    onInlineEditorArrow(up) {
+        let graphemes = this.document.surfaces[0].graphemes;
+        let lines = GraphemesUtils.lines(graphemes);
+        let index = 0;
+
+        for(let line of lines) {
+            if(line[0].id === this.editingLine[0].id) {
+                break;
+            }
+            index++;
+        }
+
+        let nextIndex = index + (up ? -1 : 1);
+        let nextLine = lines[ nextIndex ];
+        let nextWords = GraphemesUtils.lineWords(nextLine);
+        let nextText = nextWords.map((word) => { return word.map((g) => { return g.value }).join('') }).join('  ');
+
+        this.editingLine = nextLine;
+        this.editingText = nextText;
+        this.editingVisual = null;
+        this.showInlineEditor = true;
+    }
+
     hideInlineEditor() {
         this.showInlineEditor = false;
         this.forceEditingBoxes = null;
@@ -864,6 +887,7 @@ export default class Viewer extends React.Component {
                                 onCloseRequested={ this.hideInlineEditor.bind(this) }
                                 onSaveRequested={ this.saveLine.bind(this) }
                                 onDeleteLineRequested={ this.deleteLine.bind(this) }
+                                onArrow={ this.onInlineEditorArrow.bind(this) }
                                 />
                   <NewBranchWindow visible={ this.showNewBranchWindow }
                                    document={ doc }

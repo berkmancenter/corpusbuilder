@@ -71,7 +71,7 @@ export default class BoxesEditor extends React.Component {
     componentWillUpdate(props) {
         if(!props.visible) {
             this.rootElement = null;
-            this.boxes = [];
+            this.inferBoxes();
         }
         else {
             if(this.boxes.length === 0 || this.boxes.length !== this.props.boxes.length) {

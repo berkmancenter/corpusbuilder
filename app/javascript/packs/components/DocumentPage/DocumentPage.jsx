@@ -7,7 +7,8 @@ import s from './DocumentPage.scss'
 import { DocumentLine } from '../DocumentLine'
 import { FakePage } from '../FakePage'
 import { SelectionManager } from '../SelectionManager'
-import MathUtils from '../../lib/MathUtils'
+
+import GraphemesUtils from '../../lib/GraphemesUtils'
 
 @observer
 export default class DocumentPage extends React.Component {
@@ -61,26 +62,7 @@ export default class DocumentPage extends React.Component {
 
     @computed
     get lines() {
-        let initialState = {
-            result: [ [] ],
-            lineYSum: 0,
-            lineHeightSum: 0,
-            currentColumn: 1,
-            currentRow: 1
-        };
-
-        let lines = this.graphemes.reduce((state, grapheme) => {
-            state.result[ state.result.length - 1 ].push( grapheme );
-
-            // if we're seeing the pop-directionality grapheme then
-            // it's a mark of the end of line:
-            if(grapheme.value.charCodeAt(0) === 0x202c) {
-                state.result.push( [ ] );
-            }
-
-            return state;
-        }, initialState).result;
-       return lines;
+        return GraphemesUtils.lines(this.graphemes);
     }
 
     @computed
