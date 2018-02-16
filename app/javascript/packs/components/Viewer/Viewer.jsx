@@ -639,8 +639,7 @@ export default class Viewer extends React.Component {
 
         let nextIndex = index + (up ? -1 : 1);
         let nextLine = lines[ nextIndex ];
-        let nextWords = GraphemesUtils.lineWords(nextLine);
-        let nextText = nextWords.map((word) => { return word.map((g) => { return g.value }).join('') }).join('  ');
+        let nextText = GraphemesUtils.lineText(nextLine);
 
         this.editingLine = nextLine;
         this.editingText = nextText;

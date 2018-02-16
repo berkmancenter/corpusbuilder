@@ -96,6 +96,47 @@ export default class GraphemesUtils {
         );
     }
 
+    static lineText(line, spaces = 2) {
+        let words = GraphemesUtils.lineWords(line);
+        let wordsIndex = words.reduce((index, word) => {
+            for(let grapheme of word) {
+                index.set(grapheme, word);
+            }
+
+            return index;
+        }, new Map());
+
+        let state = {
+            result: "",
+            lastGrapheme: null
+        };
+
+        let spacesBetween = (previous, current, index) => {
+            if(previous === null || current === null) {
+                return '';
+            }
+
+            let previousWord = wordsIndex.get(previous);
+            let currentWord  = wordsIndex.get(current);
+
+            if(previousWord === currentWord) {
+                return '';
+            }
+            else {
+                return ''.padStart(spaces);
+            }
+        }
+
+        return line.reduce((state, g, index) => {
+            let spaces = spacesBetween(state.lastGrapheme, g, index);
+
+            state.result = `${state.result}${spaces}${g.value}`;
+            state.lastGrapheme = g;
+
+            return state;
+        }, state).result;
+    }
+
     static areRelated(grapheme1, grapheme2) {
         let ids1 = grapheme1.parent_ids.concat([ grapheme1.id ]);
         let ids2 = grapheme2.parent_ids.concat([ grapheme2.id ]);
