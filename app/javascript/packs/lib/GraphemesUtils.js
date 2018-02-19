@@ -26,7 +26,9 @@ export default class GraphemesUtils {
             }
 
             return state;
-        }, initialState).result;
+        }, initialState).result.filter((line) => {
+            return line.length > 0;
+        });
     }
 
     static boxesOverlap = BoxesUtils.boxesOverlap;

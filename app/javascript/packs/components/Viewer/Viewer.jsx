@@ -626,25 +626,61 @@ export default class Viewer extends React.Component {
     }
 
     onInlineEditorArrow(up) {
-        let graphemes = this.document.surfaces[0].graphemes;
-        let lines = GraphemesUtils.lines(graphemes);
-        let index = 0;
+        let inferNextLine = (givenIndex = null) => {
+            let graphemes = this.document.surfaces[0].graphemes;
+            let lines = GraphemesUtils.lines(graphemes);
 
-        for(let line of lines) {
-            if(line[0].id === this.editingLine[0].id) {
-                break;
+            if(givenIndex === null) {
+                let index = 0;
+
+                for(let line of lines) {
+                    if(line[0].id === this.editingLine[0].id) {
+                        break;
+                    }
+                    index++;
+                }
+
+                let nextIndex = index + (up ? -1 : 1);
+                return lines[ nextIndex ];
             }
-            index++;
+            else {
+                if(givenIndex === -1) {
+                    return lines[ lines.length - 1];
+                }
+                else {
+                    return lines[ givenIndex ];
+                }
+            }
         }
 
-        let nextIndex = index + (up ? -1 : 1);
-        let nextLine = lines[ nextIndex ];
-        let nextText = GraphemesUtils.lineText(nextLine);
+        let setLine = (nextLine) => {
+            let nextText = GraphemesUtils.lineText(nextLine);
 
-        this.editingLine = nextLine;
-        this.editingText = nextText;
-        this.editingVisual = null;
-        this.showInlineEditor = true;
+            this.editingLine = nextLine;
+            this.editingText = nextText;
+            this.editingVisual = null;
+            this.showInlineEditor = true;
+        }
+
+        let nextLine = inferNextLine();
+
+        if(nextLine !== undefined) {
+            setLine(nextLine);
+        }
+        else {
+            let origPage = parseInt(this.document.surfaces[0].number);
+            autorun((reaction) => {
+                if(this.document.surfaces[0].number === origPage) {
+                    this.page = this.document.surfaces[0].number + (up ? -1 : 1);
+                    this.props.onPageSwitch(this.page);
+                }
+                else {
+                    let nextLine = inferNextLine(up ? -1 : 0);
+                    setLine(nextLine);
+                    reaction.dispose();
+                }
+            });
+        }
     }
 
     hideInlineEditor() {

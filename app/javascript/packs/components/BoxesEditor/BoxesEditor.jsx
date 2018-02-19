@@ -74,7 +74,7 @@ export default class BoxesEditor extends React.Component {
             this.inferBoxes();
         }
         else {
-            if(this.boxes.length === 0 || this.boxes.length !== this.props.boxes.length) {
+            if(this.boxes === null || this.boxes.length !== this.props.boxes.length) {
                 this.inferBoxes();
             }
         }
@@ -115,7 +115,7 @@ export default class BoxesEditor extends React.Component {
     }
 
     @observable
-    boxes = [ ];
+    boxes = null;
 
     @computed
     get allBoxes() {
