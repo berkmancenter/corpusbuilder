@@ -307,6 +307,10 @@ export default class Viewer extends React.Component {
             if(selector.version.name === this.currentVersion.name) {
                 this.chooseBranch({ name: 'master' });
             }
+
+            if(selector.version.name === this.currentDiffVersion.name) {
+                this.onDiffBranchSwitch({ name: 'master' });
+            }
         });
 
         setTimeout(() => {
@@ -352,7 +356,7 @@ export default class Viewer extends React.Component {
         this.showDocumentPage = true;
     }
 
-    chooseBranch(branch) {
+    chooseBranch(branch, options = { includeDiffVersion: false }) {
         this.currentVersion = FetchDocumentBranch.run(
             this.props.appState,
             {
@@ -362,7 +366,12 @@ export default class Viewer extends React.Component {
               }
             }
         );
+
         this.editing = false;
+
+        if(options.includeDiffVersion) {
+            this.onDiffBranchSwitch(this.currentVersion);
+        }
     }
 
     toggleBranchMode(isOn) {

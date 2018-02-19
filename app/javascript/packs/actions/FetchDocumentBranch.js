@@ -22,7 +22,10 @@ export default class FetchDocumentBranch extends Action {
                     return branch.name == selector.name;
                 });
 
-                version.update(branch);
+                if(branch !== undefined) {
+                    version.update(branch);
+                }
+
                 if(typeof stopObserving === 'function') {
                     stopObserving();
                 }

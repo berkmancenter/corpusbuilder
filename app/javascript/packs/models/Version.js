@@ -1,11 +1,12 @@
 import { computed } from 'mobx';
+import ObservableUtils from '../lib/ObservableUtils';
 
 export default class Version {
     object = null;
     type = 'branch';
 
     constructor(object, type) {
-        this.object = object;
+        this.object = ObservableUtils.plain(object);
         this.type = type;
     }
 
@@ -97,7 +98,7 @@ export default class Version {
     }
 
     update(object) {
-        this.object = object;
+        this.object = ObservableUtils.plain(object);
     }
 
     static revision(object) {

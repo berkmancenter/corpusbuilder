@@ -356,6 +356,8 @@
   "lib/ImageUtils.js.map": "/packs/lib/ImageUtils.js.map",
   "lib/MathUtils.js": "/packs/lib/MathUtils.js",
   "lib/MathUtils.js.map": "/packs/lib/MathUtils.js.map",
+  "lib/ObservableUtils.js": "/packs/lib/ObservableUtils.js",
+  "lib/ObservableUtils.js.map": "/packs/lib/ObservableUtils.js.map",
   "lib/PagePositioningHelper.js": "/packs/lib/PagePositioningHelper.js",
   "lib/PagePositioningHelper.js.map": "/packs/lib/PagePositioningHelper.js.map",
   "lib/PlatformUtils.js": "/packs/lib/PlatformUtils.js",
