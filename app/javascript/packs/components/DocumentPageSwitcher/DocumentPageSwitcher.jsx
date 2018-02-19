@@ -96,7 +96,7 @@ export default class DocumentPageSwitcher extends React.Component {
                     )
                 });
                 return (
-                    <div className={ className }>
+                    <div className={ className } key={ `page-dropdown-${ period.join('-') }` }>
                         <NestedDropdownMenu {...submenu}>
                             { subItems }
                         </NestedDropdownMenu>
@@ -105,7 +105,7 @@ export default class DocumentPageSwitcher extends React.Component {
             }
             else {
                 return (
-                    <div className={ className }>
+                    <div className={ className } key={ `page-dropdown-${ period.join('-') }` }>
                         <NestedDropdownMenu {...submenu}>
                             { this.renderOptions( periodFrom, periodTo ) }
                         </NestedDropdownMenu>

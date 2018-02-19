@@ -2,6 +2,7 @@ import { observable, action } from 'mobx';
 
 export default class State {
     cache = observable.map();
+    eventHandlers = {};
     baseUrl = "";
 
     constructor(baseUrl) {
@@ -14,6 +15,29 @@ export default class State {
         }).forEach((key) => {
             this.cache.delete(key);
         });
+    }
+
+    on(name, callback) {
+        let list = this.eventHandlers[ name ];
+
+        if(list === undefined) {
+            list = [ callback ];
+        }
+        else {
+            list.push( callback );
+        }
+
+        this.eventHandlers[ name ] = list;
+    }
+
+    broadcastEvent(selector, value) {
+        let list = this.eventHandlers[ selector.tag ];
+
+        if(list !== undefined) {
+            for(let handler of list) {
+                handler(selector.select, value);
+            }
+        }
     }
 
     resolve(selector, callback) {
@@ -35,6 +59,7 @@ export default class State {
                 action(() => {
                     resource = value;
                     this.cache.set(selector.id, value);
+                    this.broadcastEvent(selector, value);
                 })();
             }
         }

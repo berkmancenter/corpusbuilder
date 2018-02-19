@@ -303,6 +303,12 @@ export default class Viewer extends React.Component {
         this.currentDiffVersion = this.currentVersion;
         this.showImage = this.props.showImage;
 
+        this.props.appState.on('RemoveDocumentBranch', (selector) => {
+            if(selector.version.name === this.props.currentVersion.name) {
+                this.chooseBranch({ name: 'master' });
+            }
+        });
+
         setTimeout(() => {
             // auto-publish page switches
             autorun(() => {
@@ -600,7 +606,7 @@ export default class Viewer extends React.Component {
                 }
             }
         ).then((_) => {
-            this.chooseBranch({ name: 'master' });
+            // this.chooseBranch({ name: 'master' });
             this.showBranchRemoval = false;
         });
     }
