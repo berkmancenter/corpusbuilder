@@ -59,7 +59,6 @@ export default class State {
                 action(() => {
                     resource = value;
                     this.cache.set(selector.id, value);
-                    this.broadcastEvent(selector, value);
                 })();
             }
         }

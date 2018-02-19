@@ -304,7 +304,7 @@ export default class Viewer extends React.Component {
         this.showImage = this.props.showImage;
 
         this.props.appState.on('RemoveDocumentBranch', (selector) => {
-            if(selector.version.name === this.props.currentVersion.name) {
+            if(selector.version.name === this.currentVersion.name) {
                 this.chooseBranch({ name: 'master' });
             }
         });

@@ -13,6 +13,7 @@ export default class Action {
     static run(state, options) {
         let action = new this();
         action.selector = new Selector(action.constructor.name, options.select);
+        action.state = state;
 
         return action.execute(state, action.selector, options);
     }
@@ -23,6 +24,8 @@ export default class Action {
 
             Request.get(url, params)
                 .then((data) => {
+                    this.state.broadcastEvent(this.selector, data);
+
                     Action.requests.get(this.selector.id).forEach((callback) => {
                         callback(data, null);
                     });
@@ -51,7 +54,24 @@ export default class Action {
         });
     }
 
-    post = Request.post;
-    put = Request.put;
-    delete = Request['delete'];
+    post(url, params) {
+        return Request.post(url, params)
+            .then((data) => {
+                this.state.broadcastEvent(this.selector, data);
+            });
+    }
+
+    put(url, params) {
+        return Request.put(url, params)
+            .then((data) => {
+                this.state.broadcastEvent(this.selector, data);
+            });
+    }
+
+    delete(url, params) {
+        return Request['delete'](url, params)
+            .then((data) => {
+                this.state.broadcastEvent(this.selector, data);
+            });
+    }
 }
