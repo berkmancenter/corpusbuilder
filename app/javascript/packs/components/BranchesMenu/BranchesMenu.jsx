@@ -83,7 +83,7 @@ export default class BranchesMenu extends React.Component {
     renderBranchesOptions() {
         let currentBranchName = this.currentBranch === null ? '---' : this.currentBranch.branchName;
 
-        return this.props.branches.map(
+        return (this.props.branches || []).map(
             (branch) => {
                 let selectionIcon = null;
 
