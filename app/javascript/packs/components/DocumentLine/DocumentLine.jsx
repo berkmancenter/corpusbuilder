@@ -1,7 +1,7 @@
 import React from 'react'
 import { computed, observable } from 'mobx'
 import { observer } from 'mobx-react'
-import MathUtils from '../../lib/MathUtils';
+import GraphemesUtils from '../../lib/GraphemesUtils';
 import styles from './DocumentLine.scss'
 
 @observer
@@ -259,27 +259,7 @@ export default class DocumentLine extends React.Component {
             return null;
         }
         else {
-           let graphemes = [];
-
-           for(let grapheme of this.props.line) {
-               let codePoint = grapheme.value.codePointAt(0);
-
-               if([ 0x200e, 0x200f, 0x202c ].indexOf(codePoint) === -1) {
-                   continue;
-               }
-
-               let currentWord = this.wordIndex.get(grapheme);
-
-               if(currentWord !== this.firstWord) {
-                   break;
-               }
-
-               graphemes.push(grapheme);
-           }
-
-           return graphemes.reduce((sum, g) => {
-               return `${sum}${g.value}`;
-           }, "");
+            return GraphemesUtils.wordText(this.firstWord);
         }
     }
 

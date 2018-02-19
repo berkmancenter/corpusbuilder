@@ -1,5 +1,5 @@
 import { computed } from 'mobx';
-import GraphemeUtils from '../lib/GraphemesUtils';
+import GraphemesUtils from '../lib/GraphemesUtils';
 
 export default class WordDiff {
     @computed
@@ -53,9 +53,7 @@ export default class WordDiff {
 
     @computed
     get beforeText() {
-       return this.beforeGraphemes.map((g) => {
-           return g.value;
-       }).join('');
+       return GraphemesUtils.wordText(this.beforeGraphemes);
     }
 
     @computed
@@ -75,12 +73,12 @@ export default class WordDiff {
 
     @computed
     get afterText() {
-        return this.afterGraphemes.map((g) => { return g.value }).join('');
+        return GraphemesUtils.wordText(this.afterGraphemes);
     }
 
     @computed
     get area() {
-        return GraphemeUtils.wordToBox(this.graphemes);
+        return GraphemesUtils.wordToBox(this.graphemes);
     }
 
     @computed
@@ -141,7 +139,7 @@ export default class WordDiff {
 
         for(let word1 of set1) {
             for(let word2 of set2) {
-                if(GraphemeUtils.boxesOverlap(word1.area, word2.area)) {
+                if(GraphemesUtils.boxesOverlap(word1.area, word2.area)) {
                     results.push(
                         [ word1, word2 ]
                     );

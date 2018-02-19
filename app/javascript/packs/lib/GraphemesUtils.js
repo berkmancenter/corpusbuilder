@@ -98,6 +98,18 @@ export default class GraphemesUtils {
         );
     }
 
+    static wordText(graphemes) {
+        return graphemes.sort(
+            (a, b) => {
+                return a.position_weight - b.position_weight;
+            }
+        ).map(
+            (g) => {
+                return g.value;
+            }
+        ).join('')
+    }
+
     static lineText(line, spaces = 2) {
         let words = GraphemesUtils.lineWords(line);
         let wordsIndex = words.reduce((index, word) => {

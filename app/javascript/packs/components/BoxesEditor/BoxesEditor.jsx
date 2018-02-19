@@ -365,7 +365,7 @@ export default class BoxesEditor extends React.Component {
     }
 
     renderBoxes() {
-        return this.allBoxes.map(
+        return (this.allBoxes || []).map(
           (box, index) => {
               let translatedUly = this.translatedUly(box);
 

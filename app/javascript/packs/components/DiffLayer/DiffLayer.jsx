@@ -50,6 +50,10 @@ export default class DiffLayer extends React.Component {
                 }) !== undefined;
             });
 
+            if(line === undefined) {
+                return null;
+            }
+
             return line[0].value.codePointAt(0) === GraphemeUtils.rtlMark ? "rtl" : "ltr";
         }
 
