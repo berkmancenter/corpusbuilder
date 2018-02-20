@@ -1,6 +1,7 @@
 import React from 'react'
 import { computed, observable } from 'mobx';
 import { observer } from 'mobx-react'
+import GraphemesUtils from '../../lib/GraphemesUtils';
 
 export default class SelectionManager extends React.Component {
 
@@ -15,23 +16,30 @@ export default class SelectionManager extends React.Component {
 
         if(selection.type === "Range") {
             let selectedText = selection.toString();
-            console.log(`Simplified selection contains ${selectedText.length} characters`);
-            let match = this.props.graphemes.map((g) => {
-                    return g.value;
-                })
-                .join('')
-                .match(
-                    selectedText.replace(/[#-.]|[[-^]|[?|{}]/g, '\\$&')
-                                .replace(/\s+/g, '\\s*')
-                );
-
+            let startLineIx = parseInt(selection.anchorNode.parentElement.id.match(/\d+/)[0]);
+            let endLineIx = parseInt(selection.focusNode.parentElement.id.match(/\d+/)[0]);
+            let allLines = GraphemesUtils.lines(this.props.graphemes);
+            let selectionLines = allLines.slice(startLineIx - 1, endLineIx);
+            let selectionGraphemes = selectionLines.reduce((ret, line) => {
+                for(let g of line) {
+                    ret.push(g);
+                }
+                return ret;
+            }, []);
+            let selectionLinesText = selectionLines.map((line) => {
+                return line.map((g) => { return g.value }).join('')
+            }).join('');
+            let match = selectionLinesText.match(
+                selectedText.replace(/[#-.]|[[-^]|[?|{}]/g, '\\$&')
+                            .replace(/\s+/g, '\\s*')
+            );
             if(match !== null) {
                 let currentIndex = match.index;
                 let nonSpaces = Array.from(selectedText.replace(/\s/g, ''));
                 let graphemes = [];
 
                 while(nonSpaces.length > 0) {
-                    let currentGrapheme = this.props.graphemes[ currentIndex++ ];
+                    let currentGrapheme = selectionGraphemes[ currentIndex++ ];
                     graphemes.push(currentGrapheme);
 
                     if(currentGrapheme.value !== " ") {
@@ -43,9 +51,7 @@ export default class SelectionManager extends React.Component {
 
                 return graphemes;
             }
-            else {
-                return [];
-            }
+            return [ ];
         }
 
 

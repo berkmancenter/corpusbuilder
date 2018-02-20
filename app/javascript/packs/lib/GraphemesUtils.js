@@ -19,6 +19,7 @@ export default class GraphemesUtils {
             // if we're seeing the pop-directionality grapheme then
             // it's a mark of the end of line:
             if(grapheme.value.charCodeAt(0) === this.popDirectionalityMark) {
+                state.result[ state.result.length - 1 ].push( grapheme );
                 state.result.push( [ ] );
             }
             else {
@@ -164,6 +165,12 @@ export default class GraphemesUtils {
         return graphemes.slice(0).sort((g1, g2) => {
             return g1.area.ulx - g2.area.ulx;
         });
+    }
+
+    static asLogicalOrder(graphemes) {
+        return graphemes.sort((g1, g2) => {
+            return g1.position_weight - g2.position_weight;
+        })
     }
 
     static isRegular(grapheme) {
