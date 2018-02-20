@@ -87,6 +87,9 @@ GEM
       railties (>= 3.2, < 5.2)
     equalizer (0.0.11)
     erubi (1.6.1)
+    exception_notification (4.2.2)
+      actionmailer (>= 4.0, < 6)
+      activesupport (>= 4.0, < 6)
     execjs (2.7.0)
     factory_girl (4.8.0)
       activesupport (>= 3.0.0)
@@ -317,6 +320,7 @@ DEPENDENCIES
   byebug
   carrierwave (~> 1.0)
   dotenv-rails
+  exception_notification
   factory_girl_rails (~> 4.0)
   ffi
   grape

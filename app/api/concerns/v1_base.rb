@@ -24,13 +24,9 @@ module V1Base
     end
 
     rescue_from :all do |e|
+      ExceptionHandler.process(e, env)
+
       if !e.is_a? Grape::Exceptions::Base
-        Rails.logger.error "Error inside action: #{e.message}"
-        Rails.logger.error "Backtrace:"
-        e.backtrace.each do |trace|
-          inner = !trace[/#{Rails.root}/].nil?
-          Rails.logger.error "    | #{ inner ? magenta(trace) : trace }"
-        end
         error!("Oops! Something went wrong", 500)
       else
         error!(e.message, e.status)
@@ -85,13 +81,8 @@ module V1Base
           status_fail
           action.errors
         end
-      rescue Exception => e
-        Rails.logger.error "Error inside action: #{e.message}"
-        Rails.logger.error "Backtrace:"
-        e.backtrace.each do |trace|
-          inner = !trace[/#{Rails.root}/].nil?
-          Rails.logger.error "    | #{ inner ? magenta(trace) : trace }"
-        end
+      rescue => e
+        ExceptionHandler.process(e, env)
         error!("Oops! Something went wrong", 500)
       end
 
