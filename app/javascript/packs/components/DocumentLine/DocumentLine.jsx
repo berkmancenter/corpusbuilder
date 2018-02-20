@@ -3,6 +3,7 @@ import { computed, observable } from 'mobx'
 import { observer } from 'mobx-react'
 import GraphemesUtils from '../../lib/GraphemesUtils';
 import MathUtils from '../../lib/MathUtils';
+import { memoized } from '../../lib/Decorators';
 import styles from './DocumentLine.scss'
 
 @observer
@@ -36,6 +37,7 @@ export default class DocumentLine extends React.Component {
         }, state).result;
     }
 
+    @memoized
     spacesBetween(previous, current, index) {
         if(previous === null || current === null) {
             return '';
@@ -52,6 +54,7 @@ export default class DocumentLine extends React.Component {
         }
     }
 
+    @memoized
     spacesNumBetween(word1, word2) {
         if(this.spaceWidth === null || word1 === undefined || word2 === undefined) {
             return 1;
@@ -140,38 +143,12 @@ export default class DocumentLine extends React.Component {
 
     @computed
     get visualLine() {
-        return this.props.line.slice(0).sort((g1, g2) => {
-            return g1.area.ulx - g2.area.ulx;
-        });
+       return GraphemesUtils.asReadingOrder(this.props.line);
     }
 
     @computed
     get words() {
-        let results = [];
-        let lastUlx = null;
-        let lastLrx = null;
-        let currentWordIndex = -1;
-
-        for(let grapheme of this.visualLine) {
-            let codePoint = grapheme.value.codePointAt(0);
-
-            if([ 0x200e, 0x200f, 0x202c ].indexOf(codePoint) === -1) {
-                let graphemeWidth = grapheme.area.lrx - grapheme.area.ulx;
-
-                if(lastUlx === null || lastLrx === null || grapheme.area.ulx > lastLrx) {
-                    results.push([ grapheme ]);
-                    currentWordIndex++;
-                }
-                else {
-                    results[ currentWordIndex ].push(grapheme);
-                }
-
-                lastUlx = grapheme.area.ulx;
-                lastLrx = grapheme.area.lrx;
-            }
-        }
-
-        return results;
+        return GraphemesUtils.lineWords(this.props.line);
     }
 
     @computed
@@ -213,6 +190,7 @@ export default class DocumentLine extends React.Component {
         return 'hsla(' + hue + ', 100%, 50%, .35)';
     }
 
+    @memoized
     boundsFor(graphemes) {
         let minUlx = graphemes.reduce((min, g) => { return Math.min(min, g.area.ulx) }, graphemes[0].area.ulx);
         let maxLrx = graphemes.reduce((max, g) => { return Math.max(max, g.area.lrx) }, graphemes[0].area.lrx);

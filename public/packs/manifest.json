@@ -350,6 +350,8 @@
   "lib/AnnotationsUtils.js.map": "/packs/lib/AnnotationsUtils.js.map",
   "lib/BoxesUtils.js": "/packs/lib/BoxesUtils.js",
   "lib/BoxesUtils.js.map": "/packs/lib/BoxesUtils.js.map",
+  "lib/Decorators.js": "/packs/lib/Decorators.js",
+  "lib/Decorators.js.map": "/packs/lib/Decorators.js.map",
   "lib/GraphemesUtils.js": "/packs/lib/GraphemesUtils.js",
   "lib/GraphemesUtils.js.map": "/packs/lib/GraphemesUtils.js.map",
   "lib/ImageUtils.js": "/packs/lib/ImageUtils.js",
