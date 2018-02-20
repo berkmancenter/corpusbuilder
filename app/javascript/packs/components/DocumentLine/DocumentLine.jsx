@@ -2,6 +2,7 @@ import React from 'react'
 import { computed, observable } from 'mobx'
 import { observer } from 'mobx-react'
 import GraphemesUtils from '../../lib/GraphemesUtils';
+import MathUtils from '../../lib/MathUtils';
 import styles from './DocumentLine.scss'
 
 @observer
@@ -56,13 +57,16 @@ export default class DocumentLine extends React.Component {
             return 1;
         }
 
-        let left = word1[0].area.ulx < word2[0].area.ulx ? word1[ word1.length - 1 ] : word2[ word2.length - 1 ];
-        let right = left === word1[ word1.length - 1 ] ? word2[ 0 ] : word1[ 0 ];
+        let box1 = GraphemesUtils.wordToBox(word1);
+        let box2 = GraphemesUtils.wordToBox(word2);
 
-        let absolutePixelDiff = right.area.ulx - left.area.lrx;
+        let absolutePixelDiff = box1.ulx < box2.ulx ? (box2.ulx - box1.lrx) : (box1.ulx - box2.lrx);
         let gap = absolutePixelDiff * this.props.ratio;
 
-        return Math.ceil(( gap + this.letterSpacingByWord ) / ( this.spaceWidth + this.letterSpacingByWord ));
+        return Math.max(
+            Math.ceil(( gap + this.letterSpacingByWord ) / ( this.spaceWidth + this.letterSpacingByWord )),
+            1
+        );
     }
 
     @computed
@@ -266,8 +270,9 @@ export default class DocumentLine extends React.Component {
     get letterSpacingByWord() {
         if(this.hasWords) {
             let measuredWidth = this.measureText(this.firstWordText);
+            let box = GraphemesUtils.wordToBox(this.firstWord);
             let countChars = this.firstWord.length;
-            let unscaledWidth = this.firstWord[ countChars - 1 ].area.lrx - this.firstWord[ 0 ].area.ulx;
+            let unscaledWidth = box.lrx - box.ulx;
             let scaledWidth = unscaledWidth * this.props.ratio;
 
             return ( scaledWidth - measuredWidth ) / ( countChars - ( this.firstWord.length > 1 ? 1 : 0) );
@@ -277,7 +282,6 @@ export default class DocumentLine extends React.Component {
 
     get spaceWidth() {
         if(this._spaceWidth === null) {
-            // return this.measureText(' ');
             this._spaceWidth = this.measureText(' ');
         }
 
@@ -288,9 +292,8 @@ export default class DocumentLine extends React.Component {
        if(this.hasWords) {
            let measuredWidth = this.measureText(this.text);
            let countChars = this.text.length;
-           let lastWord = this.words[ this.words.length - 1];
-           let firstWord = this.words[ 0 ];
-           let unscaledWidth = lastWord[ lastWord.length - 1 ].area.lrx - firstWord[ 0 ].area.ulx;
+           let box = GraphemesUtils.lineToBox(this.props.line);
+           let unscaledWidth = box.lrx - box.ulx;
            let scaledWidth = unscaledWidth * this.props.ratio;
 
            let result = ( scaledWidth - measuredWidth ) / ( countChars - 1 );

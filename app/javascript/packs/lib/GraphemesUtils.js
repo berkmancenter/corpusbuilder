@@ -35,7 +35,7 @@ export default class GraphemesUtils {
 
     static wordToBox(word) {
         if(word.length === 0) {
-            throw "Cannot compute the bounding box of an empty word. Zero graphemes have been given.";
+            throw "Cannot compute the bounding box of an empty set. Zero graphemes have been given.";
         }
 
         let minUlx = word[0].area.ulx;
@@ -58,6 +58,8 @@ export default class GraphemesUtils {
             graphemes: word
         }
     }
+
+    static lineToBox(line) { return GraphemesUtils.wordToBox(line); }
 
     static words(graphemes) {
         return this.lines(graphemes).reduce((result, line) => {
