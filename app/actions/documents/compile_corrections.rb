@@ -6,7 +6,6 @@ module Documents
     validate :revision_given
 
     def execute
-      raise 'yyy'
       line_diff.specs
     end
 
