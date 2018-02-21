@@ -25,31 +25,76 @@ export default class WindowManager extends React.Component {
         super(props);
 
         Request.setBaseUrl(props.baseUrl);
+
+        window.onresize = this.onWindowResize.bind(this);
+    }
+
+    @observable
+    dockMode = false;
+
+    @observable
+    _numberOfViewers = 2;
+
+    get numberOfViewers() { return this._numberOfViewers; }
+
+    set numberOfViewers(number) {
+        let diff = number - this.viewers.length;
+
+        if(diff > 0) {
+            (new Array(diff)).fill(0).forEach(
+                (_, i) => {
+                    this.viewers.push({ page: 1 });
+                }
+            );
+        }
+        else if(diff < 0) {
+            (new Array(-1 * diff)).fill(0).forEach(
+                (_, i) => {
+                    this.viewers.pop();
+                }
+            );
+        }
+
+        this._numberOfViewers = number;
     }
 
     @observable
     currentMode = this.modes[0];
 
     @observable
-    currentTab = this.tabs[0];
-
-    @observable
-    leftPage = 1;
-
-    @observable
-    rightPage = 2;
+    viewers = [
+        {
+            page: 1
+        },
+        {
+            page: 2
+        }
+    ]
 
     @observable
     maxViewerHeight = 0;
+
+    @computed
+    get hasOneViewer() { return this.numberOfViewers === 1; }
+
+    @computed
+    get hasTwoViewers() { return this.numberOfViewers === 2; }
+
+    @computed
+    get hasThreeViewers() { return this.numberOfViewers === 3; }
 
     @computed
     get host() {
         return this.props.host;
     }
 
-    @computed
     get paneWidth() {
-        return Math.floor(this.host.offsetWidth / 2) - 40;
+        if(this.dockMode) {
+            return Math.floor(document.body.offsetWidth / this.numberOfViewers) - 40 - 20;
+        }
+        else {
+            return Math.floor(this.host.offsetWidth / this.numberOfViewers) - 40;
+        }
     }
 
     @computed
@@ -78,71 +123,36 @@ export default class WindowManager extends React.Component {
         ];
     }
 
-    get tabs() {
-        return [
-            { name: 'pages', title: 'Pages' },
-            { name: 'info', title: 'Document Info' },
-            { name: 'versions', title: 'Versions' }
-        ];
-    }
-
-    @computed
-    get modesOptions() {
-        return this.modes.map((mode) => {
-            return (
-              <li key={ `mode-${ mode.name }` }>
-                  <button type="button"
-                          onClick={ () => this.onModeSwitch(mode) }
-                          >
-                      { this.currentMode.name === mode.name ? `➜ ${mode.title}` : mode.title }
-                  </button>
-              </li>
-            );
-        });
-    }
-
-    navigatePages() {
-        this.currentTab = this.tabs[0];
-    }
-
-    navigateInfo() {
-        this.currentTab = this.tabs[1];
-    }
-
-    navigateVersions() {
-        this.currentTab = this.tabs[2];
+    setViewers(number) {
+        this.numberOfViewers = number;
     }
 
     onModeSwitch(mode) {
         this.currentMode = mode;
 
-        if(this.currentMode.name === 'follow-next') {
-            this.rightPage = this.leftPage + 1;
-        }
-        else if(this.currentMode.name === 'follow-current') {
-            this.rightPage = this.leftPage;
-        }
+       //if(this.currentMode.name === 'follow-next') {
+       //    this.rightPage = this.leftPage + 1;
+       //}
+       //else if(this.currentMode.name === 'follow-current') {
+       //    this.rightPage = this.leftPage;
+       //}
     }
 
-    onLeftPageSwitch(page) {
-        this.leftPage = page;
+    onPageSwitch(viewer, ix, page) {
+       viewer.page = page;
+       //this.leftPage = page;
 
-        if(this.currentMode.name === 'follow-next') {
-            this.rightPage = page + 1;
-        }
-        else if(this.currentMode.name === 'follow-current') {
-            this.rightPage = page;
-        }
+       //if(this.currentMode.name === 'follow-next') {
+       //    this.rightPage = page + 1;
+       //}
+       //else if(this.currentMode.name === 'follow-current') {
+       //    this.rightPage = page;
+       //}
     }
 
-    onRightPageSwitch(page) {
-        this.rightPage = page;
-
-        if(this.currentMode.name === 'follow-next') {
-            this.leftPage = page - 1;
-        }
-        else if(this.currentMode.name === 'follow-current') {
-            this.leftPage = page;
+    onWindowResize(e) {
+        if(this.dockMode) {
+            this.forceUpdate();
         }
     }
 
@@ -150,27 +160,23 @@ export default class WindowManager extends React.Component {
         this.maxViewerHeight = Math.max(this.maxViewerHeight, el.offsetHeight);
     }
 
+    onToggleDockMode(isOn) {
+        this.dockMode = isOn;
+    }
+
     renderDocumentPanes() {
-        return (
-            [
-              <Viewer width={ this.paneWidth }
-                    key={ 1 }
-                    page={ this.leftPage }
+        return this.viewers.map((viewer, ix) => {
+            return (
+                <Viewer width={ this.paneWidth }
+                    key={ ix }
+                    page={ viewer.page }
                     documentId={ this.props.documentId }
                     allowImage={ this.allowImage }
                     onRendered={ this.onViewerRendered.bind(this) }
-                    onPageSwitch={ this.onLeftPageSwitch.bind(this) }
-                    />,
-              <Viewer width={ this.paneWidth }
-                      key={ 2 }
-                      page={ this.rightPage }
-                      documentId={ this.props.documentId }
-                      allowImage={ this.allowImage }
-                      onRendered={ this.onViewerRendered.bind(this) }
-                      onPageSwitch={ this.onRightPageSwitch.bind(this) }
-                      />
-            ]
-        );
+                    onPageSwitch={ this.onPageSwitch.bind(this, viewer, ix) }
+                    />
+            )
+        })
     }
 
     @observable
@@ -190,36 +196,69 @@ export default class WindowManager extends React.Component {
               </Button>
             ),
             align: 'left',
-            upwards: true
+            upwards: false
         };
     }
 
-    renderPanesOptions() {
+    @computed
+    get mainClasses() {
+        let classes = [ "corpusbuilder-window-manager" ];
+
+        if(this.dockMode) {
+            classes.push("corpusbuilder-window-manager-dockmode");
+        }
+
+        return classes.join(' ');
+    }
+
+    renderNavigation() {
         return (
-            <div className={ 'corpusbuilder-window-manager-options' } key={ 'pane-options' }>
-              <DropdownMenu {...this.menu}>
-                <ul>
-                  { this.modesOptions }
-                </ul>
-              </DropdownMenu>
+            <div className="corpusbuilder-global-options">
+                <div className="corpusbuilder-global-options-viewers">
+                    <Button toggles={ true } toggled={ this.hasOneViewer } onClick={ this.setViewers.bind(this, 1) }>
+                        <i className="fa fa-align-justify"></i>
+                    </Button>
+                    <Button toggles={ true } toggled={ this.hasTwoViewers } onClick={ this.setViewers.bind(this, 2) }>
+                        <i className="fa fa-align-justify"></i>
+                        &nbsp;
+                        <i className="fa fa-align-justify"></i>
+                    </Button>
+                    <Button toggles={ true } toggled={ this.hasThreeViewers } onClick={ this.setViewers.bind(this, 3) }>
+                        <i className="fa fa-align-justify"></i>
+                        &nbsp;
+                        <i className="fa fa-align-justify"></i>
+                        &nbsp;
+                        <i className="fa fa-align-justify"></i>
+                    </Button>
+                    <span className="corpusbuilder-global-options-separator"></span>
+                    <Button toggles={ true } toggled={ false }>
+                        Follow Current
+                    </Button>
+                    <Button toggles={ true } toggled={ true }>
+                        Follow Next
+                    </Button>
+                    <Button toggles={ true } toggled={ false }>
+                        Independent
+                    </Button>
+                    <span className="corpusbuilder-global-options-separator"></span>
+                    <Button toggles={ true } toggled={ this.dockMode } onToggle={ this.onToggleDockMode.bind(this) }>
+                        <i className="fa fa-expand"></i>
+                    </Button>
+                </div>
             </div>
         );
     }
 
-    renderContent() {
-        return [
-            this.renderDocumentPanes(),
-            this.renderPanesOptions()
-        ];
-    }
-
     render() {
-        return <div className="corpusbuilder-window-manager">
-            <Provider {...this.sharedContext}>
-                <div>
-                    { this.renderContent() }
-                </div>
-            </Provider>
-        </div>
+        return (
+          <div className={ this.mainClasses }>
+              <Provider {...this.sharedContext}>
+                  <div>
+                      { this.renderDocumentPanes() }
+                  </div>
+              </Provider>
+              { this.renderNavigation() }
+          </div>
+        )
     }
 }

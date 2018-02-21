@@ -1,5 +1,5 @@
 .corpusbuilder {
-  &-viewer:nth-child(2) {
+  &-viewer:not(:first-child) {
     border-left: 1px solid #ddd;
   }
 
