@@ -47,8 +47,8 @@ Rails.application.configure do
   # Suppress logger output for asset requests.
   config.assets.quiet = true
 
-  Rails.application.routes.default_url_options[:host]= "http://46.shariasource.berkman.temphost.net"
-  Rails.application.routes.default_url_options[:port]= 7946
+  Rails.application.routes.default_url_options[:host] = ENV.fetch('CORPUSBUILDER_HOST')
+  Rails.application.routes.default_url_options[:port] = ENV.fetch('CORPUSBUILDER_PORT')
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
