@@ -29,6 +29,8 @@ export default class WindowManager extends React.Component {
         window.onresize = this.onWindowResize.bind(this);
     }
 
+    lastCountAll = 1000;
+
     @observable
     dockMode = false;
 
@@ -117,18 +119,54 @@ export default class WindowManager extends React.Component {
 
     get modes() {
         return [
-            { name: 'follow-next', title: 'Follow Next' },
-            { name: 'follow-current', title: 'Follow Page' },
-            { name: 'independent', title: 'Independent' }
+            {
+                name: 'follow-next',
+                title: 'Follow Next',
+                arrange: ((_countAll, ix = 0, _page = null) => {
+                    let page = _page === null ? this.viewers[ ix ].page : _page;
+                    let countAll = _countAll || this.lastCountAll;
+
+                    this.viewers.forEach((viewer, viewerIx) => {
+                        let ixDiff = ix - viewerIx;
+
+                        viewer.page = Math.max(
+                            Math.min(
+                                page - ixDiff,
+                                countAll
+                            ),
+                            1
+                        );
+                    });
+                }).bind(this)
+            },
+            {
+                name: 'follow-current',
+                title: 'Follow Page',
+                arrange: ((countAll, ix = 0, _page = null) => {
+                    let page = _page === null ? this.viewers[ ix ].page : _page;
+
+                    for(let viewer of this.viewers) {
+                        viewer.page = page;
+                    }
+                }).bind(this)
+            },
+            {
+                name: 'independent',
+                title: 'Independent',
+                arrange: () => { /* no-op */ }
+            }
         ];
     }
 
     setViewers(number) {
         this.numberOfViewers = number;
+        this.currentMode.arrange();
     }
 
     onModeSwitch(mode) {
         this.currentMode = mode;
+
+        this.currentMode.arrange();
 
        //if(this.currentMode.name === 'follow-next') {
        //    this.rightPage = this.leftPage + 1;
@@ -138,8 +176,11 @@ export default class WindowManager extends React.Component {
        //}
     }
 
-    onPageSwitch(viewer, ix, page) {
+    onPageSwitch(viewer, ix, countAll, page) {
        viewer.page = page;
+
+       this.lastCountAll = countAll;
+       this.currentMode.arrange(countAll, ix, page);
        //this.leftPage = page;
 
        //if(this.currentMode.name === 'follow-next') {
@@ -231,15 +272,19 @@ export default class WindowManager extends React.Component {
                         <i className="fa fa-align-justify"></i>
                     </Button>
                     <span className="corpusbuilder-global-options-separator"></span>
-                    <Button toggles={ true } toggled={ false }>
-                        Follow Current
-                    </Button>
-                    <Button toggles={ true } toggled={ true }>
-                        Follow Next
-                    </Button>
-                    <Button toggles={ true } toggled={ false }>
-                        Independent
-                    </Button>
+                    {
+                        this.modes.map((mode, ix) => {
+                            return (
+                                <Button toggles={ true }
+                                        toggled={ this.currentMode.name === mode.name }
+                                        onToggle={ this.onModeSwitch.bind(this, mode) }
+                                        key={ ix }
+                                        >
+                                    { mode.title }
+                                </Button>
+                            )
+                        })
+                    }
                     <span className="corpusbuilder-global-options-separator"></span>
                     <Button toggles={ true } toggled={ this.dockMode } onToggle={ this.onToggleDockMode.bind(this) }>
                         <i className="fa fa-expand"></i>

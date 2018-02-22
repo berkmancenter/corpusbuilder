@@ -87,9 +87,6 @@ export default class Viewer extends React.Component {
     documentId = null;
 
     @observable
-    page = 1;
-
-    @observable
     lastSelectedGraphemes = null;
 
     @observable
@@ -148,6 +145,11 @@ export default class Viewer extends React.Component {
             return this.document.global.count_conflicts !== null &&
                    parseInt(this.document.global.count_conflicts, 10) > 0
         }
+    }
+
+    @computed
+    get page() {
+        return this.props.page;
     }
 
     @computed
@@ -314,13 +316,6 @@ export default class Viewer extends React.Component {
         });
 
         setTimeout(() => {
-            // auto-publish page switches
-            autorun(() => {
-                if(this.props.onPageSwitch !== null && this.props.onPageSwitch !== undefined) {
-                    this.props.onPageSwitch(this.page);
-                }
-            });
-
             // auto-set the diffPage when the current page changes
             autorun(() => {
                 if(this.diff !== null && this.diff !== undefined) {
@@ -340,7 +335,11 @@ export default class Viewer extends React.Component {
     }
 
     navigate(page) {
-        this.page = page;
+        if(typeof this.props.onPageSwitch === 'function') {
+            let countAll = this.document !== undefined && this.document !== null ?
+                this.document.global.surfaces_count : 1000;
+            this.props.onPageSwitch(countAll, page);
+        }
     }
 
     reportElement(div) {
@@ -686,8 +685,10 @@ export default class Viewer extends React.Component {
             let origPage = parseInt(this.document.surfaces[0].number);
             autorun((reaction) => {
                 if(this.document.surfaces[0].number === origPage) {
-                    this.page = this.document.surfaces[0].number + (up ? -1 : 1);
-                    this.props.onPageSwitch(this.page);
+                    let page = this.document.surfaces[0].number + (up ? -1 : 1);
+                    let countAll = this.document !== undefined && this.document !== null ?
+                        this.document.global.surfaces_count : 1000;
+                    this.props.onPageSwitch(countAll, page);
                 }
                 else {
                     let nextLine = inferNextLine(up ? -1 : 0);
@@ -737,7 +738,7 @@ export default class Viewer extends React.Component {
         let diffPage = this.diff.pages[ page - 1 ];
 
         if(diffPage !== undefined) {
-            this.page = diffPage.surfaceNumber;
+            this.navigate(diffPage.surfaceNumber);
         }
     }
 
@@ -770,16 +771,8 @@ export default class Viewer extends React.Component {
         this.showPopup = false;
     }
 
-    componentWillMount() {
-        this.page = this.props.page || 1;
-    }
-
     componentDidUpdate() {
         this.reportElement(this.div);
-    }
-
-    componentWillReceiveProps(props) {
-        this.page = props.page || 1;
     }
 
     renderSubmenu() {
