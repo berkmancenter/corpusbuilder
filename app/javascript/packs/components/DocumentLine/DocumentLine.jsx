@@ -190,7 +190,6 @@ export default class DocumentLine extends React.Component {
         return 'hsla(' + hue + ', 100%, 50%, .35)';
     }
 
-    @memoized
     boundsFor(graphemes) {
         let minUlx = graphemes.reduce((min, g) => { return Math.min(min, g.area.ulx) }, graphemes[0].area.ulx);
         let maxLrx = graphemes.reduce((max, g) => { return Math.max(max, g.area.lrx) }, graphemes[0].area.lrx);
@@ -214,9 +213,10 @@ export default class DocumentLine extends React.Component {
     get certaintiesMapDataURL() {
         let canvas = document.createElement('canvas');
         let context = canvas.getContext('2d');
+        let box = GraphemesUtils.lineToBox(this.props.line);
 
-        context.canvas.width = 415;
-        context.canvas.height = 20;
+        context.canvas.width = (box.lrx - box.ulx) * this.props.ratio;
+        context.canvas.height = (box.lry - box.uly) * this.props.ratio;
 
         for(let word of this.words) {
             let certainty = parseFloat(word[0].certainty);

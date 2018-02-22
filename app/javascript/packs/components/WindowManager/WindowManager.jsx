@@ -167,13 +167,6 @@ export default class WindowManager extends React.Component {
         this.currentMode = mode;
 
         this.currentMode.arrange();
-
-       //if(this.currentMode.name === 'follow-next') {
-       //    this.rightPage = this.leftPage + 1;
-       //}
-       //else if(this.currentMode.name === 'follow-current') {
-       //    this.rightPage = this.leftPage;
-       //}
     }
 
     onPageSwitch(viewer, ix, countAll, page) {
@@ -181,14 +174,6 @@ export default class WindowManager extends React.Component {
 
        this.lastCountAll = countAll;
        this.currentMode.arrange(countAll, ix, page);
-       //this.leftPage = page;
-
-       //if(this.currentMode.name === 'follow-next') {
-       //    this.rightPage = page + 1;
-       //}
-       //else if(this.currentMode.name === 'follow-current') {
-       //    this.rightPage = page;
-       //}
     }
 
     onWindowResize(e) {
