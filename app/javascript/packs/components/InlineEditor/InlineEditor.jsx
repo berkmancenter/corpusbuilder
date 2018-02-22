@@ -8,13 +8,17 @@ import { VisualPreview } from '../VisualPreview';
 
 import GraphemeUtils from '../../lib/GraphemesUtils';
 import PlatformUtils from '../../lib/PlatformUtils';
+import MathUtils from '../../lib/MathUtils';
+import BoxesUtils from '../../lib/BoxesUtils';
 
 import styles from './InlineEditor.scss'
 
+@inject('measureText')
 @observer
 export default class InlineEditor extends React.Component {
 
     navigating = false;
+    inputNode = null;
 
     @observable
     editedText = "";
@@ -77,6 +81,79 @@ export default class InlineEditor extends React.Component {
         }
 
         return result;
+    }
+
+    @computed
+    get ratio() {
+        if(this.inputNode !== null && this.inputNode !== undefined) {
+            let inputWidth = this.inputNode.offsetWidth;
+            let surfaceWidth = this.props.document.surfaces[0].area.lrx - this.props.document.surfaces[0].area.ulx;
+
+            return inputWidth / surfaceWidth;
+        }
+        else {
+            return 1;
+        }
+    }
+
+    @computed
+    get fontSize() {
+        if(this.boxes === undefined || this.boxes === null || this.boxes.length === 0) {
+            return 'auto';
+        }
+        else {
+            let meanBoxHeight = MathUtils.mean(this.boxes.map((box) => { return box.lry - box.uly; }));
+
+            return meanBoxHeight * this.ratio;
+        }
+    }
+
+    @computed
+    get letterSpacing() {
+        if(this.boxes !== null && this.boxes !== undefined && this.boxes.length !== 0) {
+            let lineBox = BoxesUtils.union(this.boxes);
+            let lineWidth = lineBox.lrx - lineBox.ulx;
+            let textWidth = this.props.measureText(this.editedText, this.fontSize);
+
+            return (this.ratio * lineWidth - textWidth) / ( this.editedText.length - 1);
+        }
+
+        return 1;
+    }
+
+    @computed
+    get paddingLeft() {
+        if(this.dir === "rtl" || this.boxes === null || this.boxes === undefined || this.boxes.length === 0) {
+            return "0px";
+        }
+        else {
+            let lineBox = BoxesUtils.union(this.boxes);
+
+            return this.ratio * lineBox.ulx;
+        }
+    }
+
+    @computed
+    get paddingRight() {
+        if(this.dir === "ltr" || this.boxes === null || this.boxes === undefined || this.boxes.length === 0) {
+            return "0px";
+        }
+        else {
+            let lineBox = BoxesUtils.union(this.boxes);
+            let surfaceWidth = this.props.document.surfaces[0].area.lrx - this.props.document.surfaces[0].area.ulx;
+
+            return this.ratio * (surfaceWidth - lineBox.lrx);
+        }
+    }
+
+    @computed
+    get inputStyles() {
+        return {
+            fontSize: this.fontSize,
+            letterSpacing: this.letterSpacing,
+            paddingLeft : this.paddingLeft,
+            paddingRight: this.paddingRight
+        }
     }
 
     deleteLine() {
@@ -159,6 +236,10 @@ export default class InlineEditor extends React.Component {
         }
     }
 
+    captureInput(el) {
+        this.inputNode = el;
+    }
+
     requestClose() {
         if(this.props.onCloseRequested !== undefined && this.props.onCloseRequested !== null) {
             this.props.onCloseRequested();
@@ -231,6 +312,8 @@ export default class InlineEditor extends React.Component {
                                onKeyUp={ this.onKeyUp.bind(this) }
                                dir={ this.dir }
                                className="corpusbuilder-inline-editor-input"
+                               style={ this.inputStyles }
+                               ref={ this.captureInput.bind(this) }
                                />
                         {
                             boxesHelp

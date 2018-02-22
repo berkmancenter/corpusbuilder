@@ -13,7 +13,6 @@ import GraphemesUtils from '../../lib/GraphemesUtils'
 @observer
 export default class DocumentPage extends React.Component {
 
-    rulerCache = new Map();
     pageRoot = null;
 
     // using @computed ensures that the values are cached and not re-computed
@@ -95,42 +94,12 @@ export default class DocumentPage extends React.Component {
         return this.props.showCertainties;
     }
 
-    get rulerId() {
-        return `corpusbuilder-page-ruler-${this.document.global.id}`;
-    }
-
-    get ruler() {
-        return document.getElementById(this.rulerId);
-    }
-
     capturePageRoot(el) {
         this.pageRoot = el;
     }
 
-    onLineClick(line, text, number, editing) {
-        return this.props.onLineClick(line, text, number, editing);
-    }
-
-    onMeasureTextRequested(text, fontSize) {
-        if(window._count === undefined) {
-            window._count = 1;
-        }
-        else {
-            window._count += 1;
-        }
-
-        if(text === " ") {
-            if(this.rulerCache.has(Math.round(fontSize))) {
-                return this.rulerCache.get(Math.round(fontSize));
-            }
-        }
-
-        this.ruler.textContent = text;
-        this.ruler.style.fontSize = fontSize + "px";
-
-        let result = this.ruler.offsetWidth;
-
-        return result;
+    onLineClick(line, text, number, editing, options) {
+        return this.props.onLineClick(line, text, number, editing, options);
     }
 
     onSelected(graphemes) {
@@ -300,14 +269,12 @@ export default class DocumentPage extends React.Component {
                                                editing={ this.props.editing }
                                                showCertainties={ this.showCertainties }
                                                onClick={ this.onLineClick.bind(this) }
-                                               onMeasureTextRequested={ this.onMeasureTextRequested.bind(this) }
                                                />
                       }
                   )
                 }
               </SelectionManager>
               { this.renderVisualSelection() }
-              <div id={ this.rulerId } className={ 'corpusbuilder-document-page-ruler' }>&nbsp;</div>
             </div>
           </div>
         );

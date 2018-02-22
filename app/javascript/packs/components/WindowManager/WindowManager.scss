@@ -1,6 +1,15 @@
 .corpusbuilder {
   font-family: Lato, Helvetica, Arial, sans-serif;
 
+  &-ruler {
+    color: transparent;
+    height: 0px;
+    overflow: hidden;
+    position: absolute;
+    white-space: pre;
+    font-family: Lato, Helvetica, Arial, sans-serif;
+  }
+
   &-window-manager {
     background-color: #f2f2f2;
     position: relative;

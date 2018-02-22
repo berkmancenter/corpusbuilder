@@ -1,11 +1,12 @@
 import React from 'react'
 import { computed, observable } from 'mobx'
-import { observer } from 'mobx-react'
+import { inject, observer } from 'mobx-react'
 import GraphemesUtils from '../../lib/GraphemesUtils';
 import MathUtils from '../../lib/MathUtils';
 import { memoized } from '../../lib/Decorators';
 import styles from './DocumentLine.scss'
 
+@inject('measureText')
 @observer
 export default class DocumentLine extends React.Component {
 
@@ -283,11 +284,23 @@ export default class DocumentLine extends React.Component {
     }
 
     measureText(text) {
-        return this.props.onMeasureTextRequested(text, this.fontSize);
+        return this.props.measureText(text, this.fontSize);
     }
 
     onClick() {
-        return this.props.onClick(this.props.line, this.text, this.props.number, this.props.editing);
+        if(typeof this.props.onClick === 'function') {
+            return this.props.onClick(
+                this.props.line,
+                this.text,
+                this.props.number,
+                this.props.editing,
+                {
+                    fontSize: this.fontSize,
+                    ratio: this.ration,
+                    letterSpacing: this.letterSpacing
+                }
+            );
+        }
     }
 
     @computed

@@ -30,6 +30,7 @@ export default class WindowManager extends React.Component {
     }
 
     lastCountAll = 1000;
+    rulerCache = new Map();
 
     @observable
     dockMode = false;
@@ -108,7 +109,8 @@ export default class WindowManager extends React.Component {
     get sharedContext() {
         return {
             appState: this.appState,
-            editorEmail: this.props.editorEmail
+            editorEmail: this.props.editorEmail,
+            measureText: this.measureText.bind(this)
         };
     }
 
@@ -176,6 +178,14 @@ export default class WindowManager extends React.Component {
        this.currentMode.arrange(countAll, ix, page);
     }
 
+    get rulerId() {
+        return `corpusbuilder-page-ruler-${this.props.documentId}`;
+    }
+
+    get ruler() {
+        return document.getElementById(this.rulerId);
+    }
+
     onWindowResize(e) {
         if(this.dockMode) {
             this.forceUpdate();
@@ -224,6 +234,21 @@ export default class WindowManager extends React.Component {
             align: 'left',
             upwards: false
         };
+    }
+
+    measureText(text, fontSize) {
+        if(text === " ") {
+            if(this.rulerCache.has(Math.round(fontSize))) {
+                return this.rulerCache.get(Math.round(fontSize));
+            }
+        }
+
+        this.ruler.textContent = text;
+        this.ruler.style.fontSize = fontSize + "px";
+
+        let result = this.ruler.offsetWidth;
+
+        return result;
     }
 
     @computed
@@ -288,6 +313,7 @@ export default class WindowManager extends React.Component {
                   </div>
               </Provider>
               { this.renderNavigation() }
+              <div id={ this.rulerId } className={ 'corpusbuilder-ruler' }>&nbsp;</div>
           </div>
         )
     }

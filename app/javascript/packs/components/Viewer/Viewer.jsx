@@ -99,6 +99,9 @@ export default class Viewer extends React.Component {
     editingVisual = null;
 
     @observable
+    editingOptions = {};
+
+    @observable
     showCertainties = false;
 
     @observable
@@ -716,11 +719,12 @@ export default class Viewer extends React.Component {
         this.showMergeWindow = false;
     }
 
-    onLineClick(line, text, number, editing) {
+    onLineClick(line, text, number, editing, options) {
         if(editing) {
             this.editingLine = line;
             this.editingText = text;
             this.editingVisual = null;
+            this.editingOptions = options;
             this.showInlineEditor = true;
         }
     }
@@ -729,6 +733,7 @@ export default class Viewer extends React.Component {
         this.editingLine = [ ];
         this.editingText = "";
         this.editingVisual = { y: y, height: height, ratio: ratio };
+        this.editingOptions = {};
         this.showInlineEditor = true;
     }
 
@@ -926,6 +931,7 @@ export default class Viewer extends React.Component {
                                 allowNewBoxes={ !this.forceEditingBoxes }
                                 page={ page }
                                 width={ width }
+                                visualOptions={ this.editingOptions }
                                 mainPageTop={ mainPageTop }
                                 onCloseRequested={ this.hideInlineEditor.bind(this) }
                                 onSaveRequested={ this.saveLine.bind(this) }
