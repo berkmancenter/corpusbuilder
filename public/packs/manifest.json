@@ -352,6 +352,8 @@
   "lib/BoxesUtils.js.map": "/packs/lib/BoxesUtils.js.map",
   "lib/Decorators.js": "/packs/lib/Decorators.js",
   "lib/Decorators.js.map": "/packs/lib/Decorators.js.map",
+  "lib/DomUtils.js": "/packs/lib/DomUtils.js",
+  "lib/DomUtils.js.map": "/packs/lib/DomUtils.js.map",
   "lib/GraphemesUtils.js": "/packs/lib/GraphemesUtils.js",
   "lib/GraphemesUtils.js.map": "/packs/lib/GraphemesUtils.js.map",
   "lib/ImageUtils.js": "/packs/lib/ImageUtils.js",

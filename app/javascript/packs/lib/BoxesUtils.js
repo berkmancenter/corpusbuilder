@@ -19,4 +19,16 @@ export default class BoxesUtils {
             lry: maxLry
         }
     }
+
+    static boxesEqual(box1, box2) {
+        if(box1 === null || box1 === undefined || box2 === null || box2 === undefined) {
+            return false;
+        }
+        else {
+            return Math.abs(box1.ulx - box2.ulx) < 1 &&
+                  Math.abs(box1.lrx - box2.lrx) < 1 &&
+                  Math.abs(box1.uly - box2.uly) < 1 &&
+                  Math.abs(box1.lry - box2.lry) < 1;
+        }
+    }
 }

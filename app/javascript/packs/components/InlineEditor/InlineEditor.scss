@@ -19,9 +19,31 @@
       padding: 5px;
     }
 
-    input {
+    &-shell {
       white-space: pre;
       font-family: Lato, Helvetica, Arial, sans-serif;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      border-radius: 1px;
+      background-color: rgba(0, 0, 0, 0.04);
+      color: black;
+      -webkit-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
+      box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
+      height: 35px;
+      cursor: text;
+      position: relative;
+
+      input {
+        margin: 0px;
+        background-color: transparent;
+        box-shadow: none;
+        padding: 0px;
+        position: absolute;
+      }
+
+      input:hover, input:focus, input:active {
+        background-color: transparent;
+      }
     }
 
     &-help {

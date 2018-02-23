@@ -11,8 +11,15 @@ export default class VisualPreview extends React.Component {
 
     rootElement = null;
 
-    @observable
-    selectedBox = null;
+    @computed
+    get showMask() {
+        return this.props.showMask === true;
+    }
+
+    @computed
+    get selectedBox() {
+        return this.props.selectedBox;
+    }
 
     @computed
     get allowNewBoxes() {
@@ -69,6 +76,17 @@ export default class VisualPreview extends React.Component {
     }
 
     @computed
+    get ratio() {
+        if(this.canvas !== undefined && this.canvas !== null) {
+            let surface = this.props.document.surfaces[0];
+
+            return this.canvas.offsetWidth / (surface.area.lrx - surface.area.ulx);
+        }
+
+        return 1;
+    }
+
+    @computed
     get scaledLineHeight() {
         let ratio = this.canvas.offsetWidth / this.image.naturalWidth;
 
@@ -119,7 +137,6 @@ export default class VisualPreview extends React.Component {
     }
 
     onBoxSelectionChanged(box) {
-        this.selectedBox = box;
         this.props.onBoxSelectionChanged(box);
     }
 
@@ -161,11 +178,41 @@ export default class VisualPreview extends React.Component {
         }
     }
 
+    renderMask() {
+        if(this.showMask && !this.showBoxes && this.selectedBox !== null && this.selectedBox !== undefined) {
+            let leftStyle = {
+                left: '0px',
+                right: 'auto',
+                width: `${ this.selectedBox.ulx * this.ratio - 4 }px`
+            };
+            let rightStyle = {
+                left: `${ this.selectedBox.lrx * this.ratio + 4 }px`,
+                right: '0px',
+                width: 'auto'
+            };
+            return [
+                <div className="corpusbuilder-visual-preview-mask"
+                     style={ leftStyle }
+                     key={ 'left' }
+                     >
+                </div>,
+                <div className="corpusbuilder-visual-preview-mask"
+                     style={ rightStyle }
+                     key={ 'right' }
+                     >
+                </div>
+            ]
+        }
+
+        return null;
+    }
+
     render() {
         return (
             <div ref={ this.captureRoot.bind(this) } className="corpusbuilder-visual-preview-preview-wrapper">
                 <div className="corpusbuilder-visual-preview-canvas-area">
                     <canvas className="corpusbuilder-visual-preview-preview" />
+                    { this.renderMask() }
                     <BoxesEditor line={ this.props.line }
                                  visible={ this.props.showBoxes }
                                  previewToSurfaceRatio={ this.previewToSurfaceRatio }
@@ -173,6 +220,7 @@ export default class VisualPreview extends React.Component {
                                  document={ this.props.document }
                                  editable={ this.editable }
                                  boxes={ this.props.boxes }
+                                 selectedBox={ this.props.selectedBox }
                                  allowNewBoxes={ this.allowNewBoxes }
                                  onBoxSelectionChanged={ this.onBoxSelectionChanged.bind(this) }
                                  onBoxesReported={ this.onBoxesReported.bind(this) }

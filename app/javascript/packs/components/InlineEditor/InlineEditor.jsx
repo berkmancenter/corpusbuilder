@@ -10,6 +10,7 @@ import GraphemeUtils from '../../lib/GraphemesUtils';
 import PlatformUtils from '../../lib/PlatformUtils';
 import MathUtils from '../../lib/MathUtils';
 import BoxesUtils from '../../lib/BoxesUtils';
+import DomUtils from '../../lib/DomUtils';
 
 import styles from './InlineEditor.scss'
 
@@ -64,12 +65,16 @@ export default class InlineEditor extends React.Component {
     }
 
     @computed
-    get wordsMatchBoxes() {
-        let editedWords = this.editedText.trim().split(/\s+/g).filter((word) => {
+    get editedTextWords() {
+        return this.editedText.trim().split(/\s+/g).filter((word) => {
             return word.length > 1 || (word.length > 0 && !GraphemeUtils.isCharSpecial(word[0]));
         });
 
-        return editedWords.length === this.boxes.length;
+    }
+
+    @computed
+    get wordsMatchBoxes() {
+        return this.editedTextWords.length === this.boxes.length;
     }
 
     @computed
@@ -179,16 +184,58 @@ export default class InlineEditor extends React.Component {
         e.stopPropagation();
     }
 
-    onTextChanged(e) {
-        this.editedText = e.target.value;
+    onTextChanged(ix, e) {
+        let textWords = JSON.parse(JSON.stringify(this.editedTextWords));
+        textWords[ ix ] = e.target.value;
+
+        this.editedText = textWords.join(' ');
     }
 
-    onKeyUp(e) {
+    onKeyUp(box, ix, e) {
         if(e.keyCode === 38) {
             this.onArrow(true);
         }
         else if(e.keyCode === 40) {
             this.onArrow(false);
+        }
+    }
+
+    onInputFocus(box, ix, e) {
+        this.selectedBox = box;
+    }
+
+    onShellClick(e) {
+        if(e.target === this.inputNode) {
+            if(this.boxes !== null && this.boxes !== undefined && this.boxes.length !== 0) {
+                let x = e.screenX - DomUtils.absoluteOffsetLeft(e.target);
+                let candidateIx = 0;
+
+                this.boxes.forEach((box, ix) => {
+                    if(box.lrx * this.ratio < x) {
+                        candidateIx = ix;
+                    }
+                });
+
+                this.inputNode.children[ candidateIx ].focus();
+                let text = this.editedTextWords[ candidateIx ];
+
+                if(this.boxes[ candidateIx ].ulx * this.ratio > x) {
+                    let tix = this.dir === "rtl" ? text.length : 0;
+
+                    this.inputNode.children[ candidateIx ].setSelectionRange(
+                        tix,
+                        tix
+                    );
+                }
+                else {
+                    let tix = this.dir === "rtl" ? 0 : text.length
+
+                    this.inputNode.children[ candidateIx ].setSelectionRange(
+                        tix,
+                        tix
+                    );
+                }
+            }
         }
     }
 
@@ -268,6 +315,53 @@ export default class InlineEditor extends React.Component {
         this.showBoxes = show;
     }
 
+    renderInput(box, ix) {
+        let text = this.dir === "rtl" ? this.editedTextWords[ this.boxes.length - 1 - ix ] : this.editedTextWords[ ix ];
+
+        text = text || " ";
+
+        let boxWidth = (box.lrx - box.ulx) * this.ratio;
+        let textWidth = this.props.measureText(text, this.fontSize);
+        let letterSpacing = text.length === 0 ? 1 : ( boxWidth - textWidth ) / text.length;
+        let styles = {
+            left: box.ulx * this.ratio,
+            width: boxWidth,
+            letterSpacing: letterSpacing,
+            fontSize: this.fontSize
+        };
+
+        return (
+            <input onChange={ this.onTextChanged.bind(this, ix) }
+                  value={ text }
+                  onKeyUp={ this.onKeyUp.bind(this, box, ix) }
+                  style={ styles }
+                  dir={ this.dir }
+                  key={ ix }
+                  onFocus={ this.onInputFocus.bind(this, box, ix) }
+                  className="corpusbuilder-inline-editor-input"
+                  />
+        );
+
+        return null;
+    }
+
+    renderInputs() {
+        let ixs = this.boxes.map((_, ix) => { return ix });
+
+        return (
+            <div className="corpusbuilder-inline-editor-shell"
+                 ref={ this.captureInput.bind(this) }
+                 onClick={ this.onShellClick.bind(this) }
+                 >
+                {
+                    ixs.map((ix) => {
+                        return this.renderInput(this.boxes[ ix ], ix)
+                    })
+                }
+            </div>
+        );
+    }
+
     render() {
         if(this.props.visible) {
             let boxesHelp = null;
@@ -302,19 +396,15 @@ export default class InlineEditor extends React.Component {
                                        document={ this.props.document }
                                        editable={ true }
                                        boxes={ this.boxes }
+                                       selectedBox={ this.selectedBox }
                                        showBoxes={ this.showBoxes }
                                        allowNewBoxes={ this.allowNewBoxes }
                                        onBoxesReported={ this.onBoxesReported.bind(this) }
                                        onBoxSelectionChanged={ this.onBoxSelectionChanged.bind(this) }
                                        />
-                        <input onChange={ this.onTextChanged.bind(this) }
-                               value={ this.editedText }
-                               onKeyUp={ this.onKeyUp.bind(this) }
-                               dir={ this.dir }
-                               className="corpusbuilder-inline-editor-input"
-                               style={ this.inputStyles }
-                               ref={ this.captureInput.bind(this) }
-                               />
+                        {
+                            this.renderInputs()
+                        }
                         {
                             boxesHelp
                         }

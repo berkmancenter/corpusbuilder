@@ -2,6 +2,7 @@ import React from 'react';
 import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react'
 import GraphemesUtils from '../../lib/GraphemesUtils';
+import BoxesUtils from '../../lib/BoxesUtils';
 import { interact } from 'interactjs';
 
 import styles from './BoxesEditor.scss';
@@ -14,8 +15,14 @@ export default class BoxesEditor extends React.Component {
     @observable
     newBox = null;
 
-    @observable
-    boxSelected = null;
+    @computed
+    get selectedBox() {
+        if(this.props.selectedBox !== undefined && this.props.selectedBox !== null) {
+            return this.scaleBoxDown(this.props.selectedBox);
+        }
+
+        return null;
+    }
 
     @computed
     get previewToSurfaceRatio() {
@@ -99,16 +106,16 @@ export default class BoxesEditor extends React.Component {
         else {
             this.boxes = this.props.boxes.map(this.scaleBoxDown.bind(this));
 
-            if(this.boxSelected !== null) {
+            if(this.selectedBox !== null) {
                 let found = this.boxes.filter((b) => {
-                    return b.ulx !== this.boxSelected.ulx &&
-                          b.uly !== this.boxSelected.uly &&
-                          b.lrx !== this.boxSelected.lrx &&
-                          b.lry !== this.boxSelected.lry;
+                    return b.ulx !== this.selectedBox.ulx &&
+                          b.uly !== this.selectedBox.uly &&
+                          b.lrx !== this.selectedBox.lrx &&
+                          b.lry !== this.selectedBox.lry;
                 });
 
                 if(found === null || found === undefined) {
-                    this.boxSelected = null;
+                    this.selectedBox = null;
                 }
             }
         }
@@ -232,14 +239,13 @@ export default class BoxesEditor extends React.Component {
             let boxIndex = target.getAttribute('data-index');
             let box = this.boxes[boxIndex];
 
-            if(this.boxSelected !== box) {
-                this.boxSelected = box;
+            if(this.selectedBox !== box) {
+                this.selectedBox = box;
                 this.props.onBoxSelectionChanged(
                   this.translateBox(box)
                 );
             }
             else {
-                this.boxSelected = null;
                 this.props.onBoxSelectionChanged(null);
             }
         }
@@ -376,7 +382,7 @@ export default class BoxesEditor extends React.Component {
                   height: (box.lry - box.uly)
               };
 
-              return <div className={ `corpusbuilder-boxes-editor-item ${ box === this.boxSelected ? 'corpusbuilder-boxes-editor-item-selected' : '' }` }
+              return <div className={ `corpusbuilder-boxes-editor-item ${ BoxesUtils.boxesEqual(box, this.selectedBox) ? 'corpusbuilder-boxes-editor-item-selected' : '' }` }
                    data-index={ index }
                    key={ index }
                    style={ boxStyles }
