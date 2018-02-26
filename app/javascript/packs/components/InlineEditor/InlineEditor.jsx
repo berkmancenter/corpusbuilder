@@ -182,9 +182,9 @@ export default class InlineEditor extends React.Component {
     }
 
     onTextChanged(ix, e) {
-        let textWords = JSON.parse(JSON.stringify(this.editedTextWords));
+        ix = this.dir === "rtl" ? this.boxes.length - ix - 1 : ix;
 
-        textWords[ ix ] = e.target.value;
+        this.editedTextWords[ ix ] = e.target.value.replace(/\s+/, '');
     }
 
     onKeyUp(box, ix, e) {
@@ -197,11 +197,48 @@ export default class InlineEditor extends React.Component {
     }
 
     onKeyDown(box, ix, e) {
-        if(e.keyCode === 37) {
+        if(e.metaKey || e.ctrlKey) {
+            if(e.keyCode === 37) {
+                this.focusWord(
+                    this.dir === "rtl" ? 0 : this.boxes.length - 1,
+                    this.dir === "rtl" ? "end" : "start"
+                );
+            }
+            else if(e.keyCode === 39) {
+                this.focusWord(
+                    this.dir === "rtl" ? this.boxes.length - 1 : 0,
+                    this.dir === "rtl" ? "start" : "end"
+                );
+            }
+        }
+        else if(e.altKey) {
+            if(e.keyCode === 37) {
+                this.focusWord(
+                    this.dir === "rtl" ? ix - 1 : ix + 1,
+                    this.dir === "rtl" ? "start" : "end"
+                );
+            }
+            else if(e.keyCode === 39) {
+                this.focusWord(
+                    this.dir === "rtl" ? ix + 1 : ix - 1,
+                    this.dir === "rtl" ? "end" : "start"
+                );
+            }
+        }
+        else if(e.keyCode === 37) {
             this.onInputArrowSide('left', e.target, ix);
         }
         else if(e.keyCode === 39) {
             this.onInputArrowSide('right', e.target, ix);
+        }
+        else if(e.keyCode === 32) {
+            if(e.target.selectionStart === e.target.value.length) {
+                this.onInputArrowSide(
+                    this.dir === "rtl" ? 'left' : 'right',
+                    e.target,
+                    ix
+                );
+            }
         }
     }
 
@@ -247,28 +284,38 @@ export default class InlineEditor extends React.Component {
 
     focusWord(ix, caretMode = null) {
         pre: {
-            this.inputNode.children[ ix ] !== undefined;
+            typeof ix === 'number',
             [ null, 'start', 'end' ].includes(caretMode);
         }
+
+        ix = Math.max(
+            Math.min(
+                ix,
+                this.boxes.length - 1
+            ),
+            0
+        );
 
         let input = this.inputNode.children[ ix ];
 
         input.focus();
 
-        if(caretMode === 'start') {
-            input.setSelectionRange(
-                0,
-                0
-            );
-        }
-        else if(caretMode === 'end') {
-            let end = input.value.length;
+        setTimeout(() => {
+            if(caretMode === 'start') {
+                input.setSelectionRange(
+                    0,
+                    0
+                );
+            }
+            else if(caretMode === 'end') {
+                let end = input.value.length;
 
-            input.setSelectionRange(
-                end,
-                end
-            );
-        }
+                input.setSelectionRange(
+                    end,
+                    end
+                );
+            }
+        });
     }
 
     onInputArrowSide(side, inputNode, ix) {
@@ -344,6 +391,11 @@ export default class InlineEditor extends React.Component {
 
     componentWillUpdate(props) {
         if(this.editedTextWords === null || this.props.visible !== props.visible || this.navigating ) {
+            if(this.navigating) {
+                setTimeout(() => {
+                    this.focusWord(this.dir === "rtl" ? this.boxes.length - 1 : 0, "start");
+                });
+            }
             this.initText(props);
             this.navigating = false;
             this.originalBoxes = [ ];
