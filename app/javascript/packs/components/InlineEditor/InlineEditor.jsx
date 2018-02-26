@@ -21,8 +21,10 @@ export default class InlineEditor extends React.Component {
     navigating = false;
     inputNode = null;
 
-    @observable
-    editedText = "";
+    @computed
+    get editedText() {
+        return this.editedTextWords === null ? "" : this.editedTextWords.join(' ');
+    }
 
     @observable
     _showBoxes = false;
@@ -45,6 +47,9 @@ export default class InlineEditor extends React.Component {
     boxes = [ ];
 
     @observable
+    editedTextWords = null;
+
+    @observable
     selectedBox = null;
 
     originalBoxes = [ ];
@@ -62,14 +67,6 @@ export default class InlineEditor extends React.Component {
         }
 
         return this.props.line[0].value.codePointAt(0) === 0x200f ? "rtl" : "ltr";
-    }
-
-    @computed
-    get editedTextWords() {
-        return this.editedText.trim().split(/\s+/g).filter((word) => {
-            return word.length > 1 || (word.length > 0 && !GraphemeUtils.isCharSpecial(word[0]));
-        });
-
     }
 
     @computed
@@ -186,9 +183,8 @@ export default class InlineEditor extends React.Component {
 
     onTextChanged(ix, e) {
         let textWords = JSON.parse(JSON.stringify(this.editedTextWords));
-        textWords[ ix ] = e.target.value;
 
-        this.editedText = textWords.join(' ');
+        textWords[ ix ] = e.target.value;
     }
 
     onKeyUp(box, ix, e) {
@@ -197,6 +193,12 @@ export default class InlineEditor extends React.Component {
         }
         else if(e.keyCode === 40) {
             this.onArrow(false);
+        }
+        else if(e.keyCode === 37) {
+            this.onInputArrowSide('left');
+        }
+        else if(e.keyCode === 39) {
+            this.onInputArrowSide('right');
         }
     }
 
@@ -260,18 +262,24 @@ export default class InlineEditor extends React.Component {
 
     onCloseRequested() {
         if(this.props.visible) {
-            this.editedText = "";
+            this.editedTextWords = [];
             this.requestClose();
         }
     }
 
+    initText(props) {
+        this.editedTextWords = props.text === null ? [ ] : props.text.trim().split(/\s+/g).filter((word) => {
+            return word.length > 1 || (word.length > 0 && !GraphemeUtils.isCharSpecial(word[0]));
+        });
+    }
+
     componentWillMount() {
-        this.editedText = this.props.text;
+        this.initText(this.props);
     }
 
     componentWillUpdate(props) {
-        if(this.props.visible !== props.visible || this.navigating ) {
-            this.editedText = props.text;
+        if(this.editedTextWords === null || this.props.visible !== props.visible || this.navigating ) {
+            this.initText(props);
             this.navigating = false;
             this.originalBoxes = [ ];
             this.boxes = [ ];
@@ -295,20 +303,22 @@ export default class InlineEditor extends React.Component {
 
     requestSave() {
         if(this.props.onSaveRequested !== undefined && this.props.onSaveRequested !== null) {
+            let text = JSON.parse(JSON.stringify(this.editedText))
+
             if(this.props.line === undefined || this.props.line === null || this.props.line.length === 0) {
                 let start = this.dir === "rtl" ? GraphemeUtils.rtlMark : GraphemeUtils.ltrMark;
                 let end   = GraphemeUtils.popDirectionalityMark;
 
-                this.editedText = `${String.fromCharCode(start)} ${this.editedText} ${String.fromCharCode(end)}`;
+                text = `${String.fromCharCode(start)} ${text} ${String.fromCharCode(end)}`;
             }
 
-            this.props.onSaveRequested(this.props.document, this.props.line, this.editedText, this.boxes);
+            this.props.onSaveRequested(this.props.document, this.props.line, text, this.boxes);
         }
     }
 
     resetText() {
         this.boxes.replace(this.originalBoxes);
-        this.editedText = this.props.text;
+        this.initText(this.props);
     }
 
     onToggleBoxes(show) {
@@ -318,29 +328,29 @@ export default class InlineEditor extends React.Component {
     renderInput(box, ix) {
         let text = this.dir === "rtl" ? this.editedTextWords[ this.boxes.length - 1 - ix ] : this.editedTextWords[ ix ];
 
-        text = text || " ";
+        if(text !== undefined && text !== null) {
+            let boxWidth = (box.lrx - box.ulx) * this.ratio;
+            let textWidth = this.props.measureText(text, this.fontSize);
+            let letterSpacing = text.length === 0 ? 1 : ( boxWidth - textWidth ) / text.length;
+            let styles = {
+                left: box.ulx * this.ratio,
+                width: boxWidth,
+                letterSpacing: letterSpacing,
+                fontSize: this.fontSize
+            };
 
-        let boxWidth = (box.lrx - box.ulx) * this.ratio;
-        let textWidth = this.props.measureText(text, this.fontSize);
-        let letterSpacing = text.length === 0 ? 1 : ( boxWidth - textWidth ) / text.length;
-        let styles = {
-            left: box.ulx * this.ratio,
-            width: boxWidth,
-            letterSpacing: letterSpacing,
-            fontSize: this.fontSize
-        };
-
-        return (
-            <input onChange={ this.onTextChanged.bind(this, ix) }
-                  value={ text }
-                  onKeyUp={ this.onKeyUp.bind(this, box, ix) }
-                  style={ styles }
-                  dir={ this.dir }
-                  key={ ix }
-                  onFocus={ this.onInputFocus.bind(this, box, ix) }
-                  className="corpusbuilder-inline-editor-input"
-                  />
-        );
+            return (
+                <input onChange={ this.onTextChanged.bind(this, ix) }
+                      value={ text }
+                      onKeyUp={ this.onKeyUp.bind(this, box, ix) }
+                      style={ styles }
+                      dir={ this.dir }
+                      key={ ix }
+                      onFocus={ this.onInputFocus.bind(this, box, ix) }
+                      className="corpusbuilder-inline-editor-input"
+                      />
+            );
+        }
 
         return null;
     }
