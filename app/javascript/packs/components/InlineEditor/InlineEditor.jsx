@@ -75,11 +75,33 @@ export default class InlineEditor extends React.Component {
     }
 
     @computed
+    get dataValid() {
+        return this.wordsMatchBoxes && !this.boxesOverlap;
+    }
+
+    @computed
+    get boxesOverlap() {
+        for(let b1 of this.boxes) {
+            for(let b2 of this.boxes) {
+                if(b1 !== b2 && BoxesUtils.boxesOverlap(b1, b2)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @computed
     get messages() {
         let result = [];
 
         if(!this.wordsMatchBoxes) {
             result.push("You must provide the same number of boxes as there are words in the provided text");
+        }
+
+        if(this.boxesOverlap) {
+            result.push("Boxes cannot overlap");
         }
 
         return result;
@@ -573,7 +595,7 @@ export default class InlineEditor extends React.Component {
                             <Button onClick={ this.resetText.bind(this) }>
                               Reset
                             </Button>
-                            <Button onClick={ this.requestSave.bind(this) } disabled={ !this.wordsMatchBoxes }>
+                            <Button onClick={ this.requestSave.bind(this) } disabled={ !this.dataValid }>
                               Save
                             </Button>
                         </div>

@@ -221,10 +221,53 @@ export default class BoxesEditor extends React.Component {
         }
     }
 
+    normalizeBox(box) {
+        let overlaps = this.boxes
+            .filter((b) => { return b !== box && BoxesUtils.boxesOverlap(b, box) })
+            .sort((b1, b2) => { return b1.ulx - b2.ulx });
+
+        let leftOverlaps = overlaps.filter((b) => { return b.lrx < box.lrx })
+        let rightOverlaps = overlaps.filter((b) => { return b.ulx > box.ulx })
+
+        let leftOverlap = leftOverlaps[ leftOverlaps.length - 1 ];
+        let rightOverlap = rightOverlaps[0];
+
+        if(leftOverlap !== undefined && leftOverlap === rightOverlap) {
+            if(leftOverlap.ulx - box.ulx < box.lrx - rightOverlap.lrx) {
+                rightOverlap = undefined;
+            }
+            else {
+                leftOverlap = undefined;
+            }
+        }
+
+        let normalizedUlx = Math.max(
+            box.ulx,
+            leftOverlap !== undefined ? leftOverlap.lrx + 4 : box.ulx
+        );
+        let normalizedLrx = Math.min(
+            box.lrx,
+            rightOverlap !== undefined ? rightOverlap.ulx - 4 : box.lrx
+        );
+
+        return {
+            uly: box.uly,
+            lry: box.lry,
+            ulx: normalizedUlx,
+            lrx: normalizedLrx
+        };
+    }
+
     onBoxEdited(event) {
         let target = event.target;
         let boxIndex = target.getAttribute('data-index');
         let box = this.boxes[boxIndex];
+
+        box = this.normalizeBox(box);
+
+        if(BoxesUtils.boxValid(box)) {
+            this.boxes[boxIndex] = box;
+        }
 
         this.broadcastBoxes();
     }
@@ -341,7 +384,9 @@ export default class BoxesEditor extends React.Component {
 
     endDraw() {
         if(this.newBox !== null) {
-            this.boxes.push(this.newBox);
+            this.boxes.push(
+                this.normalizeBox(this.newBox)
+            );
             this.newBox = null;
             this.broadcastBoxes();
         }

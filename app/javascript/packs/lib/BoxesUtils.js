@@ -6,6 +6,13 @@ export default class BoxesUtils {
                box1.lrx >= box2.ulx;
     }
 
+    static boxValid(box) {
+        return box.ulx > 0 && box.ulx < box.lrx &&
+               box.lrx > 0 &&
+               box.uly > 0 && box.uly < box.lry &&
+               box.lry > 0;
+    }
+
     static union(boxes) {
         let minUlx = boxes.reduce((min, b) => { return Math.min(min, b.ulx) }, boxes[0].ulx);
         let minUly = boxes.reduce((min, b) => { return Math.min(min, b.uly) }, boxes[0].uly);
