@@ -52,7 +52,7 @@ export default class InlineEditor extends React.Component {
     @observable
     selectedBox = null;
 
-    originalBoxes = [ ];
+    originalBoxes = null;
 
     @computed
     get line() {
@@ -165,20 +165,15 @@ export default class InlineEditor extends React.Component {
     }
 
     removeBox(e) {
-        let items = this.boxes.filter((b) => {
-            return !(
-              Math.abs(b.ulx - this.selectedBox.ulx) < 1 &&
-              Math.abs(b.uly - this.selectedBox.uly) < 1 &&
-              Math.abs(b.lrx - this.selectedBox.lrx) < 1 &&
-              Math.abs(b.lry - this.selectedBox.lry) < 1
-            );
+        let ix = this.boxes.findIndex((b) => {
+            return BoxesUtils.boxesEqual(b, this.selectedBox);
         });
-        this.boxes.clear();
-        this.boxes.replace(items);
+        this.editedTextWords.splice(
+            this.dir === "rtl" ? this.boxes.length - ix - 1 : ix,
+            1
+        );
+        this.boxes.splice(ix, 1);
         this.selectedBox = null;
-        this.forceUpdate();
-
-        e.stopPropagation();
     }
 
     onTextChanged(ix, e) {
@@ -284,7 +279,7 @@ export default class InlineEditor extends React.Component {
 
     focusWord(ix, caretMode = null) {
         pre: {
-            typeof ix === 'number',
+            typeof ix === 'number';
             [ null, 'start', 'end' ].includes(caretMode);
         }
 
@@ -298,24 +293,26 @@ export default class InlineEditor extends React.Component {
 
         let input = this.inputNode.children[ ix ];
 
-        input.focus();
+        if(input !== undefined) {
+            input.focus();
 
-        setTimeout(() => {
-            if(caretMode === 'start') {
-                input.setSelectionRange(
-                    0,
-                    0
-                );
-            }
-            else if(caretMode === 'end') {
-                let end = input.value.length;
+            setTimeout(() => {
+                if(caretMode === 'start') {
+                    input.setSelectionRange(
+                        0,
+                        0
+                    );
+                }
+                else if(caretMode === 'end') {
+                    let end = input.value.length;
 
-                input.setSelectionRange(
-                    end,
-                    end
-                );
-            }
-        });
+                    input.setSelectionRange(
+                        end,
+                        end
+                    );
+                }
+            });
+        }
     }
 
     onInputArrowSide(side, inputNode, ix) {
@@ -361,9 +358,29 @@ export default class InlineEditor extends React.Component {
     }
 
     onBoxesReported(boxes) {
+        if(this.originalBoxes !== null) {
+            let diff = boxes.length - this.boxes.length;
+
+            if(diff === 1) {
+              let ix = boxes.findIndex((box, i) => {
+                  return !BoxesUtils.boxesEqual(box, this.boxes[ i ]);
+              });
+              let txtIx = this.dir === "rtl" ? this.boxes.length - ix : ix;
+              this.editedTextWords.splice(txtIx, 0, "");
+            }
+            else if(diff === -1) {
+              let ix = boxes.findIndex((box, ix) => {
+                  return !BoxesUtils.boxesEqual(box, this.boxes[ ix ]);
+              });
+              let txtIx = this.dir === "rtl" ? this.boxes.length - ix : ix;
+              this.editedTextWords.splice(txtIx - 1, 1);
+            }
+        }
+
         if(this.boxes.length === 0) {
             this.originalBoxes = boxes;
         }
+
         this.boxes.replace(boxes);
         console.log('Boxes have been reported');
     }
@@ -398,7 +415,7 @@ export default class InlineEditor extends React.Component {
             }
             this.initText(props);
             this.navigating = false;
-            this.originalBoxes = [ ];
+            this.originalBoxes = null;
             this.boxes = [ ];
         }
 
@@ -434,7 +451,7 @@ export default class InlineEditor extends React.Component {
     }
 
     resetText() {
-        this.boxes.replace(this.originalBoxes);
+        this.boxes.replace(this.originalBoxes || [ ]);
         this.initText(this.props);
     }
 
@@ -452,7 +469,7 @@ export default class InlineEditor extends React.Component {
             let styles = {
                 left: box.ulx * this.ratio,
                 width: boxWidth,
-                letterSpacing: letterSpacing,
+                letterSpacing: Math.min(letterSpacing, 4),
                 fontSize: this.fontSize
             };
 
