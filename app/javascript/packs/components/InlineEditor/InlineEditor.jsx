@@ -194,11 +194,14 @@ export default class InlineEditor extends React.Component {
         else if(e.keyCode === 40) {
             this.onArrow(false);
         }
-        else if(e.keyCode === 37) {
-            this.onInputArrowSide('left');
+    }
+
+    onKeyDown(box, ix, e) {
+        if(e.keyCode === 37) {
+            this.onInputArrowSide('left', e.target, ix);
         }
         else if(e.keyCode === 39) {
-            this.onInputArrowSide('right');
+            this.onInputArrowSide('right', e.target, ix);
         }
     }
 
@@ -218,7 +221,8 @@ export default class InlineEditor extends React.Component {
                     }
                 });
 
-                this.inputNode.children[ candidateIx ].focus();
+                this.focusWord(candidateIx);
+
                 let text = this.editedTextWords[ candidateIx ];
 
                 if(this.boxes[ candidateIx ].ulx * this.ratio > x) {
@@ -241,7 +245,68 @@ export default class InlineEditor extends React.Component {
         }
     }
 
+    focusWord(ix, caretMode = null) {
+        pre: {
+            this.inputNode.children[ ix ] !== undefined;
+            [ null, 'start', 'end' ].includes(caretMode);
+        }
+
+        let input = this.inputNode.children[ ix ];
+
+        input.focus();
+
+        if(caretMode === 'start') {
+            input.setSelectionRange(
+                0,
+                0
+            );
+        }
+        else if(caretMode === 'end') {
+            let end = input.value.length;
+
+            input.setSelectionRange(
+                end,
+                end
+            );
+        }
+    }
+
+    onInputArrowSide(side, inputNode, ix) {
+        pre: {
+            ['left', 'right'].includes(side);
+            inputNode.constructor.name === "HTMLInputElement";
+            this.boxes[ ix ] !== undefined;
+        }
+
+        if(side === 'left') {
+            if(this.dir === 'rtl') {
+                if(inputNode.selectionStart === inputNode.value.length) {
+                    this.focusWord(ix - 1, 'start');
+                }
+            }
+            else {
+                if(inputNode.selectionStart === 0) {
+                    this.focusWord(ix + 1, 'end');
+                }
+            }
+        }
+        else {
+            if(this.dir === 'rtl') {
+                if(inputNode.selectionStart === 0) {
+                    this.focusWord(ix + 1, 'end');
+                }
+            }
+            else {
+                if(inputNode.selectionStart === inputNode.value.length) {
+                    this.focusWord(ix - 1, 'start');
+                }
+            }
+        }
+    }
+
     onArrow(up) {
+        pre: typeof up === 'boolean';
+
         if(typeof this.props.onArrow === 'function') {
             this.navigating = true;
             this.props.onArrow(up);
@@ -343,6 +408,7 @@ export default class InlineEditor extends React.Component {
                 <input onChange={ this.onTextChanged.bind(this, ix) }
                       value={ text }
                       onKeyUp={ this.onKeyUp.bind(this, box, ix) }
+                      onKeyDown={ this.onKeyDown.bind(this, box, ix) }
                       style={ styles }
                       dir={ this.dir }
                       key={ ix }
