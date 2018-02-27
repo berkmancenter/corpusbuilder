@@ -534,6 +534,8 @@ export default class InlineEditor extends React.Component {
             let boxesHelp = null;
             if(this.showBoxes && this.allowNewBoxes) {
                 boxesHelp = <div className="corpusbuilder-inline-editor-help">
+                  <i className="fa fa-info-circle"></i>
+                  &nbsp;
                   Hold { PlatformUtils.specialKeyName() } to start drawing or select
                 </div>
             }
@@ -572,32 +574,36 @@ export default class InlineEditor extends React.Component {
                         {
                             this.renderInputs()
                         }
-                        {
-                            boxesHelp
-                        }
                         <div className="corpusbuilder-inline-editor-buttons">
-                            <Button onClick={ this.deleteLine.bind(this) }
-                                    >
-                              Delete Line
-                            </Button>
                             <Button onToggle={ this.onToggleBoxes.bind(this) }
                               toggles={ true }
                               toggled={ this.showBoxes }
                               visible={ !this.props.showBoxes }
                               >
-                              Boxes
+                              Show Boxes
                             </Button>
                             <Button onClick={ this.removeBox.bind(this) }
                                     visible={ this.selectedBox !== null && this.selectedBox !== undefined }
                                     >
-                              Remove
+                              Remove Word
                             </Button>
-                            <Button onClick={ this.resetText.bind(this) }>
-                              Reset
+                            {
+                                boxesHelp
+                            }
+                        </div>
+                        <div className="corpusbuilder-inline-editor-buttons">
+                            <Button onClick={ this.deleteLine.bind(this) }
+                                    >
+                              Delete Line
                             </Button>
-                            <Button onClick={ this.requestSave.bind(this) } disabled={ !this.dataValid }>
-                              Save
-                            </Button>
+                            <div className="corpusbuilder-inline-editor-buttons-aside">
+                                <Button onClick={ this.resetText.bind(this) }>
+                                  Reset
+                                </Button>
+                                <Button onClick={ this.requestSave.bind(this) } disabled={ !this.dataValid }>
+                                  Save
+                                </Button>
+                            </div>
                         </div>
                   </FloatingWindow>
                   <Highlight graphemes={ this.props.line }

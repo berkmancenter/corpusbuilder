@@ -2,7 +2,13 @@
   &-inline-editor {
     &-buttons {
       margin-top: 10px;
-      float: right;
+      position: relative;
+
+      &-aside {
+        display: inline-block;
+        position: absolute;
+        right: 0px;
+      }
     }
 
     &-messages {
@@ -48,12 +54,13 @@
 
     &-help {
       font-size: 12px;
-      float: left;
-      margin-right: 5px;
-      margin-top: 14px;
-      padding: 2px;
+      display: inline-block;
+      position: absolute;
+      right: 0px;
+      margin-top: 4px;
+      padding: 5px;
       border-radius: 2px;
-      background-color: #bbb;
+      background-color: #ccc;
       color: white;
       font-weight: normal;
     }
