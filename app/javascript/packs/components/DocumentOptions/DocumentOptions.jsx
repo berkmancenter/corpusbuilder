@@ -58,7 +58,13 @@ export default class DocumentOptions extends React.Component {
         return {
             isOpen: opened,
             close: this.close.bind(this, name),
-            toggle: <Button toggles={ true } toggled={ toggled} onToggle={this.toggle.bind(this, name)}>{ title }</Button>,
+            toggle: <Button toggles={ true }
+                            toggled={ toggled}
+                            onToggle={this.toggle.bind(this, name)}
+                            classes={ [ name ] }
+                            >
+                            { title }
+                    </Button>,
             align: 'left'
         };
     }
@@ -74,7 +80,7 @@ export default class DocumentOptions extends React.Component {
                     }
                     return (
                         <div>
-                            Version
+                            <div>Version</div>
                             <span>{ icon } { this.currentBranch.branchName }</span>
                         </div>
                     );
@@ -181,6 +187,7 @@ export default class DocumentOptions extends React.Component {
             <Button toggles={ true }
                     toggled={ this.props.editing }
                     onToggle={ this.props.onBranchModeToggle.bind(this) }
+                    classes={ [ 'edit' ] }
                     key={ 'edit-button' }
                     >
                 <i className={ 'fa fa-pencil' }>&nbsp;</i>

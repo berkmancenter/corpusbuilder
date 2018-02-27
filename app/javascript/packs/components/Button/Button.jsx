@@ -39,6 +39,27 @@ export default class Button extends React.Component {
         return this.props.disabled;
     }
 
+    @computed
+    get classes() {
+        let ret = [ "corpusbuilder-button" ];
+
+        if(this.toggles && this.toggled) {
+            ret.push("corpusbuilder-button-toggled");
+        }
+
+        if(this.props.classes !== undefined && this.props.classes !== null) {
+            ret = ret.concat(
+                this.props.classes.map(
+                    (c) => {
+                        return `corpusbuilder-button-${c}`;
+                    }
+                )
+            );
+        }
+
+        return ret.join(' ');
+    }
+
     onClick(e) {
         if(this.props.onClick !== undefined && this.props.onClick !== null) {
             this.props.onClick(e);
@@ -56,10 +77,9 @@ export default class Button extends React.Component {
     render() {
         if(this.visible) {
             let toggledClassName = this.toggles && this.toggled ? 'corpusbuilder-button-toggled' : '';
-            let className = `corpusbuilder-button ${ toggledClassName }`;
 
             return (
-                <button className={ className }
+                <button className={ this.classes }
                         onClick={ this.onClick.bind(this) }
                         disabled={ this.disabled ? 'disabled' : '' }
                         >

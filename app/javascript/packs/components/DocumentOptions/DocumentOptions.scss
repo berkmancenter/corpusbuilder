@@ -9,6 +9,25 @@
     &-aside {
       float: right;
     }
+
+    display: flex;
+
+    .corpusbuilder-button-edit {
+        flex-shrink: 0;
+    }
+
+    .corpusbuilder-button-version {
+      div:first-child {
+        display: flex;
+      }
+
+      span {
+        height: 24px;
+        margin-top: 3px;
+        line-height: 18px;
+        overflow: hidden;
+      }
+    }
   }
 
   &-options, &-window-manager-options {
