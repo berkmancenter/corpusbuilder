@@ -56,7 +56,10 @@ export default class FloatingWindow extends React.Component {
 
         return (
             <div className="corpusbuilder-floating-window-canvas">
-                <OutsideClicksHandler onClick={ this.onClickedOutside.bind(this) }>
+                <OutsideClicksHandler
+                    onClick={ this.onClickedOutside.bind(this) }
+                    ignoreClasses={ [ "corpusbuilder-global-options" ] }
+                    >
                     <div className="corpusbuilder-floating-window" style={ styles }>
                         { this.props.children }
                     </div>

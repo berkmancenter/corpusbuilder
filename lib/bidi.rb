@@ -5,6 +5,7 @@ module Bidi
 
     attach_function :fribidi_log2vis, [ :pointer, :int32, :pointer, :pointer, :pointer, :pointer, :pointer ], :bool
     attach_function :fribidi_get_bidi_type, [ :string ], :pointer
+    attach_function :fribidi_get_par_direction, [ :string, :int32 ], :uint32
   end
 
   def self.to_visual(text, direction)
@@ -33,5 +34,11 @@ module Bidi
     else
       raise StandardError, "Failed to infer the visual ordering of the text"
     end
+  end
+
+  def self.infer_direction(text)
+    result = Lib.fribidi_get_par_direction(text, text.codepoints.count)
+
+    result == 273 ? :rtl : :ltr
   end
 end

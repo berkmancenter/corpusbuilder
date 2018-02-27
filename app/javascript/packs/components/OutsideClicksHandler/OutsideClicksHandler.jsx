@@ -18,6 +18,16 @@ export default class OutsideClicksHandler extends React.Component {
             return true;
         }
         else {
+            if(node.classList !== undefined) {
+                for(let ignoreClass of ( this.props.ignoreClasses || [ ] )) {
+                    for(let className of node.classList) {
+                        if(className === ignoreClass) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
             return this.nodeWithin(node.parentNode);
         }
     }

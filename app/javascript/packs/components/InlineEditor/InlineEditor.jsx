@@ -21,6 +21,9 @@ export default class InlineEditor extends React.Component {
     navigating = false;
     inputNode = null;
 
+    @observable
+    deleteClickedOnce = false;
+
     @computed
     get editedText() {
         return this.editedTextWords === null ? "" : this.editedTextWords.join(' ');
@@ -57,6 +60,26 @@ export default class InlineEditor extends React.Component {
     @computed
     get line() {
         return this.props.line;
+    }
+
+    @computed
+    get deleteButtonClasses() {
+        return this.deleteClickedOnce ? [ "final-delete" ] : [ ];
+    }
+
+    @computed
+    get deleteButtonTitle() {
+        if(this.deleteClickedOnce) {
+            return (
+                <div>
+                  <i className="fa fa-trash"></i>
+                  &nbsp;
+                  Delete Line
+                </div>
+            );
+        }
+
+        return "Delete Line";
     }
 
     @computed
@@ -181,9 +204,13 @@ export default class InlineEditor extends React.Component {
     }
 
     deleteLine() {
-        if(typeof this.props.onDeleteLineRequested === 'function') {
-            this.props.onDeleteLineRequested(this.props.line);
+        if(this.deleteClickedOnce) {
+            if(typeof this.props.onDeleteLineRequested === 'function') {
+                this.props.onDeleteLineRequested(this.props.line);
+            }
         }
+
+        this.deleteClickedOnce = true;
     }
 
     removeBox(e) {
@@ -439,6 +466,7 @@ export default class InlineEditor extends React.Component {
             this.navigating = false;
             this.originalBoxes = null;
             this.boxes = [ ];
+            this.deleteClickedOnce = false;
         }
 
         if(this.props.visible === false) {
@@ -593,8 +621,9 @@ export default class InlineEditor extends React.Component {
                         </div>
                         <div className="corpusbuilder-inline-editor-buttons">
                             <Button onClick={ this.deleteLine.bind(this) }
+                                    classes={ this.deleteButtonClasses }
                                     >
-                              Delete Line
+                              { this.deleteButtonTitle }
                             </Button>
                             <div className="corpusbuilder-inline-editor-buttons-aside">
                                 <Button onClick={ this.resetText.bind(this) }>

@@ -42,7 +42,7 @@ export default class DocumentPageSwitcher extends React.Component {
             }
         };
 
-        let upperBound = nP10(to);
+        let upperBound = nP10(to - from);
         let step = upperBound / 10;
         let results = [ ];
         let lastFrom = 0;
