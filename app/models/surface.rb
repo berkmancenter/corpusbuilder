@@ -16,22 +16,6 @@ class Surface < ApplicationRecord
       surface.image.processed_image_url
     end
     expose :graphemes do |surface, options|
-     #_graphemes = if options.key? :revision_id
-     #  surface.graphemes.joins(:revisions).where(revisions: { id: options[:revision_id] })
-     #elsif options.key? :branch_name
-     #  branches_query = Branch.joins(:revision).where(
-     #    revisions: { document_id: surface.document_id },
-     #    name: options[:branch_name]
-     #  )
-     #  surface.graphemes.joins(:revisions).where(revisions: { id: branches_query.select(:revision_id) })
-     #else
-     #  surface.graphemes
-     #end
-
-     #if options.key? :area
-     #  _graphemes = _graphemes.where("graphemes.area <@ ?", options[:area].to_s)
-     #end
-
       _graphemes = Graphemes::QueryPage.run!(
         surface: surface,
         revision_id: options[:revision_id],
