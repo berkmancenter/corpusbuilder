@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180220151622) do
+ActiveRecord::Schema.define(version: 20180228130000) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -58,6 +58,15 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "editor_id"
+  end
+
+  create_table "correction_logs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.uuid "editor_id", null: false
+    t.integer "status", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "delayed_jobs", force: :cascade do |t|
@@ -130,6 +139,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_01e15da01f174205b66c0925919c176c_revision_id"
   end
 
+  create_table "graphemes_revisions_03839a72_00a3_4c28_a461_aa177a9e3686", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_03839a7200a34c28a461aa177a9e3686_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_03839a7200a34c28a461aa177a9e3686_revision_id"
+  end
+
   create_table "graphemes_revisions_03c8d6c3_fdf4_42db_ab01_795a5666ab93", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
@@ -172,6 +188,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_0ac00749fc1a4f0c9b7832a83bc4b664_revision_id"
   end
 
+  create_table "graphemes_revisions_0b63eb9b_eece_4c45_b9c4_2cffe4403251", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_0b63eb9beece4c45b9c42cffe4403251_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_0b63eb9beece4c45b9c42cffe4403251_revision_id"
+  end
+
   create_table "graphemes_revisions_0dd6a70c_9f97_43ce_9c3c_10c7539d5f3e", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
@@ -184,6 +207,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_0f5b0abee33349ee9bdc310cb2f2582b_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_0f5b0abee33349ee9bdc310cb2f2582b_revision_id"
+  end
+
+  create_table "graphemes_revisions_0f5fc078_93aa_4efe_aa31_bdd68863a4f2", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_0f5fc07893aa4efeaa31bdd68863a4f2_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_0f5fc07893aa4efeaa31bdd68863a4f2_revision_id"
   end
 
   create_table "graphemes_revisions_10ec1fe7_7362_4e23_8475_656e61613065", id: false, force: :cascade do |t|
@@ -205,6 +235,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_1291c6604bff4b778baf1dc2331a1179_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_1291c6604bff4b778baf1dc2331a1179_revision_id"
+  end
+
+  create_table "graphemes_revisions_13a868cd_0a8b_4aaf_88fa_05f2b701858b", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_13a868cd0a8b4aaf88fa05f2b701858b_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_13a868cd0a8b4aaf88fa05f2b701858b_revision_id"
   end
 
   create_table "graphemes_revisions_1725b2d4_dd04_4445_8fad_eda5fe532806", id: false, force: :cascade do |t|
@@ -235,6 +272,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_1bb70226f92b4cfeb0b4c0c44cd7681a_revision_id"
   end
 
+  create_table "graphemes_revisions_1e711dc2_be27_4556_9e45_2858bdbda885", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_1e711dc2be2745569e452858bdbda885_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_1e711dc2be2745569e452858bdbda885_revision_id"
+  end
+
   create_table "graphemes_revisions_22ca487d_1a77_4c2b_a1cd_a0ed31337aec", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
@@ -242,11 +286,25 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_22ca487d1a774c2ba1cda0ed31337aec_revision_id"
   end
 
+  create_table "graphemes_revisions_2328759b_526a_49ac_83f5_73186a3817f8", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_2328759b526a49ac83f573186a3817f8_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_2328759b526a49ac83f573186a3817f8_revision_id"
+  end
+
   create_table "graphemes_revisions_26171d4c_c405_47d6_8c76_3dd4df3cee3a", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_26171d4cc40547d68c763dd4df3cee3a_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_26171d4cc40547d68c763dd4df3cee3a_revision_id"
+  end
+
+  create_table "graphemes_revisions_272f8f65_e8ba_4147_af58_e5963c6d4ffe", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_272f8f65e8ba4147af58e5963c6d4ffe_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_272f8f65e8ba4147af58e5963c6d4ffe_revision_id"
   end
 
   create_table "graphemes_revisions_27b5cb77_12e6_4487_9d3a_34d71ce2e036", id: false, force: :cascade do |t|
@@ -275,6 +333,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_2d41adda1e0c4cd89d01568476fab476_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_2d41adda1e0c4cd89d01568476fab476_revision_id"
+  end
+
+  create_table "graphemes_revisions_2de6348a_6b92_499c_bbd3_425f9bae03e7", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_2de6348a6b92499cbbd3425f9bae03e7_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_2de6348a6b92499cbbd3425f9bae03e7_revision_id"
   end
 
   create_table "graphemes_revisions_2ebd695e_0799_40cd_ab4a_8010f8fb6f39", id: false, force: :cascade do |t|
@@ -403,6 +468,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_48ef707b16a74a6f8b2951dc22d9dcb6_revision_id"
   end
 
+  create_table "graphemes_revisions_495acfbb_58a1_4e1d_8158_bb06a70a32ba", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_495acfbb58a14e1d8158bb06a70a32ba_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_495acfbb58a14e1d8158bb06a70a32ba_revision_id"
+  end
+
   create_table "graphemes_revisions_49beda51_3d62_41ce_addc_6248250b5ed9", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
@@ -415,6 +487,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_4aca4a0b55bc485eb860c4fe9e1b9dbd_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_4aca4a0b55bc485eb860c4fe9e1b9dbd_revision_id"
+  end
+
+  create_table "graphemes_revisions_4c52ab5b_f56b_4f42_920f_fd95dfabfda5", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_4c52ab5bf56b4f42920ffd95dfabfda5_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_4c52ab5bf56b4f42920ffd95dfabfda5_revision_id"
   end
 
   create_table "graphemes_revisions_4eb12c49_eda4_4bb1_9031_681ef3906328", id: false, force: :cascade do |t|
@@ -438,11 +517,25 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_501a0ba687b147d5892540a3ec105bf1_revision_id"
   end
 
+  create_table "graphemes_revisions_509fc1bc_d583_43e4_af12_c4ac77ed2ccd", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_509fc1bcd58343e4af12c4ac77ed2ccd_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_509fc1bcd58343e4af12c4ac77ed2ccd_revision_id"
+  end
+
   create_table "graphemes_revisions_562c4de4_d984_4f77_bba2_4faa9eede489", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_562c4de4d9844f77bba24faa9eede489_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_562c4de4d9844f77bba24faa9eede489_revision_id"
+  end
+
+  create_table "graphemes_revisions_5702d800_7a22_4120_bdca_dad98a8966d9", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_5702d8007a224120bdcadad98a8966d9_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_5702d8007a224120bdcadad98a8966d9_revision_id"
   end
 
   create_table "graphemes_revisions_574965a0_6930_4708_9ed3_ffb4827bab36", id: false, force: :cascade do |t|
@@ -478,6 +571,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_5b5f6efc4ae145c5904cde05b37067ca_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_5b5f6efc4ae145c5904cde05b37067ca_revision_id"
+  end
+
+  create_table "graphemes_revisions_61835bee_914f_410b_80f8_d01dd2374a6d", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_61835bee914f410b80f8d01dd2374a6d_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_61835bee914f410b80f8d01dd2374a6d_revision_id"
   end
 
   create_table "graphemes_revisions_62c8ef66_8631_4e48_bbf6_db4ac0da9fca", id: false, force: :cascade do |t|
@@ -592,6 +692,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_75db2787fcbb423da3a671d925d8b183_revision_id"
   end
 
+  create_table "graphemes_revisions_768cdf91_3fd2_47c1_9595_272ad14e306f", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_768cdf913fd247c19595272ad14e306f_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_768cdf913fd247c19595272ad14e306f_revision_id"
+  end
+
   create_table "graphemes_revisions_7a1c85a1_df14_43f9_af84_4ad9124181f0", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
@@ -639,6 +746,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_7f64e448bbc04a41b84e5a783816a741_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_7f64e448bbc04a41b84e5a783816a741_revision_id"
+  end
+
+  create_table "graphemes_revisions_7f70a44e_ccd6_409a_a118_afb02cb21513", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_7f70a44eccd6409aa118afb02cb21513_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_7f70a44eccd6409aa118afb02cb21513_revision_id"
   end
 
   create_table "graphemes_revisions_803bd86f_00e2_4da9_a375_1bd501dd2032", id: false, force: :cascade do |t|
@@ -725,6 +839,20 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_93c59017c5ae4010925fdee6ddab4e4d_revision_id"
   end
 
+  create_table "graphemes_revisions_959a638e_3280_4590_b202_e2e51889269f", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_959a638e32804590b202e2e51889269f_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_959a638e32804590b202e2e51889269f_revision_id"
+  end
+
+  create_table "graphemes_revisions_977c0ea4_bac9_416e_a70e_38b64fff0592", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_977c0ea4bac9416ea70e38b64fff0592_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_977c0ea4bac9416ea70e38b64fff0592_revision_id"
+  end
+
   create_table "graphemes_revisions_983fe1c0_3a99_49cd_aeb3_63bcd8ce1c6f", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
@@ -779,6 +907,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_a7c4314d528e40abb3978f36bff18ebd_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_a7c4314d528e40abb3978f36bff18ebd_revision_id"
+  end
+
+  create_table "graphemes_revisions_a8c14deb_871d_410d_a5a1_17bf3c5d59d6", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_a8c14deb871d410da5a117bf3c5d59d6_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_a8c14deb871d410da5a117bf3c5d59d6_revision_id"
   end
 
   create_table "graphemes_revisions_a99ec561_3b63_4a03_8091_8714f966138f", id: false, force: :cascade do |t|
@@ -851,6 +986,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.index ["revision_id"], name: "index_b605c378d89e4072b6b67e23077d70c2_revision_id"
   end
 
+  create_table "graphemes_revisions_b6a9fea7_054a_4509_9b80_2a6c32578d2e", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_b6a9fea7054a45099b802a6c32578d2e_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_b6a9fea7054a45099b802a6c32578d2e_revision_id"
+  end
+
   create_table "graphemes_revisions_b702cda5_159d_4510_bc1e_00803c3b18f6", id: false, force: :cascade do |t|
     t.uuid "grapheme_id", null: false
     t.uuid "revision_id", null: false
@@ -912,6 +1054,13 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_c2e90c29a2da40b78752af71104a0f8d_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_c2e90c29a2da40b78752af71104a0f8d_revision_id"
+  end
+
+  create_table "graphemes_revisions_c7727593_4750_4eee_aee4_65f0beddaf3e", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_c772759347504eeeaee465f0beddaf3e_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_c772759347504eeeaee465f0beddaf3e_revision_id"
   end
 
   create_table "graphemes_revisions_c8d6dba2_7c75_4b90_a8cb_e331c81063f7", id: false, force: :cascade do |t|
@@ -982,6 +1131,20 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_d571b37a09014659b312ba0a4df8f557_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_d571b37a09014659b312ba0a4df8f557_revision_id"
+  end
+
+  create_table "graphemes_revisions_d6782291_1f85_4625_b78a_be0820a28be9", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_d67822911f854625b78abe0820a28be9_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_d67822911f854625b78abe0820a28be9_revision_id"
+  end
+
+  create_table "graphemes_revisions_d859b0d7_7570_40aa_8ee8_987aaa7654fa", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_d859b0d7757040aa8ee8987aaa7654fa_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_d859b0d7757040aa8ee8987aaa7654fa_revision_id"
   end
 
   create_table "graphemes_revisions_d971a139_3380_44a4_aeec_5878be398eef", id: false, force: :cascade do |t|
@@ -1122,6 +1285,20 @@ ActiveRecord::Schema.define(version: 20180220151622) do
     t.uuid "revision_id", null: false
     t.index ["grapheme_id", "revision_id"], name: "index_f06d47cd05934869a0d58824253b0b1f_grapheme_id_revision_id"
     t.index ["revision_id"], name: "index_f06d47cd05934869a0d58824253b0b1f_revision_id"
+  end
+
+  create_table "graphemes_revisions_f16e31af_91c0_4aef_a852_acdd40577bcd", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_f16e31af91c04aefa852acdd40577bcd_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_f16e31af91c04aefa852acdd40577bcd_revision_id"
+  end
+
+  create_table "graphemes_revisions_f2047958_3379_4d4d_ac74_ead2ed4b0b1f", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+    t.uuid "revision_id", null: false
+    t.index ["grapheme_id", "revision_id"], name: "index_f204795833794d4dac74ead2ed4b0b1f_grapheme_id_revision_id"
+    t.index ["revision_id"], name: "index_f204795833794d4dac74ead2ed4b0b1f_revision_id"
   end
 
   create_table "graphemes_revisions_f22c963d_9e80_4f15_91e1_4c44153929b7", id: false, force: :cascade do |t|

@@ -181,6 +181,8 @@ class V1::DocumentsAPI < Grape::API
       end
       put ':revision/tree' do
         infer_revision!
+        infer_editor!
+
 
         graphemes = if params.has_key?(:graphemes)
                       params[:graphemes]
@@ -200,7 +202,8 @@ class V1::DocumentsAPI < Grape::API
 
         action! Documents::Correct, @revision_options.merge(
           document: @document,
-          graphemes: graphemes
+          graphemes: graphemes,
+          editor_id: @editor_id
         )
       end
 

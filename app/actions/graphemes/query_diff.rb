@@ -15,6 +15,24 @@ module Graphemes
     def all_diffs
       @_all_diffs ||= -> {
         sql = <<-sql
+          with recursive tree(id, parent_id) as (
+            select id,
+                parent_id
+            from revisions
+            where id in ('#{revision_left.id}', '#{revision_right.id}')
+            union
+            select revisions.id,
+                revisions.parent_id
+            from tree
+            inner join revisions
+                    on revisions.id = tree.parent_id
+          )
+          , corrected_graphemes(id) as (
+            select correction_logs.grapheme_id as id
+            from tree
+            inner join correction_logs
+              on correction_logs.revision_id = tree.id
+          )
           select g.grapheme_id as id,
                 g.inclusion[1],
                 g.revision_ids[1] as revision_id,
@@ -33,9 +51,13 @@ module Graphemes
             from (
               select grapheme_id, 'left' as inclusion, revision_id
               from #{revision_left.graphemes_revisions_partition_table_name}
+              inner join corrected_graphemes
+                on corrected_graphemes.id = #{revision_left.graphemes_revisions_partition_table_name}.grapheme_id
               union all
               select grapheme_id, 'right' as inclusion, revision_id
               from #{revision_right.graphemes_revisions_partition_table_name}
+              inner join corrected_graphemes
+                on corrected_graphemes.id = #{revision_right.graphemes_revisions_partition_table_name}.grapheme_id
             ) gs
             group by grapheme_id
             having array_length(array_agg(gs.inclusion), 1) < 2

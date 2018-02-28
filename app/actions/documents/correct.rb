@@ -1,6 +1,6 @@
 module Documents
   class Correct < Action::Base
-    attr_accessor :document, :graphemes, :branch_name
+    attr_accessor :document, :graphemes, :branch_name, :editor_id
 
     # validate :revision_is_in_working_state
 
@@ -14,7 +14,7 @@ module Documents
         else
           raise ArgumentError, "Missing position_weight in correction spec!" if spec[:position_weight].nil?
 
-          Graphemes::Create.run!(
+          grapheme = Graphemes::Create.run!(
             revision: revision,
             area: area(spec),
             certainty: 1,
@@ -22,7 +22,8 @@ module Documents
             old_id: spec[:id],
             position_weight: spec[:position_weight],
             surface_number: spec[:surface_number]
-          )
+          ).result
+          log_correction(grapheme.id, revision.id, :addition)
         end
       end
 
@@ -31,6 +32,7 @@ module Documents
           revision_id: revision.id,
           grapheme_id: grapheme_id
         )
+        log_correction(grapheme_id, revision.id, :removal)
       end
 
       if revision.conflict? && revision.graphemes.where(status: Grapheme.statuses[:conflict]).count == 0
@@ -59,6 +61,13 @@ module Documents
           raise ArgumentError, "You either need to specify an area or an id of existing grapheme"
         end
       end
+    end
+
+    def log_correction(grapheme_id, revision_id, status)
+      CorrectionLog.create! grapheme_id: grapheme_id,
+        revision_id: revision_id,
+        editor_id: editor_id,
+        status: status
     end
 
     def existing_ids
