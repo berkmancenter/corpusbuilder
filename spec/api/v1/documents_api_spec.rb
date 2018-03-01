@@ -483,21 +483,6 @@ describe V1::DocumentsAPI, type: :request do
           expect(only_surface_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("!world")
         end
       end
-
-      context "when a surface and an area is given" do
-        it "returns only the graphemes attached to a given surface and within a given area" do
-          expect(surface_snippet_request_result["surfaces"].first["graphemes"].map { |g| g["value"] }.join).to eq("or")
-        end
-      end
-
-      context "when an area is given but no surface" do
-        it "returns 422 with the proper error message" do
-          area_no_surface_request
-
-          expect(response.status).to eq(422)
-          expect(JSON.parse(response.body)).to eq({ "error" => "Cannot specify an area without a surface number" })
-        end
-      end
     end
 
     context "PUT" do
@@ -602,7 +587,7 @@ describe V1::DocumentsAPI, type: :request do
 
         it "calls the Documents::CompileCorrections" do
           expect(Documents::CompileCorrections).to receive(:run!).
-            with(grapheme_ids: graphemes.map(&:id), text: 'a test', boxes: boxes, document: document, branch_name: 'master', revision_id: nil).and_call_original
+            with(grapheme_ids: graphemes.map(&:id), text: 'a test', boxes: boxes, document: document, branch_name: 'master', revision_id: nil, surface_number: nil).and_call_original
           expect_any_instance_of(Documents::CompileCorrections).to receive(:execute).and_call_original
 
           valid_request
@@ -675,13 +660,13 @@ describe V1::DocumentsAPI, type: :request do
           valid_request
 
           expect(created_ones.count).to eq(given_graphemes.count)
-          expect(master_branch.working.graphemes.where(id: created_ones.map(&:id)).count).to eq(created_ones.count)
+          expect(master_branch.working.graphemes.select { |g| created_ones.map(&:id).include?(g.id) }.count).to eq(created_ones.count)
         end
 
         it "breakes connection between given graphemes and the revision" do
           valid_request
 
-          expect(master_branch.working.graphemes.where(id: given_graphemes.map { |g| g[:id] }).count).to eq(0)
+          expect(master_branch.working.graphemes.select { |g| given_graphemes.map { |g1| g1[:id] }.include?(g.id) }.count).to eq(0)
         end
 
         it "adds the older version grapheme id to the new one parent ids column" do
@@ -725,7 +710,7 @@ describe V1::DocumentsAPI, type: :request do
         it "removes given graphemes connections from the revision" do
           valid_request
 
-          expect(master_branch.graphemes.where(id: grapheme1.id)).to be_empty
+          expect(master_branch.graphemes.select { |g| g.id == grapheme1.id }).to be_empty
         end
 
         it "keeps the graphemes in the database" do
@@ -803,7 +788,9 @@ describe V1::DocumentsAPI, type: :request do
             sum
           end
 
-          expect(created_ones.map { |g| g.revision_ids }.flatten.uniq.count).to eq(1)
+          expect(
+            Revision.all.map { |r| (r.graphemes.map(&:id) & created_ones.map(&:id) ).count > 0 ? 1 : 0 }.sum 
+          ).to eq(1)
         end
       end
     end
@@ -1111,6 +1098,7 @@ describe V1::DocumentsAPI, type: :request do
           travel 1.week
           Documents::Correct.run! document: document,
             branch_name: topic_branch.name,
+            editor_id: editor.id,
             graphemes: [
               {
                 id: master_graphemes.first.id,
@@ -1130,6 +1118,7 @@ describe V1::DocumentsAPI, type: :request do
           travel 1.week
           Documents::Correct.run! document: document,
             branch_name: development_branch.name,
+            editor_id: editor.id,
             graphemes: [
               {
                 id: master_graphemes.first.id,
@@ -1176,7 +1165,7 @@ describe V1::DocumentsAPI, type: :request do
           expect(master_branch.working).to be_conflict
         end
 
-        it "makes the working revision contain the conflict graphemes", focus: true do
+        it "makes the working revision contain the conflict graphemes" do
           corrections
           travel 1.week
           first_merge

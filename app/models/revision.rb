@@ -30,6 +30,23 @@ class Revision < ApplicationRecord
     end
   end
 
+  def conflict_graphemes
+    graphemes.select(&:conflict?)
+  end
+
+  def graphemes=(items)
+    Revisions::PointAtGraphemes.run!(
+      ids: items.map do |item|
+        if !item.persisted?
+          item.save!
+        end
+
+        item.id
+      end,
+      target: self
+    )
+  end
+
   def grapheme_ids
     memoized do
       self.graphemes.map(&:id)
@@ -64,6 +81,10 @@ class Revision < ApplicationRecord
       end
 
       graphemes
+    end
+
+    def where(*args)
+      Grapheme.where(id: map(&:id)).where(*args)
     end
 
     def ==(other_revision_graphemes)

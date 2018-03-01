@@ -1,21 +1,25 @@
 module Images
   class TesseractOCR < BaseOCR
+    include Silenceable
+
     def execute
-      Rails.logger.info "Running Tesseract with: #{command}"
+      silently do
+        Rails.logger.info "Running Tesseract with: #{command}"
 
-      tesseract_output = `#{command}`
-      tesseract_status = $?
+        tesseract_output = `#{command}`
+        tesseract_status = $?
 
-      Rails.logger.info "Tesseract returned #{tesseract_output}"
-      Rails.logger.info "Tesseract status #{tesseract_status}"
+        Rails.logger.info "Tesseract returned #{tesseract_output}"
+        Rails.logger.info "Tesseract status #{tesseract_status}"
 
-      if !tesseract_status.success?
-        raise StandardError, "Tesseract returned abnormally. Status: #{tesseract_status}. Output: #{tesseract_output}"
+        if !tesseract_status.success?
+          raise StandardError, "Tesseract returned abnormally. Status: #{tesseract_status}. Output: #{tesseract_output}"
+        end
+
+        Rails.logger.debug "Tesseract resulting file should be found at #{file_path}.hocr"
+
+        "#{file_path}.hocr"
       end
-
-      Rails.logger.debug "Tesseract resulting file should be found at #{file_path}.hocr"
-
-      "#{file_path}.hocr"
     end
 
     def command

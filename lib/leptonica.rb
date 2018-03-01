@@ -28,23 +28,10 @@ module Leptonica
   end
 
   class Tools
-    def self.silent(&block)
-      prevout = STDOUT.dup
-      preverr = STDERR.dup
-
-      begin
-        $stdout.reopen Rails.root.join("log", "leptonica.log"), 'w'
-        $stderr.reopen Rails.root.join("log", "leptonica.error.log"), 'w'
-
-        block.call
-      ensure
-        $stdout.reopen prevout
-        $stderr.reopen preverr
-      end
-    end
+    include Silenceable
 
     def self.deskew(in_path, out_path)
-      silent do
+      silently do
         begin
           if !File.exist?(in_path)
             raise StandardError, "Leptonica::Tools.deskew has been given a path to inexistant file: '#{in_path}'"
@@ -75,7 +62,7 @@ module Leptonica
     end
 
     def self.dewarp(in_path, out_path)
-      silent do
+      silently do
         begin
           if !File.exist?(in_path)
             raise StandardError, "Leptonica::Tools.dewarp has been given a path to inexistant file: '#{in_path}'"
@@ -139,7 +126,7 @@ module Leptonica
     end
 
     def self.dewarp_simple(in_path, out_path)
-      silent do
+      silently do
         begin
           pixels = Lib.pixRead in_path
           normed = Lib.pixBackgroundNormSimple pixels, FFI::Pointer::NULL, FFI::Pointer::NULL

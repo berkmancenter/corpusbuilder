@@ -35,7 +35,7 @@ module Documents
         log_correction(grapheme_id, revision.id, :removal)
       end
 
-      if revision.conflict? && revision.graphemes.where(status: Grapheme.statuses[:conflict]).count == 0
+      if revision.conflict? && revision.conflict_graphemes.count == 0
         revision.update_attributes!(
           status: Revision.statuses[:working]
         )

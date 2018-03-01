@@ -15,17 +15,20 @@ module Graphemes
     def all_diffs
       @_all_diffs ||= -> {
         sql = <<-sql
-          with recursive tree(id, parent_id) as (
+          with recursive tree(id, parent_id, merged_with_id) as (
             select id,
-                parent_id
+                parent_id,
+                merged_with_id
             from revisions
             where id in ('#{revision_left.id}', '#{revision_right.id}')
             union
             select revisions.id,
-                revisions.parent_id
+                revisions.parent_id,
+                revisions.merged_with_id
             from tree
             inner join revisions
-                    on revisions.id = tree.parent_id
+                    on    revisions.id = tree.parent_id
+                       or revisions.id = tree.merged_with_id
           )
           , corrected_graphemes(id) as (
             select correction_logs.grapheme_id as id

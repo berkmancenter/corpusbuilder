@@ -31,10 +31,10 @@ class HocrParser < Parser
 
       if node_class != 'ocrx_word'
         child_nodes = 0
-        child_selector = node_class
+        child_selector = ".#{node_class}"
 
         while child_nodes == 0 && child_selector != nil
-          child_selector = next_level ".#{node_class}"
+          child_selector = next_level child_selector
           child_nodes = node.css(child_selector).count
         end
 
@@ -52,7 +52,7 @@ class HocrParser < Parser
           elements(child_node, directional).each do |element|
             yielder << element
           end
-        end
+        end if child_selector.present?
       end
     end
   end
