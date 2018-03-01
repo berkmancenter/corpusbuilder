@@ -12,31 +12,41 @@ module Documents
     def execute
       Rails.logger.info "Compiling the document page for image_id = #{image_id}"
 
+      nodes
+      copy_data_into_surfaces
+      copy_data_into_zones
       copy_data_into_graphemes
       copy_data_into_graphemes_revisions
     end
 
-    def graphemes
-      @_graphemes ||= -> {
+    def nodes
+      @_nodes ||= -> {
         graphemes = []
         zone_graphemes = []
+        surfaces = []
+        zones = []
+        last_surface = nil
+        last_zone = nil
 
         image_ocr_result.elements.each do |element|
           case element.name
           when "surface"
-            @_surface = @document.surfaces.create! area: element.area,
-              image_id: @image_id, number: image.order
+            last_surface = document.surfaces.new area: element.area,
+              image_id: @image_id, number: image.order,
+              id: SecureRandom.uuid
+            surfaces << last_surface
           when "zone"
             if zone_graphemes.count == 2
               # we only have directionals here so we can get rid of them
               # to have a cleaner document
               graphemes -= zone_graphemes
-              @_zone.delete
             end
             zone_graphemes = []
-            @_zone = @_surface.zones.create! area: element.area
+            last_zone = last_surface.zones.new area: element.area,
+              id: SecureRandom.uuid
+            zones << last_zone
           when "grapheme"
-            g = @_zone.graphemes.new(
+            g = last_zone.graphemes.new(
               id: SecureRandom.uuid,
               area: (element.grouping == "pop" ? graphemes.last.area : element.area),
               value: element.value,
@@ -50,19 +60,50 @@ module Documents
           end
         end
 
-        graphemes
+        OpenStruct.new({
+          graphemes: graphemes.to_a,
+          surfaces: surfaces.to_a,
+          zones: zones.to_a
+        })
       }.call
+    end
+
+    def copy_data_into_surfaces
+      conn = Grapheme.connection.raw_connection
+
+      conn.copy_data "COPY surfaces (id, area, image_id, number, document_id, created_at, updated_at) FROM STDIN CSV" do
+        nodes.surfaces.to_a.each do |surface|
+           data = [ surface.id, surface.area.to_s,
+                    surface.image_id, surface.number,
+                    surface.document_id,
+                    DateTime.now.to_s(:db), DateTime.now.to_s(:db)
+           ]
+           conn.put_copy_data data.to_csv
+        end
+      end
+    end
+
+    def copy_data_into_zones
+      conn = Grapheme.connection.raw_connection
+
+      conn.copy_data "COPY zones (id, area, surface_id, created_at, updated_at) FROM STDIN CSV" do
+        nodes.zones.each do |zone|
+           data = [ zone.id, zone.area.to_s,
+                    zone.surface_id,
+                    DateTime.now.to_s(:db), DateTime.now.to_s(:db)
+           ]
+           conn.put_copy_data data.to_csv
+        end
+      end
     end
 
     def copy_data_into_graphemes
       conn = Grapheme.connection.raw_connection
 
-      graphemes = self.graphemes.to_a
-
-      Rails.logger.info "Using Postgres COPY to add #{graphemes.count} graphemes"
+      Rails.logger.info "Using Postgres COPY to add #{nodes.graphemes.count} graphemes"
 
       conn.copy_data "COPY graphemes (id, area, value, certainty, position_weight, zone_id, created_at, updated_at) FROM STDIN CSV" do
-        graphemes.each do |grapheme|
+        nodes.graphemes.each do |grapheme|
            data = [ grapheme.id, grapheme.area.to_s,
                     grapheme.value, grapheme.certainty,
                     grapheme.position_weight, grapheme.zone_id,
@@ -71,8 +112,6 @@ module Documents
            conn.put_copy_data data.to_csv
         end
       end
-
-      Rails.logger.info "Copying of #{graphemes.count} graphemes done"
     end
 
     def copy_data_into_graphemes_revisions
@@ -86,17 +125,15 @@ module Documents
     def execute_copy_into_graphemes_revisions(revision)
       conn = Grapheme.connection.raw_connection
 
-      grapheme_ids = graphemes.map(&:id)
+      grapheme_ids = nodes.graphemes.map(&:id)
 
-      Rails.logger.info "Using Postgres COPY to add #{graphemes.count} graphemes to the revision #{revision.id}"
+      Rails.logger.info "Using Postgres COPY to add #{nodes.graphemes.count} graphemes to the revision #{revision.id}"
 
       conn.copy_data "COPY #{revision.graphemes_revisions_partition_table_name} (grapheme_id) FROM STDIN CSV" do
         grapheme_ids.each do |grapheme_id|
           conn.put_copy_data "#{grapheme_id}\n"
         end
       end
-
-      Rails.logger.info "Copied #{graphemes.count} graphemes to the revision #{revision.id}"
     end
 
     def master_branch
