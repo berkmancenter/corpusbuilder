@@ -83,8 +83,20 @@ class Revision < ApplicationRecord
       graphemes
     end
 
+    def default_scope
+      Grapheme.joins("inner join #{revision.graphemes_revisions_partition_table_name} on #{revision.graphemes_revisions_partition_table_name}.grapheme_id = graphemes.id")
+    end
+
+    def reorder(*args)
+      default_scope.reorder(*args)
+    end
+
     def where(*args)
-      Grapheme.where(id: map(&:id)).where(*args)
+      default_scope.where(*args)
+    end
+
+    def joins(*args)
+      default_scope.joins(*args)
     end
 
     def ==(other_revision_graphemes)

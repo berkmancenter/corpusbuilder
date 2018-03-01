@@ -13,11 +13,12 @@ module Branches
 
       new_working = Revisions::Create.run!(
         document_id: branch.revision.document_id,
-        parent_id: working.id,
+        parent_id: new_regular.id,
         status: Revision.statuses[:working]
       ).result
 
       Revisions::PointAtSameGraphemes.run!(source: new_regular, target: new_working)
+
       new_working.annotations = new_regular.annotations
 
       branch.update_attributes!(revision_id: new_regular.id)

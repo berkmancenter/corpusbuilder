@@ -44,7 +44,7 @@ module Graphemes
         else
           Revision.joins(:branches).
                    where(
-                     branches: { name: 'master' },
+                     branches: { name: branch_name },
                      document_id: surface.document_id
           ).first
         end

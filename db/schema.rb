@@ -119,6 +119,14 @@ ActiveRecord::Schema.define(version: 20180301102910) do
     t.decimal "position_weight", precision: 12, scale: 6
   end
 
+  create_table "graphemes_revisions_6f817b5b_86f8_453b_a911_d6932c2463ae", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+  end
+
+  create_table "graphemes_revisions_cc70717f_a401_4940_8491_4e72170137f2", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+  end
+
   create_table "images", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.string "image_scan"
@@ -158,13 +166,21 @@ ActiveRecord::Schema.define(version: 20180301102910) do
     t.index ["area"], name: "index_surfaces_on_area", using: :gist
   end
 
+  create_table "test", id: false, force: :cascade do |t|
+    t.uuid "grapheme_id", null: false
+  end
+
   create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "surface_id", null: false
-    t.box "area", null: false
+    t.uuid "document_id"
+    t.box "area"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "surface_id", null: false
     t.index ["area"], name: "index_zones_on_area", using: :gist
     t.index ["surface_id"], name: "index_zones_on_surface_id"
   end
 
+  add_foreign_key "graphemes_revisions_6f817b5b_86f8_453b_a911_d6932c2463ae", "graphemes", name: "test_grapheme_id_fk"
+  add_foreign_key "graphemes_revisions_cc70717f_a401_4940_8491_4e72170137f2", "graphemes", name: "test_grapheme_id_fk"
+  add_foreign_key "test", "graphemes", name: "test_grapheme_id_fk"
 end

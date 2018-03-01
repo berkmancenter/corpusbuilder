@@ -18,7 +18,7 @@ module Revisions
       end
 
       Rails.logger.info copy_sql
-      Rails.logger.info ids.join("; ")
+      Rails.logger.info "(... #{ ids.count } grapheme ids being copied ...)"
 
       ids
     end
