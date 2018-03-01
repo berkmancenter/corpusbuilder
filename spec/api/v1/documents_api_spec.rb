@@ -926,6 +926,7 @@ describe V1::DocumentsAPI, type: :request do
       development_branch.working.graphemes << master_graphemes.flatten.uniq
 
       Documents::Correct.run! document: document,
+        editor_id: editor.id,
         branch_name: 'development',
         graphemes: (additions + changes + removals)
 
@@ -1021,6 +1022,7 @@ describe V1::DocumentsAPI, type: :request do
 
           Documents::Correct.run! document: document,
             branch_name: topic_branch.name,
+            editor_id: editor.id,
             graphemes: [
               {
                 id: master_graphemes.first.id,
@@ -1052,6 +1054,7 @@ describe V1::DocumentsAPI, type: :request do
 
           Documents::Correct.run! document: document,
             branch_name: development_branch.name,
+            editor_id: editor.id,
             graphemes: [
               {
                 id: master_graphemes[2].id,

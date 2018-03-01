@@ -49,12 +49,12 @@ module Graphemes
                    array_agg(gs.inclusion) as inclusion,
                    array_agg(gs.revision_id) as revision_ids
             from (
-              select grapheme_id, 'left' as inclusion, revision_id
+              select grapheme_id, 'left' as inclusion, '#{revision_left.id}' as revision_id
               from #{revision_left.graphemes_revisions_partition_table_name}
               inner join corrected_graphemes
                 on corrected_graphemes.id = #{revision_left.graphemes_revisions_partition_table_name}.grapheme_id
               union all
-              select grapheme_id, 'right' as inclusion, revision_id
+              select grapheme_id, 'right' as inclusion, '#{revision_right.id}' as revision_id
               from #{revision_right.graphemes_revisions_partition_table_name}
               inner join corrected_graphemes
                 on corrected_graphemes.id = #{revision_right.graphemes_revisions_partition_table_name}.grapheme_id

@@ -1,4 +1,8 @@
 class ApplicationRecord < ActiveRecord::Base
+  include Memoizable
+
+  after_save :clear_memoized
+
   self.abstract_class = true
 
   def base_url

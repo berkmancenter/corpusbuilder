@@ -4,15 +4,10 @@ module Revisions
 
     def execute
       pg_result = Revision.connection.execute <<-SQL
-        delete from #{target.graphemes_revisions_partition_table_name};
+        drop table if exists #{target.graphemes_revisions_partition_table_name};
 
-        insert into #{target.graphemes_revisions_partition_table_name}(revision_id, grapheme_id)
-        select '#{target.id}' :: uuid,
-               joined.grapheme_id
-        from (
-          select grapheme_id
-          from #{source.graphemes_revisions_partition_table_name}
-        ) joined
+        create table #{target.graphemes_revisions_partition_table_name}
+        as table #{source.graphemes_revisions_partition_table_name};
       SQL
 
       pg_result.cmd_tuples

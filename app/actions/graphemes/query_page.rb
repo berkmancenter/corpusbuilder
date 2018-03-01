@@ -3,23 +3,38 @@ module Graphemes
     attr_accessor :surface, :revision_id, :branch_name, :area
 
     def execute
-      # todo: support the area param, if the need will be
-
-      Grapheme.find_by_sql [ sql, surface.id ]
+      Grapheme.find_by_sql query
     end
 
-    def sql
-      memoized do
-        <<-SQL
-          select graphemes.*
-          from graphemes
-          inner join #{revision.graphemes_revisions_partition_table_name}
-            on #{revision.graphemes_revisions_partition_table_name}.grapheme_id = graphemes.id
-          inner join zones
-            on graphemes.zone_id = zones.id
-          where zones.surface_id = ?
-        SQL
+    def query
+      if surface.present?
+        [ with_surface, surface.id ]
+      else
+        without_surface
       end
+    end
+
+    def with_surface
+      <<-SQL
+        select graphemes.*
+        from graphemes
+        inner join #{revision.graphemes_revisions_partition_table_name}
+          on #{revision.graphemes_revisions_partition_table_name}.grapheme_id = graphemes.id
+        inner join zones
+          on graphemes.zone_id = zones.id
+        where zones.surface_id = ?
+        order by graphemes.position_weight asc
+      SQL
+    end
+
+    def without_surface
+      <<-SQL
+        select graphemes.*
+        from graphemes
+        inner join #{revision.graphemes_revisions_partition_table_name}
+          on #{revision.graphemes_revisions_partition_table_name}.grapheme_id = graphemes.id
+        order by graphemes.position_weight asc
+      SQL
     end
 
     def revision

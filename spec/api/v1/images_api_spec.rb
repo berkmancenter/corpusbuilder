@@ -69,7 +69,7 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "returns 500 when something goes wrong" do
-      allow_any_instance_of(Images::Create).to receive(:execute).and_raise(Exception, "Error message")
+      allow_any_instance_of(Images::Create).to receive(:execute).and_raise(StandardError, "Error message")
 
       valid_request
 

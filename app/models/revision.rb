@@ -7,7 +7,6 @@ class Revision < ApplicationRecord
   workflow status: [ :regular, :working, :conflict ]
 
   has_many :branches, dependent: :destroy
-  has_and_belongs_to_many :graphemes, dependent: :destroy
   has_and_belongs_to_many :annotations, dependent: :destroy
 
   scope :working, -> {
@@ -23,5 +22,52 @@ class Revision < ApplicationRecord
 
   def graphemes_revisions_partition_table_name
     self.class.graphemes_revisions_partition_table_name(id)
+  end
+
+  def graphemes
+    memoized do
+      RevisionGraphemes.new(self)
+    end
+  end
+
+  def grapheme_ids
+    memoized do
+      self.graphemes.map(&:id)
+    end
+  end
+
+  # An enumerable class allowing the use of the standard
+  # Rails style linked table like syntax for the highly
+  # optimized CorpusBuilder ways of linking revisions
+  # with graphemes
+  class RevisionGraphemes
+    include Enumerable
+
+    attr_accessor :revision
+
+    def initialize(revision)
+      self.revision = revision
+    end
+
+    def each(&block)
+      Graphemes::QueryPage.run!(
+        revision_id: self.revision.id
+      ).result.each(&block)
+    end
+
+    def <<(graphemes)
+      (graphemes.is_a?(Enumerable) ? graphemes : [ graphemes ]).each do |grapheme|
+        Revisions::AddGrapheme.run!(
+          revision_id: self.revision.id,
+          grapheme_id: grapheme.id
+        )
+      end
+
+      graphemes
+    end
+
+    def ==(other_revision_graphemes)
+      self.each.to_a == other_revision_graphemes.each.to_a
+    end
   end
 end

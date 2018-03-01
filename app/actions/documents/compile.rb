@@ -90,9 +90,9 @@ module Documents
 
       Rails.logger.info "Using Postgres COPY to add #{graphemes.count} graphemes to the revision #{revision.id}"
 
-      conn.copy_data "COPY #{revision.graphemes_revisions_partition_table_name} (grapheme_id, revision_id) FROM STDIN CSV" do
+      conn.copy_data "COPY #{revision.graphemes_revisions_partition_table_name} (grapheme_id) FROM STDIN CSV" do
         grapheme_ids.each do |grapheme_id|
-          conn.put_copy_data "#{grapheme_id},#{revision.id}\n"
+          conn.put_copy_data "#{grapheme_id}\n"
         end
       end
 

@@ -12,12 +12,7 @@ module Branches
         name: @name,
         editor_id: @editor_id
 
-      if revision.present?
-        Revisions::PointAtSameGraphemes.run!(source: revision, target: next_revision)
-        Revisions::PointAtSameGraphemes.run!(source: revision, target: next_working)
-      else
-        next_revision && next_working
-      end
+      next_working
 
       branch
     end
@@ -27,11 +22,13 @@ module Branches
     def next_working
       @_next_working ||= Revisions::Create.run!(document_id: document_id,
                              parent_id: next_revision.id,
+                             source: revision,
                              status: Revision.statuses[:working]).result
     end
 
     def next_revision
       @_next_revision ||= Revisions::Create.run!(document_id: document_id,
+                                                 source: revision,
                                                  parent_id: revision.try(:id)).result
     end
 

@@ -4,12 +4,10 @@ module Revisions
 
     def execute
       Revision.connection.execute <<-SQL
-        create table #{revision.graphemes_revisions_partition_table_name}
-        (check (revision_id = '#{revision.id}'))
-        inherits (graphemes_revisions);
-
-        create index index_#{revision.id.gsub(/-/, '')}_revision_id on #{revision.graphemes_revisions_partition_table_name} using btree (revision_id);
-        create index index_#{revision.id.gsub(/-/, '')}_grapheme_id_revision_id on #{revision.graphemes_revisions_partition_table_name} using btree (grapheme_id, revision_id);
+        create table #{revision.graphemes_revisions_partition_table_name} (
+            grapheme_id uuid NOT NULL,
+            constraint "test_grapheme_id_fk" foreign key (grapheme_id) references graphemes("id")
+        );
       SQL
     end
   end

@@ -4,14 +4,16 @@ class Branch < ApplicationRecord
 
   validates :editor_id, presence: true
 
-  has_many :graphemes, through: :revision
-
   def working
     Revision.working.where(parent_id: self.revision_id).first
   end
 
   def conflict?
     working.conflict?
+  end
+
+  def graphemes
+    revision.graphemes
   end
 
   class Simple < Grape::Entity
