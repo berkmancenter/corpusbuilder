@@ -20,6 +20,7 @@ class V1::DocumentsAPI < Grape::API
         optional :publisher, type: String
       end
       requires :editor_email, type: String
+      optional :backend, type: String
     end
     post do
       authorize!

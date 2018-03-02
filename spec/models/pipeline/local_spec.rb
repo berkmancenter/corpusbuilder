@@ -167,7 +167,7 @@ describe Pipeline::Local, type: :model do
 
       it "calls Images::OCR for the first image not ocred yet" do
         expect_any_instance_of(Document).to receive(:images).and_return(images)
-        expect(Images::OCR).to receive(:run!).with(image: image2, backend: :tesseract)
+        expect(Images::OCR).to receive(:run!).with(image: image2, backend: "tesseract")
 
         pipeline.forward!
       end

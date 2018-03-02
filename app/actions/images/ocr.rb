@@ -3,7 +3,6 @@ module Images
     attr_accessor :image, :backend
 
     validates :image, presence: true
-    validates :backend, inclusion: { in: [ :tesseract, :kraken ] }
 
     # todo: specify the language to use
 
@@ -21,11 +20,13 @@ module Images
     end
 
     def backend_action
-      case backend
-      when :tesseract
+      case backend.to_s
+      when 'tesseract'
         Images::TesseractOCR
-      when :kraken
+      when 'kraken'
         Images::KrakenOCR
+      else
+        raise ArgumentError, "Backend should be tesseract or kraken but #{backend} was given"
       end
     end
   end

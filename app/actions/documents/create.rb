@@ -1,6 +1,6 @@
 module Documents
   class Create < Action::Base
-    attr_accessor :images, :metadata, :app, :editor_email
+    attr_accessor :images, :metadata, :app, :editor_email, :backend
 
     validates :app, presence: true
     validates :images, presence: true
@@ -19,6 +19,7 @@ module Documents
         notes: @metadata[:notes],
         publisher: @metadata[:publisher],
         status: Document.statuses[:initial],
+        backend: (backend || 'tesseract'),
         app_id: @app.id
 
       document.images << image_records

@@ -60,23 +60,24 @@ class Pipeline::Local < Pipeline
   end
 
   def segment
-    # todo: implement this step
     :done
   end
 
   def ocr
     Rails.logger.debug "Doing ocr in the local pipeline"
+
     next_image, one_after = document.images.lazy.select do |i|
       !i.ocred?
     end.take(2).to_a
+
     Rails.logger.debug "Next: #{next_image.try(:name)} One After: #{one_after.try(:name)}"
 
     if next_image.present?
       Rails.logger.debug "Doing OCR on: #{next_image.name}"
-      # todo: implement switching between backends
+
       Images::OCR.run!(
         image: next_image,
-        backend: :tesseract
+        backend: document.backend
       )
       return one_after.present? ? :more : :done
     else
@@ -86,7 +87,6 @@ class Pipeline::Local < Pipeline
   end
 
   def cleanup!
-    # todo: implement this step
   end
 
   def next_stage!
