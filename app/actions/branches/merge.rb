@@ -9,6 +9,9 @@ module Branches
     validate :working_is_clean
 
     def execute
+      #Revisions::PointAtGraphemes.run! ids: merge_ids,
+      #  target: branch.working
+
       Revisions::AddGraphemes.run!(
         revision_id: branch.working.id,
         grapheme_ids: (
@@ -203,9 +206,20 @@ module Branches
       end
     end
 
+    def working_changes
+      memoized do
+        Graphemes::QueryDiff.run(
+          revision_left: branch.working,
+          revision_right: branch.revision,
+          reject_mirrored: true
+        ).result.uniq
+      end
+    end
+
     def working_is_clean
-      # todo: ensure that working and main are the same
-      # ie. all changes from working have been committed
+      if working_changes.present?
+        errors.add(:base, "cannot merge with a branch that has uncommitted changed in the working version")
+      end
     end
 
     def branches_not_in_conflicts
