@@ -15,9 +15,6 @@ export default class DocumentPage extends React.Component {
 
     pageRoot = null;
 
-    // using @computed ensures that the values are cached and not re-computed
-    // even though they are not mobx related
-
     @observable
     visualSelection = null;
 

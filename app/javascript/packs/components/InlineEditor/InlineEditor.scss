@@ -51,6 +51,7 @@
         box-shadow: none;
         padding: 0px;
         position: absolute;
+        transform-origin: top left;
       }
 
       input:hover, input:focus, input:active {

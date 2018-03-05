@@ -272,6 +272,13 @@ export default class Viewer extends React.Component {
     }
 
     @computed
+    get ratio() {
+        let width = this.document.surfaces[0].area.lrx - this.document.surfaces[0].area.ulx;
+
+        return this.width / width;
+    }
+
+    @computed
     get height() {
         let width = this.document.surfaces[0].area.lrx - this.document.surfaces[0].area.ulx;
         let height = this.document.surfaces[0].area.lry - this.document.surfaces[0].area.uly;
@@ -287,9 +294,7 @@ export default class Viewer extends React.Component {
             return this.width;
         }
 
-        let ratio = this.width / this.document.global.tallest_surface.width;
-
-        return ratio * this.document.global.tallest_surface.height;
+        return this.ratio * this.document.global.tallest_surface.height;
     }
 
     constructor(props) {
