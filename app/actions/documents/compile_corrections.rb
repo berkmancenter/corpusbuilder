@@ -387,7 +387,7 @@ module Documents
           if source_graphemes.empty?
             ret = revision.graphemes.joins(zone: :surface).
               where(zones: { surfaces: { number: surface_number } }).
-              where("(graphemes.area[0])[1] < ?", sorted_boxes.map { |b| b[:uly] }.min).
+              where("(graphemes.area[1])[1] < ?", sorted_boxes.map { |b| b[:uly] }.min).
               reorder('graphemes.position_weight desc').
               first
             ret || revision.graphemes.joins(zone: :surface).
@@ -412,7 +412,7 @@ module Documents
           if source_graphemes.empty?
             ret = revision.graphemes.joins(zone: :surface).
               where(zones: { surfaces: { number: surface_number } }).
-              where("(graphemes.area[1])[1] > ?", sorted_boxes.map { |b| b[:lry] }.max).
+              where("(graphemes.area[0])[1] > ?", sorted_boxes.map { |b| b[:lry] }.max).
               reorder('graphemes.position_weight asc').
               first
             ret || revision.graphemes.joins(zone: :surface).
