@@ -9,9 +9,6 @@ module Branches
     validate :working_is_clean
 
     def execute
-      #Revisions::PointAtGraphemes.run! ids: merge_ids,
-      #  target: branch.working
-
       Revisions::AddGraphemes.run!(
         revision_id: branch.working.id,
         grapheme_ids: (
@@ -44,25 +41,7 @@ module Branches
     end
 
     def no_conflicts?
-      @_no_conflicts ||= merge_conflicts.empty?
-    end
-
-    def merge_ids
-      @_merge_ids ||= -> {
-        self.exclude_ids
-        branch_item_ids
-        other_branch_ids
-        removed_ids
-        conflicting_ids
-
-        time "calculating merge_ids in Branches::Merge" do
-          to_exclude_ids = self.exclude_ids
-
-          conflict_graphemes.map(&:id).concat(branch_item_ids).
-                                      concat(other_branch_ids).
-                                      uniq - to_exclude_ids - removed_ids - conflicting_ids
-        end
-      }.call
+      merge_conflicts.empty?
     end
 
     def added_ids
@@ -95,7 +74,9 @@ module Branches
     end
 
     def conflicting_ids
-      @_conflicting_ids ||= merge_conflicts.map(&:ids).flatten
+      memoized do
+        merge_conflicts.map(&:ids).flatten
+      end
     end
 
     def removed_ids
@@ -109,30 +90,36 @@ module Branches
     end
 
     def conflict_graphemes
-      @_conflict_graphemes ||= -> {
+      memoized do
         merge_conflicts.map do |conflict|
           Grapheme.create! conflict.output_grapheme.
             attributes.
             without("id", "inclusion", "revision_id", "surface_number", "status").
             merge("status" => Grapheme.statuses[:conflict])
         end
-      }.call
+      end
     end
 
     def branch_diff
-      @_branch_diff ||= Graphemes::QueryDiff.run(
-        revision_left: root,
-        revision_right: branch.revision,
-        reject_mirrored: true
-      ).result.uniq
+      memoized do
+        Graphemes::QueryDiff.run(
+          revision_left: root,
+          revision_right: branch.revision,
+          reject_mirrored: true
+        ).result.uniq
+      end
     end
 
     def branch_changes
-      @_branch_changes ||= compile_changes(branch_diff)
+      memoized do
+        compile_changes(branch_diff)
+      end
     end
 
     def other_branch_changes
-      @_other_branch_changes ||= compile_changes(other_branch_diff)
+      memoized do
+        compile_changes(other_branch_diff)
+      end
     end
 
     def compile_changes(diffs)
@@ -167,18 +154,22 @@ module Branches
     end
 
     def other_branch_diff
-      @_other_branch_diff ||= Graphemes::QueryDiff.run(
-        revision_left: root,
-        revision_right: other_branch.revision,
-        reject_mirrored: true
-      ).result.uniq
+      memoized do
+        Graphemes::QueryDiff.run(
+          revision_left: root,
+          revision_right: other_branch.revision,
+          reject_mirrored: true
+        ).result.uniq
+      end
     end
 
     def root
-      @_root ||= Revisions::QueryClosestRoot.run!(
-        revision1: branch.revision,
-        revision2: other_branch.revision
-      ).result
+      memoized do
+        Revisions::QueryClosestRoot.run!(
+          revision1: branch.revision,
+          revision2: other_branch.revision
+        ).result
+      end
     end
 
     def merge_conflicts
