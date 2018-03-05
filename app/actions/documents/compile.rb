@@ -102,6 +102,7 @@ module Documents
 
       Rails.logger.info "Using Postgres COPY to add #{nodes.graphemes.count} graphemes"
 
+      # todo: use the new copy_data added to ApplicationRecord
       conn.copy_data "COPY graphemes (id, area, value, certainty, position_weight, zone_id, created_at, updated_at) FROM STDIN CSV" do
         nodes.graphemes.each do |grapheme|
            data = [ grapheme.id, grapheme.area.to_s,

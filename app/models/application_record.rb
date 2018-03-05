@@ -1,5 +1,6 @@
 class ApplicationRecord < ActiveRecord::Base
   include Memoizable
+  include DataCopyable
 
   after_save :clear_memoized
 

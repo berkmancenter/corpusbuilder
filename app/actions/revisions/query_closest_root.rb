@@ -37,11 +37,11 @@ module Revisions
                 where id in ('#{revision1.id}', '#{revision2.id}')
                 union
                 select revisions.id,
-                      tree.origin_id,
-                    revisions.parent_id,
-                    revisions.merged_with_id,
-                    tree.merged_with_id is not null,
-                    tree.path || revisions.id
+                       tree.origin_id,
+                       revisions.parent_id,
+                       revisions.merged_with_id,
+                       revisions.merged_with_id is not null,
+                       tree.path || revisions.id
                 from tree
                 inner join revisions
                         on revisions.id = tree.parent_id and (not tree.merge_stop)

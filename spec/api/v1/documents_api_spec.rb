@@ -1074,7 +1074,7 @@ describe V1::DocumentsAPI, type: :request do
             current_editor_id: editor.id
         end
 
-        it "makes current revision point at the revisions from other and the ones added other way", focus: true do
+        it "makes current revision point at the revisions from other and the ones added other way" do
           corrections
           first_merge
           master_branch.reload
@@ -1083,7 +1083,7 @@ describe V1::DocumentsAPI, type: :request do
           master_branch.reload
 
           ['1', '2', '3', '4'].each do |addition|
-            expect(master_branch.revision.graphemes.to_a.uniq.map(&:value)).to include(addition)
+            expect(master_branch.revision.reload.graphemes.to_a.uniq.map(&:value)).to include(addition)
           end
         end
       end

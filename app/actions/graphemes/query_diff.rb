@@ -86,5 +86,9 @@ module Graphemes
           grapheme.surface_number == other.surface_number
       end
     end
+
+    def create_development_dumps?
+      true
+    end
   end
 end

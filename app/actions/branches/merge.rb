@@ -6,10 +6,22 @@ module Branches
     validates :other_branch, presence: true
     validates :current_editor_id, presence: true
     validate :branches_not_in_conflicts
+    validate :working_is_clean
 
     def execute
-      Revisions::PointAtGraphemes.run! ids: merge_ids,
-        target: branch.working
+      Revisions::AddGraphemes.run!(
+        revision_id: branch.working.id,
+        grapheme_ids: (
+          added_ids + conflict_graphemes.map(&:id)
+        )
+      )
+
+      Revisions::RemoveGraphemes.run!(
+        revision_id: branch.working.id,
+        grapheme_ids: (
+          exclude_ids + removed_ids + conflicting_ids
+        )
+      )
 
       branch.working.update_attributes!(merged_with_id: other_branch.revision_id)
 
@@ -34,11 +46,27 @@ module Branches
 
     def merge_ids
       @_merge_ids ||= -> {
-        to_exclude_ids = self.exclude_ids
-        conflict_graphemes.map(&:id).concat(branch_item_ids).
-                                     concat(other_branch_ids).
-                                     uniq - to_exclude_ids - removed_ids - conflicting_ids
+        self.exclude_ids
+        branch_item_ids
+        other_branch_ids
+        removed_ids
+        conflicting_ids
+
+        time "calculating merge_ids in Branches::Merge" do
+          to_exclude_ids = self.exclude_ids
+
+          conflict_graphemes.map(&:id).concat(branch_item_ids).
+                                      concat(other_branch_ids).
+                                      uniq - to_exclude_ids - removed_ids - conflicting_ids
+        end
       }.call
+    end
+
+    def added_ids
+      memoized do
+        # all ids added by the other branch
+        other_branch_changes.reject(&:removal?).map(&:to).map(&:id)
+      end
     end
 
     def all_branch_ids(branch)
@@ -48,15 +76,19 @@ module Branches
     end
 
     def branch_item_ids
-      @_branch_item_ids ||= -> {
-        all_branch_ids(branch)
-      }.call
+      memoized do
+        time "calculating branch_item_ids in Branches::Merge" do
+          all_branch_ids(branch)
+        end
+      end
     end
 
     def other_branch_ids
-      @_other_branch_ids ||= -> {
-        all_branch_ids(other_branch)
-      }.call
+      memoized do
+        time "calculating other_branch_ids in Branches::Merge" do
+          all_branch_ids(other_branch)
+        end
+      end
     end
 
     def conflicting_ids
@@ -64,9 +96,13 @@ module Branches
     end
 
     def removed_ids
-      @_removed_ids ||= branch_changes.concat(other_branch_changes).select(&:removal?).select do |change|
-        merge_conflicts.none? { |conflict| conflict.includes?(change) }
-      end.map(&:from).map(&:id).uniq
+      memoized do
+        time "calculating removed_ids in Branches::Merge" do
+          branch_changes.concat(other_branch_changes).select(&:removal?).select do |change|
+            merge_conflicts.none? { |conflict| conflict.includes?(change) }
+          end.map(&:from).map(&:id).uniq
+        end
+      end
     end
 
     def conflict_graphemes
@@ -143,24 +179,33 @@ module Branches
     end
 
     def merge_conflicts
-      @_merge_conflicts ||= -> {
-        branch_changes.map do |our_change|
-          found = other_branch_changes.find do |other_change|
-            our_change.area.overlaps? other_change.area
-          end
+      memoized do
+        time "calculating merge_conflicts in Branches::Merge" do
+          branch_changes.map do |our_change|
+            found = other_branch_changes.find do |other_change|
+              our_change.area.overlaps? other_change.area
+            end
 
-          found.present? ? [ our_change, found ] : nil
-        end.reject(&:nil?).map do |our_change, their_change|
-          Conflict.new(our_change, their_change)
-        end.reject(&:both_remove?)
-      }.call
+            found.present? ? [ our_change, found ] : nil
+          end.reject(&:nil?).map do |our_change, their_change|
+            Conflict.new(our_change, their_change)
+          end.reject(&:both_remove?)
+        end
+      end
     end
 
     def exclude_ids
-      @_exclude_ids ||= Graphemes::QueryMergeExcludes.run!(
-        branch_left: branch,
-        branch_right: other_branch
-      ).result
+      memoized do
+        Graphemes::QueryMergeExcludes.run!(
+          branch_left: branch,
+          branch_right: other_branch
+        ).result
+      end
+    end
+
+    def working_is_clean
+      # todo: ensure that working and main are the same
+      # ie. all changes from working have been committed
     end
 
     def branches_not_in_conflicts
@@ -191,6 +236,10 @@ module Branches
 
       def removal?
         to.nil?
+      end
+
+      def addition?
+        from.nil?
       end
 
       def inspect

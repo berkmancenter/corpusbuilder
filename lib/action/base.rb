@@ -7,6 +7,7 @@ module Action
   class Base
     include ActiveModel::Validations
     include Memoizable
+    include Benchmarkable
 
     def self.run!(params = {}, instance = new)
       if params.nil? && has_setters?(instance)
@@ -33,7 +34,10 @@ module Action
 
       if instance.valid?
         App.connection.transaction do
-          instance.instance_variable_set "@_result", instance.execute
+          result = instance.time "#{instance.class.name}#execute" do
+            instance.execute
+          end
+          instance.instance_variable_set "@_result", result
         end
       else
         raise ActionError, { action: instance.class, messages: instance.errors.full_messages, params: params }
