@@ -31,7 +31,7 @@ class Revision < ApplicationRecord
   end
 
   def conflict_graphemes
-    graphemes.select(&:conflict?)
+    graphemes.where(status: Grapheme.statuses[:conflict])
   end
 
   def graphemes=(items)

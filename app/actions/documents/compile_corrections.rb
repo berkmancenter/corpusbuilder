@@ -226,7 +226,9 @@ module Documents
 
           alignments = needleman_wunsch(visually_sorted_source_words, visually_sorted_entered_words,
                                         gap_penalty: gap) do |left, right|
-            if left.any?(&:conflict?) || right.any?(&:conflict?) || left.count != right.count
+            if (left.any?(&:conflict?) || right.any?(&:conflict?)) && left.text == right.text
+              0
+            elsif left.any?(&:conflict?) || right.any?(&:conflict?) || left.count != right.count
               -1 * [ left.count, right.count ].max
             elsif left.zip(right).any? { |l, r| graphemes_need_change(l, r) }
               -1 * levenshtein(left.text, right.text)
@@ -505,7 +507,7 @@ module Documents
             id: source.id,
             delete: true
           }
-        elsif modification?
+        elsif modification? || merge_resolution?
           {
             id: source.id,
             position_weight: nil,
@@ -527,7 +529,12 @@ module Documents
       end
 
       def differ?
-        addition? || deletion? || modification?
+        addition? || deletion? || modification? || merge_resolution?
+      end
+
+      def merge_resolution?
+        source.present? && entered.present? &&
+          (source.conflict? || entered.conflict?)
       end
 
       def addition?
@@ -584,7 +591,8 @@ module Documents
       def ==(other)
         other.nil? || (
           text == other.text &&
-          area == other.area
+          area == other.area &&
+          @graphemes.none?(&:conflict?) && other.none?(&:conflict?)
         )
       end
 

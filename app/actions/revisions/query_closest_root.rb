@@ -44,8 +44,8 @@ module Revisions
                        tree.path || revisions.id
                 from tree
                 inner join revisions
-                        on revisions.id = tree.parent_id and (not tree.merge_stop)
-                        or revisions.id = tree.merged_with_id and (not tree.merge_stop)
+                        on revisions.id = tree.parent_id
+                        or revisions.id = tree.merged_with_id
               )
               select tree.path,
                     other_tree.id as other_tree_id,

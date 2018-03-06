@@ -134,7 +134,7 @@ class V1::DocumentsAPI < Grape::API
       put ':branch/reset' do
         branch = @document.branches.where(name: params[:branch]).first
 
-        action! Revisions::PointAtSameGraphemes, source: branch.revision, target: branch.working
+        action! Branches::Reset, branch: branch
       end
 
       desc 'Removes the branch'

@@ -16,6 +16,13 @@ module Branches
         )
       )
 
+      conflict_graphemes.each do |conflict|
+        CorrectionLog.create! grapheme: conflict,
+          revision: branch.working,
+          editor_id: current_editor_id,
+          status: CorrectionLog.statuses[:merge_conflict]
+      end
+
       Revisions::RemoveGraphemes.run!(
         revision_id: branch.working.id,
         grapheme_ids: (
@@ -175,9 +182,20 @@ module Branches
     def merge_conflicts
       memoized do
         time "calculating merge_conflicts in Branches::Merge" do
-          branch_changes.map do |our_change|
-            found = other_branch_changes.find do |other_change|
+          ours = Set.new(branch_changes)
+          theirs = Set.new(other_branch_changes)
+
+          ours.map do |our_change|
+            found = theirs.find do |other_change|
               our_change.area.overlaps? other_change.area
+            end
+
+            if found.present?
+              theirs.delete(found)
+
+              [ our_change, found ]
+            else
+              nil
             end
 
             found.present? ? [ our_change, found ] : nil

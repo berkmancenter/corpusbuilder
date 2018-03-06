@@ -56,7 +56,7 @@ module Graphemes
               from #{revision_left.graphemes_revisions_partition_table_name}
               inner join corrected_graphemes
                 on corrected_graphemes.id = #{revision_left.graphemes_revisions_partition_table_name}.grapheme_id
-              union all
+              union
               select grapheme_id, 'right' as inclusion, '#{revision_right.id}' as revision_id
               from #{revision_right.graphemes_revisions_partition_table_name}
               inner join corrected_graphemes

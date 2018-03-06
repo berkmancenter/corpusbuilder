@@ -3,5 +3,5 @@ class CorrectionLog < ApplicationRecord
   belongs_to :revision
   belongs_to :editor
 
-  enum status: [ :removal, :addition ]
+  enum status: [ :removal, :addition, :merge_conflict ]
 end
