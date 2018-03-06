@@ -10,7 +10,7 @@ module Documents
     end
 
     def revision
-      @_revision ||= -> {
+      memoized do
         if !branch_name.nil?
           rev = Revision.working.where(
             parent_id: document.branches.where(name: branch_name).select("branches.revision_id")
@@ -22,14 +22,18 @@ module Documents
         else
           Revision.find(revision_id)
         end
-      }.call
+      end
     end
 
     def line_diff
-      @_line_diff ||= LineDiff.new(grapheme_ids, text, boxes, revision, surface_number)
+      memoized do
+        LineDiff.new(grapheme_ids, text, boxes, revision, surface_number)
+      end
     end
 
     class CorrectionDiff
+      include Memoizable
+
       def needleman_wunsch(from, to, options = {}, &block)
         Shared::NeedlemanWunsch.run!(
           from: from,
@@ -140,11 +144,16 @@ module Documents
             addmod_specs = grapheme_diffs.map(&:to_spec)
 
             open_position_weight = diff_span.open.try(:position_weight) || -> {
-              revision.graphemes.reorder('position_weight asc').first.position_weight - diff_span.diffs.count - 1
+              0 - diff_span.diffs.count - 1
             }.call
 
             close_position_weight = diff_span.close.try(:position_weight) || -> {
-              revision.graphemes.reorder('position_weight desc').first.position_weight + diff_span.diffs.count + 1
+              revision.
+                graphemes.joins(zone: :surface).
+                where(zones: { surfaces: { number: surface_number } }).
+                reorder('position_weight desc').
+                first.
+                position_weight + diff_span.diffs.count + 1
             }.call
 
             addmod_specs.each_with_index do |addmod_spec, index|
@@ -161,13 +170,17 @@ module Documents
                   value: [ltr? ? 0x200e : 0x200f].pack('U*'),
                   area: addmod_specs.first[:area],
                   surface_number: surface_number,
-                  position_weight: open_position_weight + 0.5*(addmod_specs.first[:position_weight] - open_position_weight)
+                  position_weight: open_position_weight + 0.5 * (
+                    addmod_specs.first[:position_weight] - open_position_weight
+                  )
                 },
                 {
                   value: [0x202c].pack('U*'),
                   area: addmod_specs.last[:area],
                   surface_number: surface_number,
-                  position_weight: close_position_weight - 0.5*(close_position_weight - addmod_specs.last[:position_weight])
+                  position_weight: close_position_weight - 0.5 * (
+                    close_position_weight - addmod_specs.last[:position_weight]
+                  )
                 }
               ]
             end
@@ -383,53 +396,47 @@ module Documents
       end
 
       def first_bounding_grapheme
-        @_first_bounding_grapheme || -> {
+        memoized do
           if source_graphemes.empty?
-            ret = revision.graphemes.joins(zone: :surface).
+            revision.graphemes.joins(zone: :surface).
               where(zones: { surfaces: { number: surface_number } }).
               where("(graphemes.area[1])[1] < ?", sorted_boxes.map { |b| b[:uly] }.min).
               reorder('graphemes.position_weight desc').
               first
-            ret || revision.graphemes.joins(zone: :surface).
-                where(zones: { surfaces: { number: surface_number - 1 } }).
-                reorder('graphemes.position_weight desc').
-                first
           else
             if grapheme_special?(source_graphemes.first)
               source_graphemes.first
             else
-              revision.graphemes.
+              revision.graphemes.joins(zone: :surface).
+                where(zones: { surfaces: { number: surface_number } }).
                 where("position_weight < ?", source_graphemes.first.position_weight).
                 reorder("position_weight desc").
                 first
             end
           end
-        }.call
+        end
       end
 
       def last_bounding_grapheme
-        @_last_bounding_grapheme || -> {
+        memoized do
           if source_graphemes.empty?
-            ret = revision.graphemes.joins(zone: :surface).
+            revision.graphemes.joins(zone: :surface).
               where(zones: { surfaces: { number: surface_number } }).
               where("(graphemes.area[0])[1] > ?", sorted_boxes.map { |b| b[:lry] }.max).
               reorder('graphemes.position_weight asc').
               first
-            ret || revision.graphemes.joins(zone: :surface).
-                where(zones: { surfaces: { number: surface_number + 1 } }).
-                reorder('graphemes.position_weight asc').
-                first
           else
             if grapheme_special?(source_graphemes.last)
               source_graphemes.last
             else
-              revision.graphemes.
+              revision.graphemes.joins(zone: :surface).
+                where(zones: { surfaces: { number: surface_number } }).
                 where("position_weight > ?", source_graphemes.last.position_weight).
                 reorder("position_weight asc").
                 first
             end
           end
-        }.call
+        end
       end
 
       class EnteredChar

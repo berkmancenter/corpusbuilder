@@ -181,8 +181,8 @@ export default class BoxesEditor extends React.Component {
 
     @computed
     get origLineBottomY() {
-        return this.props.line.reduce((min, grapheme) => {
-            return Math.min(min, grapheme.area.lry);
+        return this.props.line.reduce((max, grapheme) => {
+            return Math.max(max, grapheme.area.lry);
         }, this.props.line[0].area.lry);
     }
 

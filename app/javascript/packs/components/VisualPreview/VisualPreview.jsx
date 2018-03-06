@@ -50,8 +50,8 @@ export default class VisualPreview extends React.Component {
 
     @computed
     get lineBottomY() {
-        return this.line.reduce((min, grapheme) => {
-            return Math.min(min, grapheme.area.lry);
+        return this.line.reduce((max, grapheme) => {
+            return Math.max(max, grapheme.area.lry);
         }, this.line[0].area.lry) * this.previewToSurfaceRatio;
     }
 
