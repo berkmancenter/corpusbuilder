@@ -522,7 +522,10 @@ export default class InlineEditor extends React.Component {
         if(text !== undefined && text !== null) {
             let boxWidth = (box.lrx - box.ulx) * this.ratio;
             let textWidth = this.props.measureText(text, this.fontSize);
-            let scale = textWidth > 0 ? boxWidth / textWidth : 1; // todo
+            let scale = textWidth > 0 ? boxWidth / textWidth : 1;
+
+            scale = scale > 2 ? 1 : scale;
+
             let styles = {
                 left: box.ulx * this.ratio,
                 width: textWidth,

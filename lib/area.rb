@@ -18,11 +18,13 @@ class Area
     end
   end
 
-  def normalize
+  def normalize!
     @ulx = @ulx.to_f.round
     @uly = @uly.to_f.round
     @lrx = @lrx.to_f.round
     @lry = @lry.to_f.round
+
+    self
   end
 
   def self.span_boxes(boxes)

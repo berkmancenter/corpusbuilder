@@ -11,25 +11,28 @@ export default class GraphemesUtils {
     }
 
     static lines(graphemes) {
-        let initialState = {
-            zoneId: null,
-            result: [ ],
-        };
+        let bag = graphemes.reduce((state, grapheme) => {
+            let key = parseFloat(grapheme.zone_position_weight);
 
-        return graphemes.reduce((state, grapheme) => {
-            // if we're seeing the pop-directionality grapheme then
-            // it's a mark of the end of line:
-            if(grapheme.zone_id !== state.zoneId) {
-                state.result.push( [ ] );
-                state.zoneId = grapheme.zone_id;
+            if(state[ key ] === undefined) {
+                state[ key ] = [ ];
             }
-
-            state.result[ state.result.length - 1 ].push( grapheme );
+            state[ key ].push(grapheme);
 
             return state;
-        }, initialState).result.filter((line) => {
-            return line.length > 0;
-        });
+        }, {});
+
+        let keys = Object.keys(bag).sort((a, b) => { return a - b; });
+
+        return keys.reduce((result, key) => {
+            let graphemes = bag[ key ].sort((a, b) => {
+                return parseFloat(a.position_weight) - parseFloat(b.position_weight);
+            });
+
+            result.push(graphemes);
+
+            return result;
+        }, []);
     }
 
     static boxesOverlap = BoxesUtils.boxesOverlap;

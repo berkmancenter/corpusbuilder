@@ -158,7 +158,7 @@ class V1::DocumentsAPI < Grape::API
         requires :words, type: Array do
           requires :grapheme_ids, type: Array
           requires :text, type: String
-          requires :area, type: Hash do
+          optional :area, type: Hash do
             requires :ulx, type: String
             requires :uly, type: String
             requires :lrx, type: String

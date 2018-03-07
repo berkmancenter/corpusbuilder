@@ -109,7 +109,7 @@ module Documents
               if diffs.has_key?(grapheme.id)
                 state.current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
                 state.current_span.open ||= source_list.find do |g|
-                  !graphemes_need_change(g, state.previous)
+                  state.previous.present? && !graphemes_need_change(g, state.previous)
                 end
                 state.current_span.diffs.push(diffs[ grapheme.id ].first)
               else
@@ -283,10 +283,27 @@ module Documents
       def zone_id
         memoized do
           if source_graphemes.empty?
-            Zone.create! surface_id: revision.document.surfaces.where(number: surface_number).first.id,
-              area: Area.span_boxes(
-                words.map { |word| word[:area] }
-              ).normalize
+            area = Area.span_boxes(words.map { |word| word[:area] }).normalize!
+            zone_scope = Zone.where(surface_id: revision.document.surfaces.where(number: surface_number).first.id).
+              where('position_weight is not null')
+            previous_zone = zone_scope.
+              where('(area[1])[1] < ?', area.uly).
+              reorder('position_weight desc').first
+            next_zone = zone_scope.
+              where('(area[0])[1] > ?', area.lry).
+              reorder('position_weight asc').first
+            previous_weight = previous_zone.try(:position_weight)
+            next_weight = next_zone.try(:position_weight)
+            if previous_weight.nil?
+              previous_weight = zone_scope.reorder('position_weight asc').first.position_weight - 1
+            end
+            if next_weight.nil?
+              next_weight = zone_scope.reorder('position_weight desc').first.position_weight + 1
+            end
+            zone = Zone.create! surface_id: revision.document.surfaces.where(number: surface_number).first.id,
+              area: area,
+              position_weight: (previous_weight + 0.5*(next_weight - previous_weight))
+            zone.id
           else
             source_graphemes.first.zone_id
           end
@@ -411,6 +428,7 @@ module Documents
           {
             value: entered.value,
             area: entered.area,
+            zone_id: entered.zone_id,
             surface_number: word_diff.line_diff.surface_number,
             position_weight: nil
           }
@@ -424,6 +442,7 @@ module Documents
             id: source.id,
             position_weight: nil,
             value: entered.value,
+            zone_id: entered.zone_id,
             area: entered.area,
             surface_number: word_diff.line_diff.surface_number
           }

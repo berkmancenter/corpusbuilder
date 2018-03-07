@@ -19,6 +19,7 @@ module Documents
             area: area(spec),
             certainty: 1,
             value: spec[:value],
+            given_zone_id: spec[:zone_id],
             old_id: spec[:id],
             position_weight: spec[:position_weight],
             surface_number: spec[:surface_number]

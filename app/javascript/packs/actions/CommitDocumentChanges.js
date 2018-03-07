@@ -21,6 +21,16 @@ export default class CommitDocumentChanges extends Action {
                                 document: { id: selector.document.id }
                             })
                         );
+                        state.invalidate(
+                            new Selector('FetchDocumentBranch', {
+                                document: { id: selector.document.id }
+                            })
+                        );
+                        state.invalidate(
+                            new Selector('FetchDocumentBranches', {
+                                document: { id: selector.document.id }
+                            })
+                        );
                     }
                 )
             );

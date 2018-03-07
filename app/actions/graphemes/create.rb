@@ -1,6 +1,7 @@
 module Graphemes
   class Create < Action::Base
-    attr_accessor :revision, :area, :value, :surface_number, :old_id, :position_weight, :certainty
+    attr_accessor :revision, :area, :value, :surface_number, :old_id, :position_weight, :certainty,
+      :given_zone_id
 
     validates :revision, presence: true
     validates :value, presence: true
@@ -30,7 +31,7 @@ module Graphemes
     end
 
     def zone_id
-      @_zone_id ||= (existing_zone_id || new_zone_id)
+      @_zone_id ||= (given_zone_id || existing_zone_id || new_zone_id)
     end
 
     def parent_ids

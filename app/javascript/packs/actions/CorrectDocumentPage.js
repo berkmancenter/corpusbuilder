@@ -18,8 +18,7 @@ export default class CorrectDocumentPage extends Action {
                     ( _ ) => {
                         state.invalidate(
                             new Selector('FetchDocumentPage', {
-                                document: { id: selector.document.id },
-                                pageNumber: selector.pageNumber
+                                document: { id: selector.document.id }
                             })
                         );
                         state.invalidate(
