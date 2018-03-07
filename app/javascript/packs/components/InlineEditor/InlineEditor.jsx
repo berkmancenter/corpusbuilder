@@ -46,6 +46,11 @@ export default class InlineEditor extends React.Component {
         return this.props.allowNewBoxes === true;
     }
 
+    @computed
+    get graphemeWords() {
+        return GraphemeUtils.lineWords(this.props.line);
+    }
+
     @observable
     boxes = [ ];
 
@@ -487,16 +492,18 @@ export default class InlineEditor extends React.Component {
 
     requestSave() {
         if(this.props.onSaveRequested !== undefined && this.props.onSaveRequested !== null) {
-            let text = JSON.parse(JSON.stringify(this.editedText))
+            let textWords = this.dir === 'rtl' ? this.editedTextWords.reverse() : this.editedTextWords;
+            let words = textWords.map(
+                (word, ix) => {
+                    return {
+                        text: word,
+                        area: this.boxes[ix],
+                        grapheme_ids: (this.graphemeWords[ix] || []).map((g) => { return g.id })
+                    }
+                }
+            );
 
-            if(this.props.line === undefined || this.props.line === null || this.props.line.length === 0) {
-                let start = this.dir === "rtl" ? GraphemeUtils.rtlMark : GraphemeUtils.ltrMark;
-                let end   = GraphemeUtils.popDirectionalityMark;
-
-                text = `${String.fromCharCode(start)} ${text} ${String.fromCharCode(end)}`;
-            }
-
-            this.props.onSaveRequested(this.props.document, this.props.line, text, this.boxes);
+            this.props.onSaveRequested(this.props.document, words);
         }
     }
 

@@ -155,55 +155,31 @@ class V1::DocumentsAPI < Grape::API
 
       desc 'Adds corrections on a given revision'
       params do
-        optional :edit_spec, type: Hash do
+        requires :words, type: Array do
           requires :grapheme_ids, type: Array
-          requires :boxes, type: Array do
-            requires :ulx, type: String
-            requires :uly, type: String
-            requires :lrx, type: String
-            requires :lry, type: String
-          end
           requires :text, type: String
-          optional :surface_number, type: Integer
-        end
-        optional :graphemes, type: Array do
-          optional :id, type: String
-          optional :value, type: String
-          optional :surface_number, type: Integer
-          optional :position_weight, type: String
-          optional :delete, type: Boolean
-          optional :area, type: Hash do
+          requires :area, type: Hash do
             requires :ulx, type: String
             requires :uly, type: String
             requires :lrx, type: String
             requires :lry, type: String
           end
         end
+        requires :surface_number, type: Integer
       end
       put ':revision/tree' do
         infer_revision!
         infer_editor!
 
-
-        graphemes = if params.has_key?(:graphemes)
-                      params[:graphemes]
-                    else
-                      return error!("Either graphemes or edit_spec must be specified") if !params.has_key?(:edit_spec)
-
-                      Documents::CompileCorrections.run!(
-                        grapheme_ids: params[:edit_spec][:grapheme_ids],
-                        text: params[:edit_spec][:text],
-                        boxes: params[:edit_spec][:boxes],
-                        document: @document,
-                        branch_name: @revision_options[:branch_name],
-                        revision_id: @revision_options[:revision_id],
-                        surface_number: params[:edit_spec][:surface_number]
-                      ).result
-                    end
+        specs = Documents::CompileCorrections.run! words: params[:words],
+          surface_number: params[:surface_number],
+          revision_id: @revision_options[:revision_id],
+          document: @document,
+          branch_name: @revision_options[:branch_name]
 
         action! Documents::Correct, @revision_options.merge(
           document: @document,
-          graphemes: graphemes,
+          graphemes: specs.result,
           editor_id: @editor_id
         )
       end

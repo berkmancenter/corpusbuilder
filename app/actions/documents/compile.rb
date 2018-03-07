@@ -43,7 +43,8 @@ module Documents
             end
             zone_graphemes = []
             last_zone = last_surface.zones.new area: element.area,
-              id: SecureRandom.uuid
+              id: SecureRandom.uuid,
+              position_weight: zones.count + 1
             zones << last_zone
           when "grapheme"
             g = last_zone.graphemes.new(

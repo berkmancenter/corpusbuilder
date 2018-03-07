@@ -1,7 +1,6 @@
 module Documents
   class CompileCorrections < Action::Base
-    attr_accessor :grapheme_ids, :text, :boxes, :branch_name, :revision_id, :document,
-      :surface_number
+    attr_accessor :words, :document, :revision_id, :branch_name, :surface_number
 
     validate :revision_given
 
@@ -27,7 +26,7 @@ module Documents
 
     def line_diff
       memoized do
-        LineDiff.new(grapheme_ids, text, boxes, revision, surface_number)
+        LineDiff.new(words, revision, surface_number)
       end
     end
 
@@ -70,18 +69,16 @@ module Documents
     end
 
     class LineDiff < CorrectionDiff
-      attr_accessor :grapheme_ids, :text, :boxes, :revision, :surface_number
+      attr_accessor :words, :revision, :surface_number
 
-      def initialize(grapheme_ids, text, boxes, revision, surface_number)
-        @grapheme_ids = grapheme_ids
-        @text = text
-        @boxes = boxes
+      def initialize(words, revision, surface_number)
+        @words = words
         @revision = revision
-        @_surface_number = surface_number
+        @surface_number = surface_number
       end
 
       def specs
-        @_specs ||= -> {
+        memoized do
           if deleting_line?
             return source_graphemes.map do |grapheme|
               GraphemeDiff.new(grapheme, nil, nil).to_spec
@@ -97,19 +94,13 @@ module Documents
             grapheme_diff.entered.id
           end
 
-          entered_list.insert(0, first_bounding_grapheme)
-          entered_list.push(last_bounding_grapheme)
-
-          source_list.insert(0, first_bounding_grapheme)
-          source_list.push(last_bounding_grapheme)
-
           initial_state = OpenStruct.new({ result: [ ], current_span: nil, previous: nil })
 
           diff_spans = if new_line? or deleting_line?
             [
               OpenStruct.new({
-                open: first_bounding_grapheme,
-                close: last_bounding_grapheme,
+                open: nil,
+                close: nil,
                 diffs: diffs.values.flatten
               })
             ]
@@ -117,13 +108,12 @@ module Documents
             entered_list.inject(initial_state) do |state, grapheme|
               if diffs.has_key?(grapheme.id)
                 state.current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
-                state.current_span.open ||= state.previous
+                state.current_span.open ||= source_list.find do |g|
+                  !graphemes_need_change(g, state.previous)
+                end
                 state.current_span.diffs.push(diffs[ grapheme.id ].first)
               else
                 if state.current_span.present?
-                  state.current_span.open = source_list.find do |g|
-                    !graphemes_need_change(g, state.current_span.open)
-                  end
                   state.current_span.close = source_list.find do |g|
                     !graphemes_need_change(g, grapheme)
                   end
@@ -148,12 +138,7 @@ module Documents
             }.call
 
             close_position_weight = diff_span.close.try(:position_weight) || -> {
-              revision.
-                graphemes.joins(zone: :surface).
-                where(zones: { surfaces: { number: surface_number } }).
-                reorder('position_weight desc').
-                first.
-                position_weight + diff_span.diffs.count + 1
+              diff_span.diffs.count + 1
             }.call
 
             addmod_specs.each_with_index do |addmod_spec, index|
@@ -185,25 +170,9 @@ module Documents
               ]
             end
 
-            if first_bounding_grapheme.try(:conflict?) && first_bounding_grapheme.try(:special?)
-              addmod_specs << GraphemeDiff.new(
-                first_bounding_grapheme,
-                nil,
-                nil
-              ).to_spec
-            end
-
-            if last_bounding_grapheme.try(:conflict?) && last_bounding_grapheme.try(:special?)
-              addmod_specs << GraphemeDiff.new(
-                last_bounding_grapheme,
-                nil,
-                nil
-              ).to_spec
-            end
-
             addmod_specs
           end.flatten + all_diffs.select(&:deletion?).map(&:to_spec)
-        }.call
+        end
       end
 
       def new_line?
@@ -211,7 +180,7 @@ module Documents
       end
 
       def deleting_line?
-        @text.strip.empty?
+        words.all? { |word| word[:text].strip.empty? }
       end
 
       def word_diffs
@@ -219,7 +188,7 @@ module Documents
       end
 
       def all_word_diffs
-        @_all_word_diffs ||= -> {
+        memoized do
           gap = -> (word) {
             -1 * word.count
           }
@@ -240,15 +209,11 @@ module Documents
           alignments.first.zip(alignments.last).map do |source, entered|
             WordDiff.new(source, entered, self)
           end
-        }.call
-      end
-
-      def surface_number
-        @_surface_number ||= source_graphemes.first.zone.surface.number
+        end
       end
 
       def source_words
-        @_source_words ||= -> {
+        memoized do
           initial_state = OpenStruct.new({ result: [], last_lrx: nil })
 
           source_graphemes_filtered.sort_by { |g| g.area.ulx }.inject(initial_state) do |state, grapheme|
@@ -263,7 +228,7 @@ module Documents
           end.result.map do |graphemes|
             Word.new(graphemes)
           end
-        }.call
+        end
       end
 
       def visually_sorted_source_words
@@ -271,18 +236,27 @@ module Documents
       end
 
       def entered_words
-        @_entered_words ||= -> {
-          visually_sorted_words = entered_sorted_visually_text_words_with_indices.sort_by { |w| w[0].visual_index }
-          visually_sorted_words.each_with_index.map do |entered_chars, word_index|
-            sorted_logically_chars = entered_chars.sort_by(&:index)
-            sorted_visually_indices = Bidi.to_visual_indices(
-              sorted_logically_chars.map(&:char).join,
-              rtl? ? :rtl : :ltr
-            )
-            sorted_visually_chars = sorted_visually_indices.map { |ix| sorted_logically_chars[ix] }
+        memoized do
+          last_position = 0
 
-            graphemes = sorted_visually_chars.each_with_index.map do |entered_char, local_index|
-              box = sorted_boxes[word_index]
+          sorted_words = @words.sort_by { |word| word[:area][:ulx].to_f }
+          visual_text = sorted_words.map { |word| word[:text] }.join(' ')
+
+          vis2word = sorted_words.each_with_index.map do |word, ix|
+            [[ix] * word[:text].codepoints.count, nil]
+          end.flatten
+          logical_indices = Bidi.to_logical_indices(visual_text, ltr? ? :ltr : :rtl)
+          logical_words = logical_indices.each_with_index.map do |lix, vix|
+            { lix: lix, word: sorted_words[ vis2word[ vix ] ] } if vis2word[ vix ].present?
+          end.reject(&:nil?).sort_by { |w| w[:lix] }.map { |w| w[:word] }.uniq
+
+          logical_words.each_with_index.map do |word, logical_index|
+            entered_chars = EnteredChar.from_word(word[:text], ltr? ? :ltr : :rtl)
+
+            sorted_visually = entered_chars.sort_by(&:visual_index)
+
+            graphemes = sorted_visually.each_with_index.map do |entered_char, local_index|
+              box = normalize_area(word[:area])
               width = box[:lrx] - box[:ulx]
               delta_x = ((width / (1.0 * entered_chars.count)) * local_index)
               delta_x_end = ((width / (1.0 * entered_chars.count)) * (local_index + 1))
@@ -295,21 +269,27 @@ module Documents
               Grapheme.new value: entered_char.char,
                 area: area,
                 zone_id: zone_id,
-                position_weight: entered_char.index,
+                position_weight: last_position + entered_char.index,
                 id: SecureRandom.uuid
             end
 
+            last_position = graphemes.map(&:position_weight).max + 1
+
             Word.new(graphemes)
           end
-        }.call
+        end
       end
 
       def zone_id
-        if source_graphemes.empty?
-          Zone.create! surface_id: @revision.document.surfaces.where(number: surface_number).first.id,
-            area: Area.span_boxes(sorted_boxes)
-        else
-          source_graphemes.first.zone_id
+        memoized do
+          if source_graphemes.empty?
+            Zone.create! surface_id: revision.document.surfaces.where(number: surface_number).first.id,
+              area: Area.span_boxes(
+                words.map { |word| word[:area] }
+              ).normalize
+          else
+            source_graphemes.first.zone_id
+          end
         end
       end
 
@@ -317,21 +297,21 @@ module Documents
         entered_words.sort_by { |word| word.area.ulx }
       end
 
-      def sorted_boxes
-        @_sorted_boxes ||= @boxes.map do |box|
-          {
-            ulx: box[:ulx].to_f.round,
-            uly: box[:uly].to_f.round,
-            lrx: box[:lrx].to_f.round,
-            lry: box[:lry].to_f.round
-          }
-        end.sort_by { |box| box[:ulx] }
+      def normalize_area(box)
+        {
+          ulx: box[:ulx].to_f.round,
+          uly: box[:uly].to_f.round,
+          lrx: box[:lrx].to_f.round,
+          lry: box[:lry].to_f.round
+        }
       end
 
       def source_graphemes_filtered
-        @_source_graphemes_filtered ||= source_graphemes.select do |grapheme|
-          codepoint = grapheme.value.codepoints.first
-          codepoint != 0x202c && codepoint != 0x200f && codepoint != 0x200e
+        memoized do
+          source_graphemes.select do |grapheme|
+            codepoint = grapheme.value.codepoints.first
+            codepoint != 0x202c && codepoint != 0x200f && codepoint != 0x200e
+          end
         end
       end
 
@@ -340,104 +320,28 @@ module Documents
       end
 
       def ltr?
-        @_ltr ||= -> {
-          if source_graphemes.empty?
-            text.codepoints.first === 0x200e
-          else
-            first_bounding_grapheme.value.codepoints.first === 0x200e
-          end
-        }.call
+        memoized do
+          Bidi.infer_direction(words.map { |word| word[:text] }.join(' ')) == :ltr
+        end
+      end
+
+      def grapheme_ids
+        memoized do
+          words.map { |word| word[:grapheme_ids] }.flatten
+        end
       end
 
       def source_graphemes
-        @_source_graphemes ||= Grapheme.where(id: @grapheme_ids).to_a
+        memoized do
+          Grapheme.where(id: grapheme_ids).to_a
+        end
       end
 
       def entered_graphemes
-        @_entered_graphemes ||= entered_words.map do |entered_word|
-          entered_word.graphemes
-        end.flatten.sort_by { |g| g.position_weight }
-      end
-
-      def entered_sorted_visually_text_words_with_indices
-        @_entered_sorted_visually_text_words_with_indices ||= -> {
-          visual_indices = Bidi.to_visual_indices(normalized_entered_text, rtl? ? :rtl : :ltr)
-
-          visual_indices.each_with_index.map do |index, visual_index|
-            EnteredChar.new(normalized_entered_text[index], index, visual_index)
-          end.inject([[]]) do |state, entered_char|
-            if entered_char.char[/\s+/].nil?
-              state[ state.count - 1].push(entered_char)
-            else
-              state.push([ ])
-            end
-
-            state
-          end.reject(&:empty?)
-        }.call
-      end
-
-      def normalized_entered_text
-        @_normalized_entered_text ||= -> {
-          @text.codepoints.select do |codepoint|
-            codepoint != 0x200e && codepoint != 0x200f && codepoint != 0x202c
-          end.pack("U*").strip
-        }.call
-      end
-
-      def grapheme_special?(grapheme)
-        codepoint = grapheme.value.codepoints.first
-
-        codepoint == 0x200e || codepoint == 0x200f || codepoint == 0x202c
-      end
-
-      def match_source_by_entered(entered_grapheme)
-        source_graphemes.find do |source_grapheme|
-          !graphemes_need_change(source_grapheme, entered_grapheme)
-        end
-      end
-
-      def first_bounding_grapheme
         memoized do
-          if source_graphemes.empty?
-            revision.graphemes.joins(zone: :surface).
-              where(zones: { surfaces: { number: surface_number } }).
-              where("(graphemes.area[1])[1] < ?", sorted_boxes.map { |b| b[:uly] }.min).
-              reorder('graphemes.position_weight desc').
-              first
-          else
-            if grapheme_special?(source_graphemes.first)
-              source_graphemes.first
-            else
-              revision.graphemes.joins(zone: :surface).
-                where(zones: { surfaces: { number: surface_number } }).
-                where("position_weight < ?", source_graphemes.first.position_weight).
-                reorder("position_weight desc").
-                first
-            end
-          end
-        end
-      end
-
-      def last_bounding_grapheme
-        memoized do
-          if source_graphemes.empty?
-            revision.graphemes.joins(zone: :surface).
-              where(zones: { surfaces: { number: surface_number } }).
-              where("(graphemes.area[0])[1] > ?", sorted_boxes.map { |b| b[:lry] }.max).
-              reorder('graphemes.position_weight asc').
-              first
-          else
-            if grapheme_special?(source_graphemes.last)
-              source_graphemes.last
-            else
-              revision.graphemes.joins(zone: :surface).
-                where(zones: { surfaces: { number: surface_number } }).
-                where("position_weight > ?", source_graphemes.last.position_weight).
-                reorder("position_weight asc").
-                first
-            end
-          end
+          entered_words.map do |entered_word|
+            entered_word.graphemes
+          end.flatten.sort_by { |g| g.position_weight }
         end
       end
 
@@ -448,6 +352,14 @@ module Documents
           @char = char
           @index = index
           @visual_index = visual_index
+        end
+
+        def self.from_word(text_word, dir)
+          indices = Bidi.to_visual_indices(text_word, dir)
+
+          indices.each_with_index.map do |logical_index, visual_index|
+            EnteredChar.new(text_word[logical_index], logical_index, visual_index)
+          end
         end
       end
     end
@@ -462,7 +374,7 @@ module Documents
       end
 
       def grapheme_diffs
-        @_grapheme_diffs ||= -> {
+        memoized do
           source_alignment, entered_alignment = needleman_wunsch(source, entered,
                                                                  gap_penalty: -1) do |left, right|
             graphemes_need_change(left, right) ? -1 : 1
@@ -471,7 +383,7 @@ module Documents
           source_alignment.zip(entered_alignment).map do |from, to|
             GraphemeDiff.new(from, to, self)
           end.select(&:differ?)
-        }.call
+        end
       end
 
       def differ?
@@ -553,6 +465,7 @@ module Documents
 
     class Word
       include Enumerable
+      include Memoizable
 
       attr_accessor :graphemes
 
@@ -573,11 +486,15 @@ module Documents
       end
 
       def logically_ordered
-        @_logically_ordered ||= @graphemes.sort_by(&:position_weight)
+        memoized do
+          @graphemes.sort_by(&:position_weight)
+        end
       end
 
       def visually_ordered
-        @_visually_ordered ||= @graphemes.sort_by { |g| g.area.ulx }
+        memoized do
+          @graphemes.sort_by { |g| g.area.ulx }
+        end
       end
 
       def text
@@ -597,12 +514,14 @@ module Documents
       end
 
       def area
-        @_area ||= Area.new(
-          ulx: visually_ordered.first.area.ulx,
-          uly: visually_ordered.first.area.uly,
-          lrx: visually_ordered.last.area.lrx,
-          lry: visually_ordered.last.area.lry
-        )
+        memoized do
+          Area.new(
+            ulx: visually_ordered.first.area.ulx,
+            uly: visually_ordered.first.area.uly,
+            lrx: visually_ordered.last.area.lrx,
+            lry: visually_ordered.last.area.lry
+          )
+        end
       end
 
       def inspect

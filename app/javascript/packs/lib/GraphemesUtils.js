@@ -12,19 +12,19 @@ export default class GraphemesUtils {
 
     static lines(graphemes) {
         let initialState = {
-            result: [ [] ],
+            zoneId: null,
+            result: [ ],
         };
 
         return graphemes.reduce((state, grapheme) => {
             // if we're seeing the pop-directionality grapheme then
             // it's a mark of the end of line:
-            if(grapheme.value.charCodeAt(0) === this.popDirectionalityMark) {
-                state.result[ state.result.length - 1 ].push( grapheme );
+            if(grapheme.zone_id !== state.zoneId) {
                 state.result.push( [ ] );
+                state.zoneId = grapheme.zone_id;
             }
-            else {
-                state.result[ state.result.length - 1 ].push( grapheme );
-            }
+
+            state.result[ state.result.length - 1 ].push( grapheme );
 
             return state;
         }, initialState).result.filter((line) => {

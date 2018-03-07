@@ -6,20 +6,8 @@ import Selector from '../lib/Selector';
 export default class CorrectDocumentPage extends Action {
     execute(state, selector, params) {
         let payload = {
-            edit_spec: {
-                grapheme_ids: params.line.map((g) => { return g.id; }),
-                text: params.text,
-                surface_number: params.surfaceNumber,
-                boxes: params.boxes.map((box) => {
-                      return {
-                          ulx: box.ulx,
-                          uly: box.uly,
-                          lrx: box.lrx,
-                          lry: box.lry
-                      }
-                  }
-                )
-            }
+            surface_number: params.surfaceNumber,
+            words: params.words
         };
 
         let branchVersion = selector.version.isRevision ? selector.version.branchVersion : version;

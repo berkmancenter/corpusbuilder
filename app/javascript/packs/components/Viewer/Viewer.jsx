@@ -561,6 +561,7 @@ export default class Viewer extends React.Component {
     }
 
     deleteLine(line) {
+        // TODO: adjust for the new correction params format
         CorrectDocumentPage.run(
             this.props.appState,
             {
@@ -578,7 +579,7 @@ export default class Viewer extends React.Component {
         });
     }
 
-    saveLine(doc, line, editedText, boxes) {
+    saveLine(doc, words) {
         CorrectDocumentPage.run(
             this.props.appState,
             {
@@ -587,10 +588,8 @@ export default class Viewer extends React.Component {
                     version: this.currentVersion,
                     pageNumber: this.page
                 },
-                line: line,
-                text: editedText,
                 surfaceNumber: this.document.surfaces[0].number,
-                boxes: boxes
+                words: words
             }
         ).then((_) => {
             this.showInlineEditor = false;

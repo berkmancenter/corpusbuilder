@@ -18,6 +18,13 @@ class Area
     end
   end
 
+  def normalize
+    @ulx = @ulx.to_f.round
+    @uly = @uly.to_f.round
+    @lrx = @lrx.to_f.round
+    @lry = @lry.to_f.round
+  end
+
   def self.span_boxes(boxes)
     ulx = boxes.map { |box| box[:ulx] }.min
     uly = boxes.map { |box| box[:uly] }.min

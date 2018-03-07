@@ -19,6 +19,8 @@ class Grapheme < ApplicationRecord
       grapheme.status
     end
     expose :id
+    expose :zone_id
+    expose :zone_position_weight
     expose :certainty
   end
 

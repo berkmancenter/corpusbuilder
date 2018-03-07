@@ -31,6 +31,8 @@ gem 'ffi'
 gem 'rack-cors', :require => 'rack/cors'
 gem 'term-ansicolor'
 gem 'exception_notification'
+gem 'ruby-progressbar'
+gem 'descriptive_statistics'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
