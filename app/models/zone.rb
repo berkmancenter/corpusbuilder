@@ -1,6 +1,8 @@
 class Zone < ApplicationRecord
   belongs_to :surface
 
+  enum direction: [ :ltr, :rtl, :on ]
+
   has_many :graphemes
 
   serialize :area, Area::Serializer

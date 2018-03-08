@@ -32,7 +32,7 @@ describe Documents::CompileCorrections do
   end
 
   def create_grapheme(char, box, index, pos, count)
-    box_width = 1.0 * (box[:lrx] - box[:ulx])
+    box_width = 1.0 * (box.lrx - box.ulx)
     delta_x = (box_width / (1.0 * count)) * index
     delta_x_end = (box_width / (1.0 * count)) * (index + 1)
 
@@ -42,56 +42,70 @@ describe Documents::CompileCorrections do
       zone_id: first_line.id,
       position_weight: pos,
       area: Area.new(
-        ulx: box[:ulx] + delta_x,
-        uly: box[:uly],
-        lrx: box[:ulx] + delta_x_end,
-        lry: box[:lry]
+        ulx: box.ulx + delta_x,
+        uly: box.uly,
+        lrx: box.ulx + delta_x_end,
+        lry: box.lry
       ),
-      certainty: 0.5
-      ).id
+      certainty: Random.new.rand
+      )
   end
 
-  def create_graphemes(spec, dir)
-    text = spec.keys.first
-    boxes = dir == :rtl ? spec.values.first.reverse : spec.values.first
-    ids = [ ]
+  def create_graphemes(word, area, ix)
+    graphemes = [ ]
 
-    words = text.split(/\s+/)
+    dir = Bidi.infer_direction(word)
+    visual_positions = Bidi.to_visual_indices(word, dir)
 
-    ids << create_grapheme([dir == :rtl ? 0x200f : 0x200e].pack("U*"), boxes[0], 0, 0, 1)
-
-    words.each_with_index.each do |word, index|
-      visual_positions = Bidi.to_visual_indices(word, dir)
-
-      word.chars.each_with_index do |char, char_index|
-        ids << create_grapheme(char, boxes[ index ], visual_positions[char_index], ids.count, word.chars.count)
-      end
+    word.chars.each_with_index do |char, char_index|
+      graphemes <<
+        create_grapheme(char, area, visual_positions[char_index], 100*ix + graphemes.count, word.chars.count)
     end
 
-    ids << create_grapheme([0x202c].pack("U"), boxes[boxes.count-1], text.chars.count, ids.count, text.chars.count)
+    document.master.revision.grapheme_ids << graphemes.flatten.map(&:id)
+    document.master.working.grapheme_ids << graphemes.flatten.map(&:id)
 
-    document.master.revision.grapheme_ids << ids
-    document.master.working.grapheme_ids << ids
-
-    ids
+    graphemes
   end
 
   def run_example(spec, dir = :ltr)
-    from_spec = spec.slice(spec.keys.first)
-    to_spec = spec.slice(spec.keys.last)
+    if !document.reload.master.present?
+      Branches::Create.run!(document_id: document.id, name: "master", editor_id: editor.id)
+    end
 
-    Branches::Create.run!(document_id: document.id, name: "master", editor_id: editor.id)
+    first_line.update_attribute(:direction, Zone.directions[dir])
 
-    ids = create_graphemes(from_spec, dir)
+    word_specs = spec.each_with_index.inject([]) do |state, iter|
+      data, ix = iter
+      from, to = data
+      graphemes = []
+      area = nil
 
-    corrections = Documents::CompileCorrections.run!(
-      grapheme_ids: ids,
-      text: to_spec.keys.first,
-      boxes: to_spec.values.first,
+      if !from.is_a?(String)
+        # existing word:
+        text = from.keys.first
+        area = Area::Serializer.load(from.values.first)
+        graphemes = create_graphemes(text, area, ix)
+      end
+
+      state << {
+        text: to.try(:keys).try(:first) || '',
+        area: (Area::Serializer.load(to.values.first).as_json if to.present?) || area.as_json,
+        grapheme_ids: graphemes.map(&:id)
+      }
+
+      state
+    end
+
+    action = Documents::CompileCorrections.run!(
+      words: word_specs,
       document: document,
       branch_name: 'master',
-      revision_id: nil
-    ).result
+      revision_id: nil,
+      surface_number: surface.number
+    )
+
+    corrections = action.result
 
     corrections.inject([[], [], []]) do |state, correction|
       index = if correction.has_key?(:delete)
@@ -108,15 +122,24 @@ describe Documents::CompileCorrections do
 
   it 'adds words correctly' do
     additions, _, _ = run_example(
-      "two three" => [
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-      ],
-      "one two three" => [
-        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-      ]
+      {
+        "one" => { "one" => "((97,20),(88,0))" },
+        { "two" => "((109,20),(100,0))" } => { "two" => "((109,20),(100,0))" },
+        { "three" => "((124,20),(112,0))" } => { "three" => "((124,20),(112,0))" }
+      }
+    )
+
+    expect(additions.count).to eq(3)
+    expect(additions.map { |a| a[:value] }.join).to eq("one")
+  end
+
+  it 'adds ltr words in rtl context correctly' do
+    additions, _, _ = run_example(
+      {
+        "one" => { "one" => "((497,20),(488,0))" },
+        { "ﺏﺎﻠﻜﺗﺎﺑ" => "((309,20),(300,0))" } => { "ﺏﺎﻠﻜﺗﺎﺑ" => "((309,20),(300,0))" },
+        { "ﺎﻟﺬﻳ" => "((124,20),(112,0))" } => { "ﺎﻟﺬﻳ" => "((124,20),(112,0))" }
+      }
     )
 
     expect(additions.count).to eq(3)
@@ -125,15 +148,11 @@ describe Documents::CompileCorrections do
 
   it 'removes words correctly' do
     _, _, removals = run_example(
-      "one two three" => [
-        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-      ],
-      "two three" => [
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-      ]
+      {
+        { "one" => "((97,20),(88,0))" } => nil,
+        { "two" => "((109,20),(100,0))" } => { "two" => "((109,20),(100,0))" },
+        { "three" => "((124,20),(112,0))" } =>  { "three" => "((124,20),(112,0))" }
+      }
     )
 
     expect(removals.count).to eq(3)
@@ -142,16 +161,9 @@ describe Documents::CompileCorrections do
 
   it 'modifies correct words' do
     additions, modifications, _ = run_example(
-      "one two three" => [
-        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-      ],
-      "jeden two three" => [
-        { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-        { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-        { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-      ]
+        { "one" => "((97,20),(88,0))" } => { "jeden" => "((97,20),(88,0))" },
+        { "two" => "((109,20),(100,0))" } => { "two" => "((109,20),(100,0))" },
+        { "three" => "((124,20),(112,0))" } =>  { "three" => "((124,20),(112,0))" }
     )
 
     expect(additions.count).to eq(2)
@@ -160,89 +172,5 @@ describe Documents::CompileCorrections do
     expect(modifications.sort_by { |a| a[:position_weight] }.map { |a| a[:value] }.join).to eq("den")
   end
 
-  it 'provides proper additions in the RTL scenario' do
-    additions, modifications, removals = run_example(
-      {
-        "ليس بالكتاب الذي" => [
-          { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-          { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-          { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-        ],
-        "ليس بالكتاب الذي abcdefg" => [
-          { ulx:  50, uly: 0, lrx:  80, lry: 20 },
-          { ulx:  88, uly: 0, lrx:  97, lry: 20 },
-          { ulx: 100, uly: 0, lrx: 109, lry: 20 },
-          { ulx: 112, uly: 0, lrx: 124, lry: 20 }
-        ]
-      },
-      :rtl
-    )
-
-    expect(additions.count).to eq(7)
-    expect(additions.map { |a| a[:value] }.join).to eq("abcdefg")
-
-    expect(modifications.count).to eq(0)
-    expect(removals.count).to eq(0)
-  end
-
-  it 'makes the resulting, emerging line read exactly the same as the one given in params' do
-    additions, modifications, removals = run_example(
-      {
-        "وهو صورة للحياة" => [
-          { ulx:  38, uly: 0, lrx:  57, lry: 20 },
-          { ulx: 100, uly: 0, lrx: 119, lry: 20 },
-          { ulx: 122, uly: 0, lrx: 134, lry: 20 }
-        ],
-        "وهو صورة 1234 للحياة" => [
-          { ulx:  38, uly: 0, lrx:  57, lry: 20 },
-          { ulx:  68, uly: 0, lrx:  97, lry: 20 },
-          { ulx: 100, uly: 0, lrx: 119, lry: 20 },
-          { ulx: 122, uly: 0, lrx: 134, lry: 20 }
-        ]
-      },
-      :rtl
-    )
-
-    expect(additions.count).to eq(4)
-    expect(additions.map { |a| a[:value] }.join).to eq("1234")
-
-    expect(modifications.count).to eq(0)
-    expect(removals.count).to eq(0)
-
-    sorted_resulting_line = Grapheme.all.map { |g| { value: g.value, position_weight: g.position_weight } }.
-      concat(additions).
-      sort_by { |g| g[:position_weight] }
-
-    resulting_line = sorted_resulting_line.map { |g| g[:value] }.select do |v|
-        codepoint = v.codepoints.first
-        codepoint != 0x200f && codepoint != 0x200e && codepoint != 0x202c
-      end.join
-
-    expect(
-      resulting_line.codepoints
-    ).to eq([1608, 1607, 1608, 1589, 1608, 1585, 1577, 49, 50, 51, 52, 1604, 1604, 1581, 1610, 1575, 1577])
-  end
-
-  it 'doesnt change the grapheme for which the box value changes are less than 1' do
-    additions, modifications, removals = run_example(
-      {
-        "سلطة أمير البلد" => [
-          { ulx:  88.0, uly: 1, lrx:  97.0, lry: 20 },
-          { ulx: 100, uly: 1, lrx: 109, lry: 20 },
-          { ulx: 112, uly: 1, lrx: 124, lry: 20 }
-        ],
-        "سلطة أمير البلد " => [
-          { ulx:  88.4, uly: 1.1, lrx:  97.0, lry: 20 },
-          { ulx: 100, uly: 0.9, lrx: 109, lry: 20 },
-          { ulx: 112, uly: 0.6, lrx: 123.7, lry: 20 }
-        ]
-      },
-      :rtl
-    )
-
-    expect(additions.count).to eq(0)
-    expect(modifications.count).to eq(0)
-    expect(removals.count).to eq(0)
-  end
 end
 

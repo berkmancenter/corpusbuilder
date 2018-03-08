@@ -16,7 +16,9 @@ module Graphemes
 
     def with_surface
       <<-SQL
-        select graphemes.*, zones.position_weight as zone_position_weight
+        select graphemes.*,
+               zones.position_weight as zone_position_weight,
+               zones.direction as zone_direction
         from graphemes
         inner join #{revision.graphemes_revisions_partition_table_name}
           on #{revision.graphemes_revisions_partition_table_name}.grapheme_id = graphemes.id
@@ -29,10 +31,14 @@ module Graphemes
 
     def without_surface
       <<-SQL
-        select graphemes.*, zones.position_weight as zone_position_weight
+        select graphemes.*,
+               zones.position_weight as zone_position_weight,
+               zones.direction as zones_direction
         from graphemes
         inner join #{revision.graphemes_revisions_partition_table_name}
           on #{revision.graphemes_revisions_partition_table_name}.grapheme_id = graphemes.id
+        inner join zones
+          on graphemes.zone_id = zones.id
         order by graphemes.position_weight asc
       SQL
     end

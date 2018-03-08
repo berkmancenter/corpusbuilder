@@ -46,10 +46,8 @@ export default class InlineEditor extends React.Component {
         return this.props.allowNewBoxes === true;
     }
 
-    @computed
-    get graphemeWords() {
-        return GraphemeUtils.lineWords(this.props.line);
-    }
+    @observable
+    graphemeWords = [ ];
 
     @observable
     boxes = [ ];
@@ -87,14 +85,8 @@ export default class InlineEditor extends React.Component {
         return "Delete Line";
     }
 
-    @computed
     get dir() {
-        // todo: add ability to choose it from UI
-        if(this.props.line === undefined || this.props.line === null || this.props.line.length === 0) {
-            return "rtl";
-        }
-
-        return this.props.line[0].value.codePointAt(0) === 0x200f ? "rtl" : "ltr";
+        return this.props.line[0].zone_direction === 1 ? "rtl" : "ltr";
     }
 
     @computed
@@ -223,7 +215,7 @@ export default class InlineEditor extends React.Component {
             return BoxesUtils.boxesEqual(b, this.selectedBox);
         });
         this.editedTextWords.splice(
-            this.dir === "rtl" ? this.boxes.length - ix - 1 : ix,
+            ix,
             1
         );
         this.boxes.splice(ix, 1);
@@ -231,8 +223,6 @@ export default class InlineEditor extends React.Component {
     }
 
     onTextChanged(ix, e) {
-        ix = this.dir === "rtl" ? this.boxes.length - ix - 1 : ix;
-
         this.editedTextWords[ ix ] = e.target.value.replace(/\s+/, '');
     }
 
@@ -416,18 +406,20 @@ export default class InlineEditor extends React.Component {
             let diff = boxes.length - this.boxes.length;
 
             if(diff === 1) {
+              // box has been added
               let ix = boxes.findIndex((box, i) => {
                   return !BoxesUtils.boxesEqual(box, this.boxes[ i ]);
               });
-              let txtIx = this.dir === "rtl" ? this.boxes.length - ix : ix;
-              this.editedTextWords.splice(txtIx, 0, "");
+              this.editedTextWords.splice(ix, 0, "");
+              this.graphemeWords.splice(ix, 0, []);
             }
             else if(diff === -1) {
+              // box has been removed
               let ix = boxes.findIndex((box, ix) => {
                   return !BoxesUtils.boxesEqual(box, this.boxes[ ix ]);
               });
-              let txtIx = this.dir === "rtl" ? this.boxes.length - ix : ix;
-              this.editedTextWords.splice(txtIx - 1, 1);
+              this.editedTextWords.splice(ix, 1);
+              this.graphemeWords.splice(ix, 1);
             }
         }
 
@@ -436,7 +428,6 @@ export default class InlineEditor extends React.Component {
         }
 
         this.boxes.replace(boxes);
-        console.log('Boxes have been reported');
     }
 
     onBoxSelectionChanged(box) {
@@ -451,9 +442,13 @@ export default class InlineEditor extends React.Component {
     }
 
     initText(props) {
-        this.editedTextWords = props.text === null ? [ ] : props.text.trim().split(/\s+/g).filter((word) => {
-            return word.length > 1 || (word.length > 0 && !GraphemeUtils.isCharSpecial(word[0]));
-        });
+        this.graphemeWords = GraphemeUtils.lineWords(props.line);
+        this.editedTextWords = this.graphemeWords
+            .map((word) => {
+                return word.sort((g) => { return parseFloat(g.position_weight) })
+                           .map((g) =>  { return g.value })
+                           .join('')
+            })
     }
 
     componentWillMount() {
@@ -493,12 +488,15 @@ export default class InlineEditor extends React.Component {
     requestSave() {
         if(this.props.onSaveRequested !== undefined && this.props.onSaveRequested !== null) {
             let textWords = this.dir === 'rtl' ? this.editedTextWords.reverse() : this.editedTextWords;
-            let words = textWords.map(
+            let graphemeWords = this.dir === 'rtl' ? this.graphemeWords.reverse() : this.graphemeWords;
+            let boxes = this.dir === 'rtl' ? this.boxes.reverse() : this.boxes;
+
+            let words = graphemeWords.map(
                 (word, ix) => {
                     return {
-                        text: word,
-                        area: this.boxes[ix],
-                        grapheme_ids: (this.graphemeWords[ix] || []).map((g) => { return g.id })
+                        text: textWords[ix],
+                        area: boxes[ix],
+                        grapheme_ids: word.map((g) => { return g.id })
                     }
                 }
             );
@@ -517,7 +515,7 @@ export default class InlineEditor extends React.Component {
     }
 
     renderInput(box, ix) {
-        let text = this.dir === "rtl" ? this.editedTextWords[ this.boxes.length - 1 - ix ] : this.editedTextWords[ ix ];
+        let text = this.editedTextWords[ ix ];
 
         if(text !== undefined && text !== null) {
             let boxWidth = (box.lrx - box.ulx) * this.ratio;

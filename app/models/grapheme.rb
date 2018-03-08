@@ -21,6 +21,7 @@ class Grapheme < ApplicationRecord
     expose :id
     expose :zone_id
     expose :zone_position_weight
+    expose :zone_direction
     expose :certainty
   end
 

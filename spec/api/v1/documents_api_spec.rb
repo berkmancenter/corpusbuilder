@@ -10,7 +10,8 @@ describe V1::DocumentsAPI, type: :request do
       "Accept" => "application/vnd.corpus-builder-v1+json",
       "X-App-Id" => client_app.id,
       "X-Editor-Id" => editor.id,
-      "X-Token" => client_app.encrypted_secret
+      "X-Token" => client_app.encrypted_secret,
+      "Content-Type" => "application/json"
     }
   end
 
@@ -45,19 +46,19 @@ describe V1::DocumentsAPI, type: :request do
     it_behaves_like "application authenticated route"
 
     let(:no_app_request) do
-      post url, params: data_minimal_correct, headers: headers.without('X-App-Id')
+      post url, params: data_minimal_correct.to_json, headers: headers.without('X-App-Id')
     end
 
     let(:no_token_request) do
-      post url, params: data_minimal_correct, headers: headers.without('X-Token')
+      post url, params: data_minimal_correct.to_json, headers: headers.without('X-Token')
     end
 
     let(:invalid_token_request) do
-      post url, params: data_minimal_correct, headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+      post url, params: data_minimal_correct.to_json, headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
     end
 
     let(:valid_request) do
-      post url, params: data_minimal_correct, headers: headers
+      post url, params: data_minimal_correct.to_json, headers: headers
     end
 
     let(:url) { "/api/documents" }
@@ -100,19 +101,19 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "Fails when at least title in metadata is not provided" do
-      post url, params: data_empty_metadata, headers: headers
+      post url, params: data_empty_metadata.to_json, headers: headers
 
       expect(response.status).to eq(400)
     end
 
     it "Returns success when images and minimal metadata is given" do
-      post url, params: data_minimal_correct, headers: headers
+      post url, params: data_minimal_correct.to_json, headers: headers
 
       expect(response.status).to eq(201)
     end
 
     it "Creates a document that is in an initial state" do
-      post url, params: data_minimal_correct, headers: headers
+      post url, params: data_minimal_correct.to_json, headers: headers
 
       new_id = JSON.parse(response.body)["id"]
       document = Document.find new_id
@@ -121,7 +122,7 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "creates a master branch making gioven editor an owner" do
-      post url, params: data_minimal_correct, headers: headers
+      post url, params: data_minimal_correct.to_json, headers: headers
 
       new_id = JSON.parse(response.body)["id"]
       document = Document.find new_id
@@ -130,7 +131,7 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "updates the images order attribute based on their order in the params" do
-      post url, params: data_minimal_correct, headers: headers
+      post url, params: data_minimal_correct.to_json, headers: headers
 
       new_id = JSON.parse(response.body)["id"]
       document = Document.find new_id
@@ -141,7 +142,7 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "fails when a given image id doesn't exist" do
-      post url, params: data_minimal_correct.merge({ images: [ { id: -1 } ] }), headers: headers
+      post url, params: data_minimal_correct.merge({ images: [ { id: -1 } ] }).to_json, headers: headers
 
       expect(response.status).to eq(400)
     end
@@ -484,316 +485,6 @@ describe V1::DocumentsAPI, type: :request do
         end
       end
     end
-
-    context "PUT" do
-      it_behaves_like "authorization on document checking route"
-      it_behaves_like "revision accepting route"
-
-      let(:wrong_app) do
-        create :app
-      end
-
-      let(:omit_revision) { true }
-
-      let(:bad_branch_request) do
-        master_branch
-        development_branch
-        surfaces
-        graphemes
-
-        put url(document.id, 'idontexist'),
-          headers: headers,
-          params: minimal_valid_params
-      end
-
-      let(:good_branch_request) do
-        master_branch
-        development_branch
-        surfaces
-        graphemes
-
-        put url(document.id, master_branch.name),
-          headers: headers,
-          params: minimal_valid_params
-      end
-
-      let(:success_status) { 200 }
-
-      let(:wrong_app_request) do
-        put url(document.id),
-          headers: headers.merge('X-App-Id' => wrong_app.id, 'X-Token' => wrong_app.encrypted_secret),
-          params: minimal_valid_params
-      end
-
-      let(:minimal_valid_params) do
-        {
-          graphemes: [
-            { value: 'u', area: { ulx: 0, uly: 0, lrx: 10, lry: 10 }, surface_number: 1, position_weight: 1.5 }
-          ]
-        }
-      end
-
-      def url(id, revision = 'master')
-        "/api/documents/#{id}/#{revision}/tree"
-      end
-
-      def area_to_params(area)
-        {
-          ulx: area.ulx,
-          uly: area.uly,
-          lrx: area.lrx,
-          lry: area.lry
-        }
-      end
-
-      let(:grapheme1) { master_graphemes.first }
-      let(:grapheme2) { master_graphemes.drop(1).first }
-      let(:grapheme3) { master_graphemes.drop(2).first }
-
-      context "giving the edit_spec of grapheme ids along with the line text" do
-        let(:minimal_valid_params) do
-          {
-            edit_spec: {
-              grapheme_ids: graphemes.map(&:id),
-              boxes: boxes,
-              text: 'a test'
-            }
-          }
-        end
-
-        let(:boxes) do
-          [
-            { ulx: "0", uly: "0", lrx: "100", lry: "100" },
-            { ulx: "110", uly: "110", lrx: "200", lry: "200" }
-          ]
-        end
-
-        let(:valid_request) do
-          master_branch
-          development_branch
-          surfaces
-          graphemes
-
-          open = create :grapheme, value: [0x200e].pack("U*"), position_weight: 0, zone_id: graphemes.first.zone_id, area: graphemes.first.area
-          close = create :grapheme, value: [0x202c].pack("U*"), position_weight: 100, zone_id: graphemes.first.zone_id, area: graphemes.first.area
-
-          master_branch.revision.graphemes << [ open, close ]
-          master_branch.working.graphemes << [ open, close ]
-
-          put url(document.id),
-            headers: headers,
-            params: minimal_valid_params
-        end
-
-        it "calls the Documents::CompileCorrections" do
-          expect(Documents::CompileCorrections).to receive(:run!).
-            with(grapheme_ids: graphemes.map(&:id), text: 'a test', boxes: boxes, document: document, branch_name: 'master', revision_id: nil, surface_number: nil).and_call_original
-          expect_any_instance_of(Documents::CompileCorrections).to receive(:execute).and_call_original
-
-          valid_request
-        end
-
-        it "calls Documents::Correct correctly" do
-          expect_any_instance_of(Documents::Correct).to receive(:execute).and_call_original
-
-          valid_request
-        end
-      end
-
-      context "pointing at existing graphemes" do
-        let(:given_graphemes) do
-          [
-            {
-              id: grapheme1.id,
-              area: area_to_params(grapheme1.area),
-              surface_number: 1,
-              position_weight: 1.5,
-              value: '1'
-            },
-            {
-              id: grapheme2.id,
-              area: area_to_params(grapheme2.area),
-              surface_number: 1,
-              position_weight: 2.5,
-              value: '2'
-            },
-            {
-              id: grapheme3.id,
-              area: area_to_params(grapheme3.area),
-              surface_number: 1,
-              position_weight: 3.5,
-              value: '3'
-            }
-          ]
-        end
-
-        let(:minimal_valid_params) do
-          {
-            graphemes: given_graphemes
-          }
-        end
-
-        let(:valid_request) do
-          master_branch
-          development_branch
-          surfaces
-          graphemes
-
-          put url(document.id),
-            headers: headers,
-            params: minimal_valid_params
-        end
-
-        let(:created_ones) do
-          given_graphemes.inject(Grapheme.where(id: '-1')) do |sum, spec|
-            sum = sum.or(Grapheme.where(area: Area.new(ulx: spec[:area][:ulx],
-                                                       uly: spec[:area][:uly],
-                                                       lrx: spec[:area][:lrx],
-                                                       lry: spec[:area][:lry]),
-                                        value: spec[:value]).
-                                  where.not(id: spec[:id]))
-            sum
-          end
-        end
-
-        it "creates new graphemes" do
-          valid_request
-
-          expect(created_ones.count).to eq(given_graphemes.count)
-          expect(master_branch.working.graphemes.select { |g| created_ones.map(&:id).include?(g.id) }.count).to eq(created_ones.count)
-        end
-
-        it "breakes connection between given graphemes and the revision" do
-          valid_request
-
-          expect(master_branch.working.graphemes.select { |g| given_graphemes.map { |g1| g1[:id] }.include?(g.id) }.count).to eq(0)
-        end
-
-        it "adds the older version grapheme id to the new one parent ids column" do
-          valid_request
-
-          expect(created_ones.pluck(:parent_ids).flatten.sort).to eq([
-            grapheme1.id,
-            grapheme2.id,
-            grapheme3.id
-          ].sort)
-        end
-      end
-
-      context "removing graphemes" do
-        let(:given_graphemes) do
-          [
-            {
-              id: grapheme1.id,
-              delete: true
-            }
-          ]
-        end
-
-        let(:minimal_valid_params) do
-          {
-            graphemes: given_graphemes
-          }
-        end
-
-        let(:valid_request) do
-          master_branch
-          development_branch
-          surfaces
-          graphemes
-
-          put url(document.id),
-            headers: headers,
-            params: minimal_valid_params
-        end
-
-        it "removes given graphemes connections from the revision" do
-          valid_request
-
-          expect(master_branch.graphemes.select { |g| g.id == grapheme1.id }).to be_empty
-        end
-
-        it "keeps the graphemes in the database" do
-          valid_request
-
-          expect(Grapheme.where(id: grapheme1.id)).to be_present
-        end
-      end
-
-      context "providing new graphemes" do
-        let(:given_graphemes) do
-          [
-            {
-              area: area_to_params(grapheme1.area),
-              surface_number: 1,
-              position_weight: 1.5,
-              value: '1'
-            },
-            {
-              area: area_to_params(grapheme2.area),
-              surface_number: 1,
-              position_weight: 2.5,
-              value: '2'
-            },
-            {
-              area: area_to_params(grapheme3.area),
-              surface_number: 1,
-              position_weight: 3.5,
-              value: '3'
-            }
-          ]
-        end
-
-        let(:minimal_valid_params) do
-          {
-            graphemes: given_graphemes
-          }
-        end
-
-        let(:valid_request) do
-          master_branch
-          development_branch
-          surfaces
-          graphemes
-
-          put url(document.id),
-            headers: headers,
-            params: minimal_valid_params
-        end
-
-        it "creates new graphemes" do
-          valid_request
-
-          created_ones = given_graphemes.inject(Grapheme.where(id: '-1')) do |sum, spec|
-            sum = sum.or(Grapheme.where(area: Area.new(ulx: spec[:area][:ulx],
-                                                       uly: spec[:area][:uly],
-                                                       lrx: spec[:area][:lrx],
-                                                       lry: spec[:area][:lry]),
-                                        value: spec[:value]))
-            sum
-          end
-
-          expect(created_ones.count).to eq(given_graphemes.count)
-        end
-
-        it "points new graphemes at a given revision only" do
-          valid_request
-
-          created_ones = given_graphemes.inject(Grapheme.where(id: '-1')) do |sum, spec|
-            sum = sum.or(Grapheme.where(area: Area.new(ulx: spec[:area][:ulx],
-                                                       uly: spec[:area][:uly],
-                                                       lrx: spec[:area][:lrx],
-                                                       lry: spec[:area][:lry]),
-                                        value: spec[:value]))
-            sum
-          end
-
-          expect(
-            Revision.all.map { |r| (r.graphemes.map(&:id) & created_ones.map(&:id) ).count > 0 ? 1 : 0 }.sum 
-          ).to eq(1)
-        end
-      end
-    end
   end
 
   context "diffing and merging" do
@@ -996,7 +687,7 @@ describe V1::DocumentsAPI, type: :request do
         topic_branch
 
         method.call url(document.id, 'master'),
-          params: { other_branch: 'topic' },
+          params: { other_branch: 'topic' }.to_json,
           headers: headers
       end
 
@@ -1310,19 +1001,19 @@ describe V1::DocumentsAPI, type: :request do
     it_behaves_like "editor requiring route"
 
     let(:no_app_request) do
-      post url(document.id), headers: headers.without('X-App-Id'), params: minimal_valid_params
+      post url(document.id), headers: headers.without('X-App-Id'), params: minimal_valid_params.to_json
     end
 
     let(:inexistant_editor_request) do
       post url(document.id),
         headers: headers.without('X-App-Id').merge('X-Editor-Id' => document.id),
-        params: minimal_valid_params
+        params: minimal_valid_params.to_json
     end
 
     let(:no_editor_request) do
       post url(document.id),
         headers: headers.without('X-App-Id').without('X-Editor-Id'),
-        params: minimal_valid_params
+        params: minimal_valid_params.to_json
     end
 
     let(:valid_editor_request) do
@@ -1330,11 +1021,11 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:no_token_request) do
-      post url(document.id), headers: headers.without('X-Token'), params: minimal_valid_params
+      post url(document.id), headers: headers.without('X-Token'), params: minimal_valid_params.to_json
     end
 
     let(:invalid_token_request) do
-      post url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --')), params: minimal_valid_params
+      post url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --')), params: minimal_valid_params.to_json
     end
 
     let(:valid_request) do
@@ -1348,33 +1039,33 @@ describe V1::DocumentsAPI, type: :request do
     let(:wrong_app_request) do
       post url(document.id),
         headers: headers.merge('X-App-Id' => wrong_app.id, 'X-Token' => wrong_app.encrypted_secret),
-        params: minimal_valid_params.merge(revision: master_branch.name)
+        params: minimal_valid_params.merge(revision: master_branch.name).to_json
     end
 
     let(:good_revision_request) do
       post url(document.id),
         headers: headers,
-        params: minimal_valid_params.merge(revision: master_branch.revision_id)
+        params: minimal_valid_params.merge(revision: master_branch.revision_id).to_json
     end
 
     let(:good_branch_request) do
       post url(document.id),
         headers: headers.merge('X-Editor-Id' => another_editor.id),
-        params: minimal_valid_params.merge(revision: master_branch.name)
+        params: minimal_valid_params.merge(revision: master_branch.name).to_json
     end
 
     let(:bad_branch_request) do
-      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: 'idontexist')
+      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: 'idontexist').to_json
     end
 
     let(:bad_revision_request) do
-      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: document.id)
+      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: document.id).to_json
     end
 
     let(:no_editor_request) do
       post url(document.id),
         headers: headers.without('X-Editor-Id'),
-        params: minimal_valid_params.merge(revision: master_branch.name).without(:editor_id)
+        params: minimal_valid_params.merge(revision: master_branch.name).without(:editor_id).to_json
     end
 
     let(:master_branch) do

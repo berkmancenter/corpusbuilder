@@ -66,6 +66,7 @@ class HocrParser < Parser
       Parser::Element.new(
         area: empty_area,
         name: "grapheme",
+        grouping: "directional",
         certainty: 1,
         value: directional_value(xml_node)
       )
@@ -166,11 +167,17 @@ class HocrParser < Parser
 
     visual_indices = Bidi.to_visual_indices(xml_node.text, direction(xml_node))
 
+    certainties = node_certainty(xml_node)
+
+    if certainties.count == 1 && visual_indices.count > 1
+      certainties *= visual_indices.count
+    end
+
     visual_indices.each_with_index.lazy.map do |visual_index, logical_index|
       Parser::Element.new(
         area: node_area(xml_node, visual_index, count_all),
         name: "grapheme",
-        certainty: node_certainty(xml_node),
+        certainty: certainties[ logical_index ],
         value: unordered[logical_index],
         grouping: xml_node.attr('title')
       )
@@ -182,8 +189,23 @@ class HocrParser < Parser
   end
 
   def node_certainty(xml_node)
-    wconf = xml_node.attr('title').split(';').map(&:strip).find { |m| m[/x_wconf/] }
-    wconf.split(' ').last.to_f / 100.0
+    wconf = xml_node.attr('title')
+    if wconf[/x_confs/].present?
+      wconf.split(';').
+        map(&:strip).
+        find { |m| m[/x_confs/] }.
+        split(' ').
+        drop(1).
+        map(&:to_f)
+    else
+      [
+        wconf.split(';').
+        map(&:strip).
+        find { |m| m[/x_wconf/] }.
+        split(' ').
+        last.to_f / 100.0
+      ]
+    end
   end
 
   def node_area(xml_node, index = nil, count_all = nil)

@@ -47,15 +47,17 @@ module Documents
               position_weight: zones.count + 1
             zones << last_zone
           when "grapheme"
-            g = last_zone.graphemes.new(
-              id: SecureRandom.uuid,
-              area: (element.grouping == "pop" ? graphemes.last.area : element.area),
-              value: element.value,
-              certainty: element.certainty,
-              position_weight: graphemes.count + 1
-            )
-            graphemes << g
-            zone_graphemes << g
+            if element.grouping != "directional" && element.grouping != "pop"
+              g = last_zone.graphemes.new(
+                id: SecureRandom.uuid,
+                area: (element.grouping == "pop" ? graphemes.last.area : element.area),
+                value: element.value,
+                certainty: element.certainty,
+                position_weight: graphemes.count + 1
+              )
+              graphemes << g
+              zone_graphemes << g
+            end
           else
             fail "Invalid OCR element name: #{element.name}"
           end

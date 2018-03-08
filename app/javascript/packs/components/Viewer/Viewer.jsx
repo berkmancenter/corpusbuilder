@@ -612,6 +612,7 @@ export default class Viewer extends React.Component {
             }
         ).then((_) => {
             this.showMergeWindow = false;
+            this.showDiff = false;
         });
     }
 

@@ -149,27 +149,6 @@ module Documents
                 )
             end
 
-            if new_line?
-              addmod_specs += [
-                {
-                  value: [ltr? ? 0x200e : 0x200f].pack('U*'),
-                  area: addmod_specs.first[:area],
-                  surface_number: surface_number,
-                  position_weight: open_position_weight + 0.5 * (
-                    addmod_specs.first[:position_weight] - open_position_weight
-                  )
-                },
-                {
-                  value: [0x202c].pack('U*'),
-                  area: addmod_specs.last[:area],
-                  surface_number: surface_number,
-                  position_weight: close_position_weight - 0.5 * (
-                    close_position_weight - addmod_specs.last[:position_weight]
-                  )
-                }
-              ]
-            end
-
             addmod_specs
           end.flatten + all_diffs.select(&:deletion?).map(&:to_spec)
         end
@@ -316,10 +295,10 @@ module Documents
 
       def normalize_area(box)
         {
-          ulx: box[:ulx].to_f.round,
-          uly: box[:uly].to_f.round,
-          lrx: box[:lrx].to_f.round,
-          lry: box[:lry].to_f.round
+          ulx: (box[:ulx] || box["ulx"]).to_f.round,
+          uly: (box[:uly] || box["uly"]).to_f.round,
+          lrx: (box[:lrx] || box["lrx"]).to_f.round,
+          lry: (box[:lry] || box["lry"]).to_f.round
         }
       end
 

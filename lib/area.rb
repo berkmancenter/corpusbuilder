@@ -28,10 +28,10 @@ class Area
   end
 
   def self.span_boxes(boxes)
-    ulx = boxes.map { |box| box[:ulx] }.min
-    uly = boxes.map { |box| box[:uly] }.min
-    lrx = boxes.map { |box| box[:lrx] }.max
-    lry = boxes.map { |box| box[:lry] }.max
+    ulx = boxes.map { |box| box[:ulx] || box["ulx"] }.map(&:to_f).min
+    uly = boxes.map { |box| box[:uly] || box["uly"] }.map(&:to_f).min
+    lrx = boxes.map { |box| box[:lrx] || box["lrx"] }.map(&:to_f).max
+    lry = boxes.map { |box| box[:lry] || box["lry"] }.map(&:to_f).max
 
     new ulx: ulx, uly: uly, lrx: lrx, lry: lry
   end

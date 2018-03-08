@@ -74,6 +74,10 @@ export default class GraphemesUtils {
     }
 
     static lineWords(graphemes) {
+        if(graphemes === undefined || graphemes === null) {
+            return [ ];
+        }
+
         let results = [];
         let lastUlx = null;
         let lastLrx = null;
