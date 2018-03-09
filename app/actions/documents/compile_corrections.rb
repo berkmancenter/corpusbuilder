@@ -105,7 +105,7 @@ module Documents
               })
             ]
           else
-            entered_list.inject(initial_state) do |state, grapheme|
+            run = entered_list.inject(initial_state) do |state, grapheme|
               if diffs.has_key?(grapheme.id)
                 state.current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
                 state.current_span.open ||= source_list.find do |g|
@@ -125,7 +125,9 @@ module Documents
               state.previous = grapheme
 
               state
-            end.result
+            end
+
+            run.result.push(run.current_span).reject(&:nil?)
           end
 
           diff_spans.map do |diff_span|
@@ -134,11 +136,11 @@ module Documents
             addmod_specs = grapheme_diffs.map(&:to_spec)
 
             open_position_weight = diff_span.open.try(:position_weight) || -> {
-              0 - diff_span.diffs.count - 1
+              (source_graphemes.first.try(:position_weight) || 0) - diff_span.diffs.count - 1
             }.call
 
             close_position_weight = diff_span.close.try(:position_weight) || -> {
-              diff_span.diffs.count + 1
+              (source_graphemes.last.try(:position_weight) || 0) + diff_span.diffs.count + 1
             }.call
 
             addmod_specs.each_with_index do |addmod_spec, index|
@@ -214,6 +216,11 @@ module Documents
         source_words.sort_by { |word| word.area.ulx }
       end
 
+      def visual_entered_text
+        sorted_words = @words.sort_by { |word| word[:area][:ulx].to_f }
+        sorted_words.map { |word| word[:text] }.join(' ')
+      end
+
       def entered_words
         memoized do
           last_position = 0
@@ -260,31 +267,143 @@ module Documents
       end
 
       def zone_id
+        zone.id
+      end
+
+      def zone
         memoized do
           if source_graphemes.empty?
             area = Area.span_boxes(words.map { |word| word[:area] }).normalize!
-            zone_scope = Zone.where(surface_id: revision.document.surfaces.where(number: surface_number).first.id).
-              where('position_weight is not null')
-            previous_zone = zone_scope.
-              where('(area[1])[1] < ?', area.uly).
-              reorder('position_weight desc').first
-            next_zone = zone_scope.
-              where('(area[0])[1] > ?', area.lry).
-              reorder('position_weight asc').first
-            previous_weight = previous_zone.try(:position_weight)
-            next_weight = next_zone.try(:position_weight)
-            if previous_weight.nil?
-              previous_weight = zone_scope.reorder('position_weight asc').first.position_weight - 1
+
+            zone_ids_query = revision.
+              graphemes.
+              joins(zone: :surface).
+              where(zones: { surfaces: { number: surface_number } }).
+              where('zones.position_weight is not null').
+              select(:zone_id)
+
+            zones = Zone.where(id: zone_ids_query)
+
+            initial = OpenStruct.new({
+              clusters: [],
+              current_max_ulx: 0,
+              current_min_lrx: 10e10
+            })
+
+            clusters = zones.reduce(initial) do |state, line|
+              inter_ulx = [ state.current_max_ulx, line.area.ulx ].max
+              inter_lrx = [ state.current_min_lrx, line.area.lrx ].min
+
+              mean_cluster_ulx = state.clusters.count > 0 ?
+                state.clusters[ state.clusters.count - 1 ].map(&:area).map(&:ulx).mean :
+                0
+              mean_cluster_lrx = state.clusters.count > 0 ?
+                state.clusters[ state.clusters.count - 1 ].map(&:area).map(&:lrx).mean :
+                0
+
+              mean_cluster_width = mean_cluster_lrx - mean_cluster_ulx
+              line_width = line.area.lrx - line.area.ulx
+
+              if state.clusters.empty? ||
+                  line.area.ulx > state.current_min_lrx ||
+                  line.area.lrx < state.current_max_ulx ||
+                  (inter_lrx - inter_ulx) < 0.5*mean_cluster_width ||
+                  line_width < 0.5*mean_cluster_width ||
+                  line_width > 1.5*mean_cluster_width
+                state.clusters.push([ line ])
+                state.current_max_ulx = line.area.ulx
+                state.current_min_lrx = line.area.lrx
+              else
+                state.clusters[ state.clusters.count - 1 ].push(line)
+                state.current_max_ulx = inter_ulx
+                state.current_min_lrx = inter_lrx
+              end
+
+              state
+            end.clusters.map do |cluster|
+              OpenStruct.new({
+                lines: cluster,
+                area: Area.span_boxes(cluster.map(&:area))
+              })
             end
-            if next_weight.nil?
-              next_weight = zone_scope.reorder('position_weight desc').first.position_weight + 1
+
+            previous_weight = 0
+            next_weight = 0
+
+            our_cluster = clusters.find do |cluster|
+              cluster.area.uly <= area.uly &&
+                cluster.area.lry >= area.lry &&
+                cluster.area.ulx <= area.ulx &&
+                cluster.area.lrx >= area.lrx
             end
-            zone = Zone.create! surface_id: revision.document.surfaces.where(number: surface_number).first.id,
+
+            if our_cluster.present?
+              above_line = our_cluster.lines.select do |line|
+                line.area.lry <= area.lry
+              end.last
+
+              if above_line.present?
+                previous_weight = above_line.position_weight
+
+                next_weight = zones.find { |zone| zone.position_weight > previous_weight }.
+                  try(:position_weight) || (previous_weight + 1)
+              else
+                next_weight = our_cluster.lines.first.position_weight
+
+                previous_weight = zones.find { |zone| zone.position_weight < previous_weight }.
+                  try(:position_weight) || (next_weight - 1)
+              end
+            end
+
+            if ltr?
+              left_cluster = clusters.find do |cluster|
+                cluster.area.lry >= area.uly &&
+                  cluster.area.uly <= area.lry &&
+                  cluster.area.lrx < area.ulx
+              end
+
+              if left_cluster.present?
+                previous_weight = left_cluster.lines.last.position_weight
+                next_weight = zones.find { |zone| zone.position_weight > previous_weight }.
+                  try(:position_weight) || (previous_weight + 1)
+              end
+            else
+              right_cluster = clusters.find do |cluster|
+                cluster.area.lry >= area.uly &&
+                  cluster.area.uly <= area.lry &&
+                  cluster.area.ulx > area.lrx
+              end
+
+              if right_cluster.present?
+                previous_weight = right_cluster.lines.last.position_weight
+                next_weight = zones.find { |zone| zone.position_weight > previous_weight }.
+                  try(:position_weight) || (previous_weight + 1)
+              end
+            end
+
+            if previous_weight == 0 && next_weight == 0
+              top_cluster = clusters.select do |cluster|
+                cluster.area.uly < area.uly
+              end.last
+
+              if top_cluster.present?
+                previous_weight = top_cluster.lines.last.position_weight
+                next_weight = zones.find { |zone| zone.position_weight > previous_weight }.
+                  try(:position_weight) || (previous_weight + 1)
+              else
+                next_weight = clusters.first.lines.first.position_weight
+
+                previous_weight = zones.find { |zone| zone.position_weight < previous_weight }.
+                  try(:position_weight) || (next_weight - 1)
+              end
+            end
+
+            Zone.create! surface_id: revision.document.surfaces.where(number: surface_number).first.id,
               area: area,
+              direction: Bidi.infer_direction( visual_entered_text ),
               position_weight: (previous_weight + 0.5*(next_weight - previous_weight))
-            zone.id
           else
-            source_graphemes.first.zone_id
+            source_graphemes.first.zone
           end
         end
       end
@@ -317,7 +436,11 @@ module Documents
 
       def ltr?
         memoized do
-          Bidi.infer_direction(words.map { |word| word[:text] }.join(' ')) == :ltr
+          if new_line?
+            Bidi.infer_direction(visual_entered_text) == :ltr
+          else
+            zone.ltr?
+          end
         end
       end
 

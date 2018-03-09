@@ -308,6 +308,20 @@ export default class DocumentLine extends React.Component {
         return `corpusbuilder-document-line-${this.props.number}`;
     }
 
+    @computed
+    get className() {
+        return `corpusbuilder-document-line ${ this.props.editing ? 'corpusbuilder-document-line-editing' : '' }`;
+    }
+
+    @computed
+    get dir() {
+        if(this.props.line === undefined || this.props.line === null || this.props.line.length === 0) {
+            return "ltr";
+        }
+
+        return this.props.line[0].zone_direction === 1 ? "rtl" : "ltr";
+    }
+
     render() {
         this._spaceWidth = null;
 
@@ -324,7 +338,8 @@ export default class DocumentLine extends React.Component {
         }
 
         return (
-            <div className={ `corpusbuilder-document-line ${ this.props.editing ? 'corpusbuilder-document-line-editing' : '' }` }
+            <div className={ this.className }
+                 dir={ this.dir }
                  key={ this.text }
                  style={ dynamicStyles }
                  id={ this.elementId }

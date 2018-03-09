@@ -86,6 +86,10 @@ export default class InlineEditor extends React.Component {
     }
 
     get dir() {
+        if(this.props.line === undefined || this.props.line === null || this.props.line.length === 0) {
+            return "ltr";
+        }
+
         return this.props.line[0].zone_direction === 1 ? "rtl" : "ltr";
     }
 
@@ -374,7 +378,7 @@ export default class InlineEditor extends React.Component {
             }
             else {
                 if(inputNode.selectionStart === 0) {
-                    this.focusWord(ix + 1, 'end');
+                    this.focusWord(ix - 1, 'end');
                 }
             }
         }
@@ -386,7 +390,7 @@ export default class InlineEditor extends React.Component {
             }
             else {
                 if(inputNode.selectionStart === inputNode.value.length) {
-                    this.focusWord(ix - 1, 'start');
+                    this.focusWord(ix + 1, 'start');
                 }
             }
         }
@@ -445,7 +449,7 @@ export default class InlineEditor extends React.Component {
         this.graphemeWords = GraphemeUtils.lineWords(props.line);
         this.editedTextWords = this.graphemeWords
             .map((word) => {
-                return word.sort((g) => { return parseFloat(g.position_weight) })
+                return word.sort((g1, g2) => { return parseFloat(g1.position_weight) - parseFloat(g2.position_weight) })
                            .map((g) =>  { return g.value })
                            .join('')
             })

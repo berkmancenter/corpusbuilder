@@ -41,6 +41,8 @@ module Documents
               # to have a cleaner document
               graphemes -= zone_graphemes
             end
+            dir = Bidi.infer_direction(zone_graphemes.map(&:value).join(''))
+            last_zone.direction = Zone.directions[dir] if last_zone.present?
             zone_graphemes = []
             last_zone = last_surface.zones.new area: element.area,
               id: SecureRandom.uuid,
@@ -89,9 +91,12 @@ module Documents
     def copy_data_into_zones
       conn = Grapheme.connection.raw_connection
 
-      conn.copy_data "COPY zones (id, area, surface_id, created_at, updated_at) FROM STDIN CSV" do
+      conn.copy_data "COPY zones (id, area, direction, position_weight, surface_id, created_at, updated_at) FROM STDIN CSV" do
         nodes.zones.each do |zone|
-           data = [ zone.id, zone.area.to_s,
+           data = [ zone.id,
+                    zone.area.to_s,
+                    Zone.directions[zone.direction],
+                    zone.position_weight,
                     zone.surface_id,
                     DateTime.now.to_s(:db), DateTime.now.to_s(:db)
            ]

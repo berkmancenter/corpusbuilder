@@ -27,6 +27,17 @@ class Area
     self
   end
 
+  def [](ix)
+    six = ix.to_s
+
+    case six
+    when "ulx" then @ulx
+    when "lrx" then @lrx
+    when "uly" then @uly
+    when "lry" then @lry
+    end
+  end
+
   def self.span_boxes(boxes)
     ulx = boxes.map { |box| box[:ulx] || box["ulx"] }.map(&:to_f).min
     uly = boxes.map { |box| box[:uly] || box["uly"] }.map(&:to_f).min
