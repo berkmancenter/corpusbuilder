@@ -187,7 +187,8 @@ module Branches
 
           ours.map do |our_change|
             found = theirs.find do |other_change|
-              our_change.area.overlaps? other_change.area
+              our_change.surface_number == other_change.surface_number &&
+                our_change.area.overlaps?(other_change.area)
             end
 
             if found.present?
@@ -255,6 +256,10 @@ module Branches
 
       def area
         from.try(:area) || to.try(:area)
+      end
+
+      def surface_number
+        from.try(:surface_number) || to.try(:surface_number)
       end
 
       def removal?
