@@ -33,6 +33,7 @@ gem 'term-ansicolor'
 gem 'exception_notification'
 gem 'ruby-progressbar'
 gem 'descriptive_statistics'
+gem 'oily_png'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
