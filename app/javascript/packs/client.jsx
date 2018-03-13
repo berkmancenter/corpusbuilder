@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 import { WindowManager } from './components/WindowManager'
+import { Uploader } from './components/Uploader'
 
 class CorpusBuilder {
     static init(element, options) {
@@ -17,4 +18,17 @@ class CorpusBuilder {
     }
 }
 
-window.CorpusBuilder = CorpusBuilder
+class CorpusBuilderUploader {
+    static init(element, options) {
+        ReactDOM.render(
+            <Uploader baseUrl={ options.baseUrl }
+                      host={ element }
+                      editorEmail={ options.editorEmail }
+                      />,
+            element
+        );
+    }
+}
+
+window.CorpusBuilder = CorpusBuilder;
+window.CorpusBuilderUploader = CorpusBuilderUploader;
