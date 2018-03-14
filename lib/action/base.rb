@@ -34,7 +34,7 @@ module Action
 
       if instance.valid?
         App.connection.transaction do
-          result = instance.time "#{instance.class.name}#execute" do
+          result = instance.time "[Action] #{instance.class.name}#execute", true do
             instance.execute
           end
           instance.instance_variable_set "@_result", result

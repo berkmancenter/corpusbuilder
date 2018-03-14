@@ -6,8 +6,10 @@ module Benchmarkable
   extend ActiveSupport::Concern
 
   included do
-    def time(name, &block)
+    def time(name, print_start = false, &block)
       ret = nil
+
+      Rails.logger.info red("Starting #{name}") if print_start
 
       stats = Benchmark.measure { ret = block.call }
 

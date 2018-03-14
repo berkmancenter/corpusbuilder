@@ -26,7 +26,7 @@ module Branches
       Revisions::RemoveGraphemes.run!(
         revision_id: branch.working.id,
         grapheme_ids: (
-          exclude_ids + removed_ids + conflicting_ids
+          removed_ids + conflicting_ids
         )
       )
 
@@ -37,8 +37,6 @@ module Branches
         other_revision: other_branch.revision,
         current_editor_id: current_editor_id
       )
-
-
 
       if no_conflicts?
         Branches::Commit.run! branch: branch
@@ -143,7 +141,8 @@ module Branches
 
       roots.each do |root_grapheme|
         found = root_grapheme.special? ? nil : rights.find do |g|
-          !g.special? && g.area.overlaps?(root_grapheme.area)
+          !g.special? && root_grapheme.surface_number == g.surface_number &&
+            g.area.overlaps?(root_grapheme.area)
         end
 
         results.push(
