@@ -1,0 +1,35 @@
+.corpusbuilder-progress-indicator {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 999999999;
+  text-align: center;
+  padding-top: 30%;
+
+  &-items {
+    padding: 10px;
+    width: 300px;
+    margin: 0 auto;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 150%;
+  }
+
+  &-item:not(:nth-child(2)) {
+      border-top: 1px dashed white;
+  }
+
+  &-spinner {
+    margin: 0 auto;
+    margin-bottom: 10px;
+    opacity: 0.95;
+
+    > div {
+      margin: 0 auto;
+    }
+  }
+}

@@ -30,8 +30,9 @@ export default class State {
         this.eventHandlers[ name ] = list;
     }
 
-    broadcastEvent(selector, value) {
-        let list = this.eventHandlers[ selector.tag ];
+    broadcastEvent(selector, value, subname = null) {
+        let eventName = subname === null ? selector.tag : `${selector.tag}:${subname}`;
+        let list = this.eventHandlers[ eventName ];
 
         if(list !== undefined) {
             for(let handler of list) {

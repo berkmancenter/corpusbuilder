@@ -9,6 +9,7 @@ import { Viewer } from '../Viewer'
 import { Button } from '../Button';
 import { DocumentInfo } from '../DocumentInfo'
 import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
+import { ProgressIndicator } from '../ProgressIndicator';
 
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
@@ -160,6 +161,20 @@ export default class WindowManager extends React.Component {
         ];
     }
 
+    progressEvents = [
+        {
+            name: 'MergeDocumentBranches',
+            title: <div>
+              Merging document branches.<br />
+              This can take a while...
+            </div>
+        },
+        {
+            name: 'CorrectDocumentPage',
+            title: 'Applying corrections.'
+        }
+    ];
+
     setViewers(number) {
         this.numberOfViewers = number;
         this.currentMode.arrange();
@@ -309,6 +324,8 @@ export default class WindowManager extends React.Component {
           <div className={ this.mainClasses }>
               <Provider {...this.sharedContext}>
                   <div>
+                      <ProgressIndicator events={ this.progressEvents }>
+                      </ProgressIndicator>
                       { this.renderDocumentPanes() }
                   </div>
               </Provider>

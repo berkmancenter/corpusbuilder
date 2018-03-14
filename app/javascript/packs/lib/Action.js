@@ -55,20 +55,26 @@ export default class Action {
     }
 
     post(url, params) {
+        this.state.broadcastEvent(this.selector, null, 'start');
+
         return Request.post(url, params)
             .then((data, response) => {
-                console.log(data);
-                console.log(response);
                 this.state.broadcastEvent(this.selector, data);
+            })
+            .finally(() => {
+                this.state.broadcastEvent(this.selector, null, 'end');
             });
     }
 
     put(url, params) {
+        this.state.broadcastEvent(this.selector, null, 'start');
+
         return Request.put(url, params)
             .then((data, response) => {
-                console.log(data);
-                console.log(response);
                 this.state.broadcastEvent(this.selector, data);
+            })
+            .finally(() => {
+                this.state.broadcastEvent(this.selector, null, 'end');
             });
     }
 
