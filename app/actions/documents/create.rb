@@ -41,7 +41,6 @@ module Documents
         document_id: document.id
 
       ProcessDocumentJob.
-        set(wait: 5.seconds).
         perform_later(document)
 
       document

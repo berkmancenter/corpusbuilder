@@ -120,14 +120,10 @@ class V1::DocumentsAPI < Grape::API
         current_branch = @document.branches.where(name: params[:branch]).first
         other_branch = @document.branches.where(name: params[:other_branch]).first
 
-        updated_branch = action! Branches::Merge,
+        async! Branches::Merge,
           branch: current_branch,
           other_branch: other_branch,
           current_editor_id: @editor_id
-
-        if !updated_branch.is_a?(ActiveModel::Errors) && updated_branch.conflict?
-          error!('Merge Conflict!', 209)
-        end
       end
 
       desc 'Resets the working revision for a given branch'

@@ -20,17 +20,53 @@ export default class Request {
         });
     }
 
+    static resolveAsync(id, resolve = null, reject = null) {
+        let executor = (resolve, reject) => {
+            qwest.get(`/corpusbuilder/api/async_responses/${id}`)
+                .then((response) => {
+                    if(response.status === 202) {
+                        setTimeout(Request.resolveAsync, 1000, id, resolve, reject);
+                    }
+                    else {
+                        resolve(JSON.parse(response.responseText));
+                    }
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        };
+
+        if(resolve === null) {
+            return new Promise(executor);
+        }
+        else {
+            executor(resolve, reject);
+        }
+    }
+
     static put(url, data) {
         return new Promise((resolve, reject) => {
             qwest.put(url, JSON.stringify(data), { dataType: 'json' })
               .then((response) => {
-                resolve(
-                   JSON.parse(response.responseText)
-                )
+                  let payload = JSON.parse(response.responseText);
+                  if(response.status === 202) {
+                      // we now need to periodically ask for the async
+                      // response
+                      Request.resolveAsync(payload.id)
+                          .then((data) => {
+                              resolve(data);
+                          })
+                          .catch((error) => {
+                              reject(error);
+                          });
+                  }
+                  else {
+                      resolve(payload)
+                  }
+              })
               .catch((error) => {
-                reject(error);
+                  reject(error);
               });
-            });
         });
     }
 
@@ -38,13 +74,25 @@ export default class Request {
         return new Promise((resolve, reject) => {
             qwest.post(url, JSON.stringify(data), { dataType: 'json' })
               .then((response) => {
-                resolve(
-                   JSON.parse(response.responseText)
-                )
+                  let payload = JSON.parse(response.responseText);
+                  if(response.status === 202) {
+                      // we now need to periodically ask for the async
+                      // response
+                      Request.resolveAsync(payload.id)
+                          .then((data) => {
+                              resolve(data);
+                          })
+                          .catch((error) => {
+                              reject(error);
+                          });
+                  }
+                  else {
+                      resolve(payload)
+                  }
+              })
               .catch((error) => {
-                reject(error);
+                  reject(error);
               });
-            });
         });
     }
 

@@ -56,14 +56,18 @@ export default class Action {
 
     post(url, params) {
         return Request.post(url, params)
-            .then((data) => {
+            .then((data, response) => {
+                console.log(data);
+                console.log(response);
                 this.state.broadcastEvent(this.selector, data);
             });
     }
 
     put(url, params) {
         return Request.put(url, params)
-            .then((data) => {
+            .then((data, response) => {
+                console.log(data);
+                console.log(response);
                 this.state.broadcastEvent(this.selector, data);
             });
     }

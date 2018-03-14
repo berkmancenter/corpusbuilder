@@ -86,6 +86,18 @@ module V1Base
         error!("Oops! Something went wrong", 500)
       end
 
+      def async! action, additional_params
+        require_editor!
+
+        resp = AsyncResponse.create! editor_id: @editor_id
+
+        ProcessAsyncResponse.
+          perform_later resp, action.name, (additional_params || params)
+
+        status 202
+        present resp, with: AsyncResponse::Simple
+      end
+
       def infer_revision!(options = {})
         @revision_options = {}
         if uuid_pattern.match?(params[:revision])
