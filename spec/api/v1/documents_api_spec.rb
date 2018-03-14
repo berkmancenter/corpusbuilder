@@ -5,6 +5,10 @@ describe V1::DocumentsAPI, type: :request do
   include AuthenticationSpecHelper
   include ActiveSupport::Testing::TimeHelpers
 
+  def queue_adapter_for_test
+    ActiveJob::QueueAdapters::DelayedJobAdapter.new
+  end
+
   let(:headers) do
     {
       "Accept" => "application/vnd.corpus-builder-v1+json",
@@ -137,7 +141,7 @@ describe V1::DocumentsAPI, type: :request do
       document = Document.find new_id
 
       expect(document.images.count).to eq(2)
-      expect(document.images.map(&:order)).to eq([1, 2])
+      expect(document.images.map(&:order).sort).to eq([1, 2])
       expect(document.images.map(&:id)).to eq([image2.id, image1.id])
     end
 
@@ -656,6 +660,14 @@ describe V1::DocumentsAPI, type: :request do
     context "PUT /api/documents/:id/:revision/merge" do
       it_behaves_like "application authenticated route"
 
+      before do
+        Delayed::Worker.delay_jobs = false
+      end
+
+      after do
+        Delayed::Worker.delay_jobs = true
+      end
+
       def url(id, revision = 'master')
         "/api/documents/#{id}/#{revision}/merge"
       end
@@ -833,24 +845,12 @@ describe V1::DocumentsAPI, type: :request do
             current_editor_id: editor.id
         end
 
-        it "returns HTTP 209 CONFLICT along with the message about the need to resolve the merge conflicts" do
-          corrections
-          travel 1.week
-          first_merge
-          master_branch.reload
-          travel 1.week
-          valid_request
-          travel 1.week
-          master_branch.reload
-
-          expect(response.status).to eq(209)
-        end
-
         it "marks the working revision of the branch as being in conflict" do
           corrections
           first_merge
           master_branch.reload
           valid_request
+
           master_branch.reload
 
           expect(master_branch.working).to be_conflict
@@ -862,7 +862,9 @@ describe V1::DocumentsAPI, type: :request do
           first_merge
           master_branch.reload
           travel 1.week
+
           valid_request
+
           master_branch.reload
 
           expect(master_branch.working.graphemes.to_a.uniq.select(&:conflict?).count).to eq(2)

@@ -128,122 +128,6 @@ ActiveRecord::Schema.define(version: 20180313171908) do
     t.decimal "position_weight", precision: 12, scale: 6
   end
 
-  create_table "graphemes_revisions_003e2881_fdf9_48f3_9580_6d1d135c511e", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_02350cdd_038e_4849_9858_4ae320b8f779", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_0d29c65e_6578_414f_94c8_7ec8d25cbff4", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_11c753b0_7816_4365_b511_e05f6b97e755", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_14c5e0fc_1674_4719_9616_b2a891391c24", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_2fac8132_24d0_481e_b166_96b2c3f60a4b", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_2fbcfa80_5b85_4edd_aeca_3976fa4845dc", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_439647b6_ccef_4c45_8e65_80de0b32e7f2", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_4d11c0a3_899b_4339_852b_9ec2b1236fc9", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_4e66fbb8_0175_4244_8c5b_1b8a516e5424", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_51dd283d_1c0b_4bf6_9beb_b676ad3a968d", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_584a49e5_3e5a_486f_8e54_585ce0288648", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_75dbdc4f_13b0_4945_a801_bf63317bb87d", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_7b98d8d0_d833_41c6_8d24_22bfa640ccca", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_81e29a87_be46_4bba_9761_e5c71ed59b41", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_84cb1154_a382_4971_b153_749687220a22", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_855e6dec_8561_40a5_b9e4_f1015ce54786", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_86d45179_b87e_45ec_b53f_acb625d34bcc", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_879650d6_10bc_4566_a992_1b1272f80f92", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_92d1e62f_9bd1_45b3_8ef9_985e28c2bb25", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_a66c010e_594f_476c_9f88_8e8304aca3a9", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_c597aee0_f0e9_43e1_9914_f8499a6af344", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_ca55294a_0aee_4f83_adb5_85ca2b459065", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_cf8aad7f_a91f_4e84_b0e5_0cb47cc6148e", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_d352858c_4ba1_4a62_89a9_3f6b17c3e88b", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_dcdce719_6ea0_4544_a7ee_2d6b4d89564d", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id", null: false
-  end
-
-  create_table "graphemes_revisions_ecff1aeb_5625_4754_b6b3_2324c0630985", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_f294b4e8_9448_4616_b209_6588ea4a5272", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
-  create_table "graphemes_revisions_fa7bf967_459b_4c88_978d_ef90d14fa655", id: false, force: :cascade do |t|
-    t.uuid "grapheme_id"
-  end
-
   create_table "images", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.string "image_scan"
@@ -262,17 +146,6 @@ ActiveRecord::Schema.define(version: 20180313171908) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "data", default: {}
-  end
-
-  create_table "que_jobs", primary_key: ["queue", "priority", "run_at", "job_id"], force: :cascade, comment: "3" do |t|
-    t.integer "priority", limit: 2, default: 100, null: false
-    t.datetime "run_at", default: -> { "now()" }, null: false
-    t.bigserial "job_id", null: false
-    t.text "job_class", null: false
-    t.json "args", default: [], null: false
-    t.integer "error_count", default: 0, null: false
-    t.text "last_error"
-    t.text "queue", default: "", null: false
   end
 
   create_table "revisions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -295,11 +168,10 @@ ActiveRecord::Schema.define(version: 20180313171908) do
   end
 
   create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "document_id"
-    t.box "area"
+    t.uuid "surface_id", null: false
+    t.box "area", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "surface_id", null: false
     t.decimal "position_weight", precision: 12, scale: 6, default: "0.0"
     t.integer "direction", default: 0
     t.index ["area"], name: "index_zones_on_area", using: :gist

@@ -63,9 +63,9 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "returns the id and name of the image in JSON" do
-      expect(valid_response_body.keys.sort).to eq(["id", "name"])
-      expect(valid_response_body["name"]).to eq("file_1.png")
-      expect(valid_response_body["id"]).to eq(images.first.id)
+      expect(valid_response_body.first.keys.sort).to eq(["id", "name"])
+      expect(valid_response_body.first["name"]).to eq("file_1.png")
+      expect(valid_response_body.first["id"]).to eq(images.first.id)
     end
 
     it "returns 500 when something goes wrong" do

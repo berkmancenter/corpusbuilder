@@ -20,6 +20,7 @@ class V1::AsyncResponsesAPI < Grape::API
           error!(data, 500)
         else
           status 200
+          async.delete
 
           return data
         end

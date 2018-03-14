@@ -6,14 +6,14 @@ module Graphemes
 
     def execute
       if reject_mirrored == true
-        all_diffs.reject { |g| has_mirrored?(g) }
+        without_mirrored all_diffs
       else
         all_diffs
       end
     end
 
     def all_diffs
-      @_all_diffs ||= -> {
+      memoized do
         sql = <<-sql
           with recursive tree(id, parent_id, merged_with_id) as (
             select id,
@@ -75,16 +75,32 @@ module Graphemes
         sql
 
         Grapheme.find_by_sql sql
-      }.call
+      end
     end
 
-    def has_mirrored?(grapheme)
-      all_diffs.any? do |other|
-        grapheme.inclusion != other.inclusion &&
-          grapheme.value == other.value &&
-          grapheme.area == other.area &&
-          grapheme.surface_number == other.surface_number
+    def without_mirrored(diffs)
+      left_set = Set.new
+      right_set = Set.new
+
+      for diff in diffs
+        if diff.inclusion == 'left'
+          left_set.add(diff)
+        else
+          left_set.add(diff)
+        end
       end
+
+      for left in left_set
+        for right in right_set
+          if left.value == right.value &&
+              left.area == right.area &&
+              left.surface_number == right.surface_number
+            right_set.delete(right)
+          end
+        end
+      end
+
+      left_set.to_a + right_set.to_a
     end
 
     def create_development_dumps?

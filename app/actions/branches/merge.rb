@@ -38,6 +38,8 @@ module Branches
         current_editor_id: current_editor_id
       )
 
+
+
       if no_conflicts?
         Branches::Commit.run! branch: branch
       else
@@ -89,9 +91,13 @@ module Branches
     def removed_ids
       memoized do
         time "calculating removed_ids in Branches::Merge" do
-          branch_changes.concat(other_branch_changes).select(&:removal?).select do |change|
-            merge_conflicts.none? { |conflict| conflict.includes?(change) }
-          end.map(&:from).map(&:id).uniq
+          branch_changes.select(&:removal?).
+            concat(other_branch_changes.select(&:removal?)).
+            map(&:from).map(&:id).uniq
+
+         # branch_changes.concat(other_branch_changes).select(&:removal?).select do |change|
+         #   merge_conflicts.none? { |conflict| conflict.includes?(change) }
+         # end.map(&:from).map(&:id).uniq
         end
       end
     end
@@ -182,27 +188,71 @@ module Branches
     def merge_conflicts
       memoized do
         time "calculating merge_conflicts in Branches::Merge" do
-          ours = Set.new(branch_changes)
-          theirs = Set.new(other_branch_changes)
+          return [] if branch_changes.empty? || other_branch_changes.empty?
 
-          ours.map do |our_change|
-            found = theirs.find do |other_change|
-              our_change.surface_number == other_change.surface_number &&
+          ours_ix = 0
+          theirs_ix = 0
+
+          conflicts = []
+          ours = Set.new
+          theirs = Set.new
+          surface_number = branch_changes.first.surface_number
+
+          loop do
+            loop do
+              next_ours = branch_changes[ ours_ix ]
+
+              if next_ours.try(:surface_number) != surface_number
+                break
+              else
+                ours.add(next_ours)
+                ours_ix += 1
+              end
+            end
+
+            loop do
+              next_theirs = other_branch_changes[ theirs_ix ]
+
+              if next_theirs.nil?
+                break
+              elsif next_theirs.surface_number < surface_number
+                theirs_ix += 1
+              elsif next_theirs.surface_number != surface_number
+                break
+              else
+                theirs.add(next_theirs)
+                theirs_ix += 1
+              end
+            end
+
+            conflicts += ours.map do |our_change|
+              found = theirs.find do |other_change|
                 our_change.area.overlaps?(other_change.area)
+              end
+
+              if found.present?
+                theirs.delete(found)
+
+                [ our_change, found ]
+              else
+                nil
+              end
+
+              found.present? ? [ our_change, found ] : nil
+            end.reject(&:nil?).map do |our_change, their_change|
+              Conflict.new(our_change, their_change)
+            end.reject(&:both_remove?)
+
+            ours.clear
+            theirs.clear
+            surface_number = branch_changes[ ours_ix ].try(:surface_number)
+
+            if ours_ix >= branch_changes.count || theirs_ix >= other_branch_changes.count
+              break
             end
+          end
 
-            if found.present?
-              theirs.delete(found)
-
-              [ our_change, found ]
-            else
-              nil
-            end
-
-            found.present? ? [ our_change, found ] : nil
-          end.reject(&:nil?).map do |our_change, their_change|
-            Conflict.new(our_change, their_change)
-          end.reject(&:both_remove?)
+          conflicts
         end
       end
     end

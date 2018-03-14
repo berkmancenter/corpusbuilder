@@ -22,6 +22,7 @@ module Memoizable
     end
 
     def clear_memoized
+      byebug if self.is_a?(Branches::Merge)
       @_memoized = {}
     end
   end

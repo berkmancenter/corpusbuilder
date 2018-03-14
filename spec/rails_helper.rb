@@ -26,6 +26,8 @@ RSpec.configure do |config|
     end
   end
 
+  config.include(ActiveJob::TestHelper)
+
   config.before(:suite) { FactoryGirl.reload }
 
   config.include RSpec::Rails::RequestExampleGroup,
@@ -35,4 +37,26 @@ RSpec.configure do |config|
   config.include RSpec::Rails::RequestExampleGroup,
     type: :request,
     file_path: /spec\/api\/v1/
+end
+
+class ActiveJob::QueueAdapters::DelayedJobAdapter
+  class EnqueuedJobs
+    def clear
+      Delayed::Job.where(failed_at:nil).map(&:destroy)
+    end
+  end
+
+  class PerformedJobs
+    def clear
+      Delayed::Job.where.not(failed_at:nil).map(&:destroy)
+    end
+  end
+
+  def enqueued_jobs
+    EnqueuedJobs.new
+  end
+
+  def performed_jobs
+    PerformedJobs.new
+  end
 end

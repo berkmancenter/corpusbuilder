@@ -44,10 +44,10 @@ RSpec.shared_examples "application authenticated route" do
       end
 
       context "when it is valid" do
-        it "returns 200 or 201 for a valid request" do
+        it "returns 200, 201 or 202 for a valid request" do
           valid_request
 
-          expect(response.status).to be_between(200, 201).inclusive
+          expect(response.status).to be_between(200, 202).inclusive
         end
       end
     end
