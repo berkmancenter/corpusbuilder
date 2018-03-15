@@ -20,12 +20,34 @@ class CorpusBuilder {
 
 class CorpusBuilderUploader {
     static init(element, options) {
+        let uploader = new CorpusBuilderUploader();
+
+        uploader.element = element;
+        uploader.options = options;
+
+        uploader.render();
+
+        return uploader;
+    }
+
+    options = { };
+    element = null;
+    metadata = { };
+
+    setMetadata(metadata) {
+        this.metadata = metadata;
+
+        this.render();
+    }
+
+    render() {
         ReactDOM.render(
-            <Uploader baseUrl={ options.baseUrl }
-                      host={ element }
-                      editorEmail={ options.editorEmail }
+            <Uploader baseUrl={ this.options.baseUrl }
+                      host={ this.element }
+                      editorEmail={ this.options.editorEmail }
+                      metadata={ this.metadata }
                       />,
-            element
+            this.element
         );
     }
 }

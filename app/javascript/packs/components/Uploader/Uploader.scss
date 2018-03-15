@@ -1,0 +1,15 @@
+.corpusbuilder-uploader {
+  background-color: #f2f2f2;
+  position: relative;
+  line-height: 1;
+  border: 1px solid #e7e7e7;
+  padding: 1.25rem;
+  color: #777 !important;
+  font-size: 14px;
+
+  &-title {
+    font-size: 1.25em;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+}
