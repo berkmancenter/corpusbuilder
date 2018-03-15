@@ -38,6 +38,27 @@ class V1::DocumentsAPI < Grape::API
       ).result, with: Document::Simple
     end
 
+    params do
+      requires :metadata, type: JSON do
+        requires :title, type: String
+        optional :authority, type: String
+        optional :date, type: String
+        optional :editor, type: String
+        optional :license, type: String
+        optional :notes, type: String
+        optional :publisher, type: String
+      end
+    end
+    get 'similar' do
+      authorize!
+
+      # todo: implement querying only for the ones that are similar
+      present Documents::QueryAll.run!(
+        app: @current_app,
+        status: Document.statuses[:ready]
+      ).result, with: Document::Simple
+    end
+
     namespace ':id', requirements: { id: uuid_pattern } do
       before do
         fetch_and_authorize_document!

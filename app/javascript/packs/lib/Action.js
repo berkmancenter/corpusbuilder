@@ -22,6 +22,8 @@ export default class Action {
         if(!Action.requests.has(this.selector.id)) {
             Action.requests.set(this.selector.id, [ ]);
 
+            this.state.broadcastEvent(this.selector, null, 'start');
+
             Request.get(url, params)
                 .then((data) => {
                     this.state.broadcastEvent(this.selector, data);
@@ -37,6 +39,7 @@ export default class Action {
                 })
                 .finally(() => {
                     Action.requests.delete(this.selector.id);
+                    this.state.broadcastEvent(this.selector, null, 'end');
                 });
         }
 

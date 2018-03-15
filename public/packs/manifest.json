@@ -23,6 +23,8 @@
   "actions/FetchDocumentDiff.js.map": "/packs/actions/FetchDocumentDiff.js.map",
   "actions/FetchDocumentPage.js": "/packs/actions/FetchDocumentPage.js",
   "actions/FetchDocumentPage.js.map": "/packs/actions/FetchDocumentPage.js.map",
+  "actions/FetchSimilarDocuments.js": "/packs/actions/FetchSimilarDocuments.js",
+  "actions/FetchSimilarDocuments.js.map": "/packs/actions/FetchSimilarDocuments.js.map",
   "actions/GetMousePosition.js": "/packs/actions/GetMousePosition.js",
   "actions/GetMousePosition.js.map": "/packs/actions/GetMousePosition.js.map",
   "actions/MergeDocumentBranches.js": "/packs/actions/MergeDocumentBranches.js",

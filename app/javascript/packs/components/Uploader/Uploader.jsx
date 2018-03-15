@@ -9,6 +9,7 @@ import { PageFlow } from '../PageFlow';
 import { PageFlowItem } from '../PageFlowItem';
 import { Button } from '../Button';
 import { ProgressIndicator } from '../ProgressIndicator';
+import FetchDocumentPage from '../../actions/FetchDocumentPage';
 
 import Request from '../../lib/Request';
 
@@ -61,6 +62,19 @@ export default class Uploader extends React.Component {
             appState: this.appState,
             editorEmail: this.props.editorEmail
         };
+    }
+
+    componentWillUpdate(props) {
+        if(!this.isMetadataReady && props.metadata !== null && props.metadata !== undefined) {
+            this.similarDocuments = FetchSimilarDocuments.run(
+                this.props.appState,
+                {
+                  select: {
+                  },
+                  metadata: props.metadata
+                }
+            );
+        }
     }
 
     onDocumentPicked(doc) {
