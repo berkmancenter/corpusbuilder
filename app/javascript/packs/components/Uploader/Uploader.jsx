@@ -165,6 +165,9 @@ export default class Uploader extends React.Component {
                                     </div>
                                 </div>
                             </div>
+                            <div className="corpusbuilder-uploader-similar-documents-item-preview">
+                              <img src={ doc.images_sample[0].url } />
+                            </div>
                             <Button onClick={ this.onDocumentPicked.bind(this, doc) }>
                                 { doc === this.pickedDocument ? 'Unpick' : 'Pick' }
                             </Button>

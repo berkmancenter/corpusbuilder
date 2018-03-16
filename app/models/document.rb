@@ -23,6 +23,13 @@ class Document < ApplicationRecord
     expose :title
     expose :author
     expose :date
+    expose :images_sample do |document|
+      document.surfaces.joins(:image).take(10).map do |surface|
+        {
+          url: surface.image.processed_image_url
+        }
+      end
+    end
   end
 
   class Tree < Grape::Entity
