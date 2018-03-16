@@ -38,6 +38,9 @@ export default class Uploader extends React.Component {
     metadata = null;
 
     @observable
+    uploadNewChosen = false;
+
+    @observable
     pickedDocument = null;
 
     @computed
@@ -70,8 +73,11 @@ export default class Uploader extends React.Component {
         if(!this.isMetadataReady) {
             return 'pre-metadata';
         }
-        else {
+        else if(!this.uploadNewChosen) {
             return 'similar-documents';
+        }
+        else {
+            return 'images-upload';
         }
     }
 
@@ -104,6 +110,10 @@ export default class Uploader extends React.Component {
         }
     }
 
+    onUploadNewChosen() {
+        this.uploadNewChosen = true;
+    }
+
     renderPreMeta() {
         return (
             <div className="corpusbuilder-uploader-explain">
@@ -119,14 +129,7 @@ export default class Uploader extends React.Component {
             items = <i>Fetching similar documents, please wait...</i>;
         }
         else if(this.similarDocuments.length > 0) {
-            items = [
-                <div key="explain" className="corpusbuilder-uploader-explain">
-                    If any of the following documents represent the one described
-                    in the metadata: please click on the "Pick" button.
-                    Otherwise, please click on next to continue.
-                </div>
-            ];
-            items = items.concat(
+            let docItems =
                 this.similarDocuments.map((doc) => {
                     let classes = [ "corpusbuilder-uploader-similar-documents-item" ];
 
@@ -173,8 +176,28 @@ export default class Uploader extends React.Component {
                             </Button>
                         </div>
                     ];
-                })
+                });
+            docItems.push(
+                <div key="new-one" className="corpusbuilder-uploader-similar-documents-item clickable"
+                     onClick={ this.onUploadNewChosen.bind(this) }>
+                    <div className="corpusbuilder-uploader-similar-documents-item-top-label-big">
+                        +
+                    </div>
+                    <div className="corpusbuilder-uploader-similar-documents-item-top-label">
+                        Add New
+                    </div>
+                </div>
             );
+            items = [
+                <div key="explain" className="corpusbuilder-uploader-explain">
+                    If any of the following documents represent the one described
+                    in the metadata: please click on the "Pick" button.
+                    Otherwise, please click on next to continue.
+                </div>,
+                <div className="corpusbuilder-uploader-similar-documents-list">
+                    { docItems }
+                </div>
+            ];
         }
         else {
             items = <i>No similar document has been found for given metadata. Please click next to continue</i>;
