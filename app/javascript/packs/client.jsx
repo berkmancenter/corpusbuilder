@@ -40,12 +40,26 @@ class CorpusBuilderUploader {
         this.render();
     }
 
+    onDocumentPicked(doc) {
+        if(typeof this.options.onDocumentPicked === 'function') {
+            this.options.onDocumentPicked(doc);
+        }
+    }
+
+    onDocumentUnpicked() {
+        if(typeof this.options.onDocumentUnpicked === 'function') {
+            this.options.onDocumentUnpicked();
+        }
+    }
+
     render() {
         ReactDOM.render(
             <Uploader baseUrl={ this.options.baseUrl }
                       host={ this.element }
                       editorEmail={ this.options.editorEmail }
                       metadata={ this.metadata }
+                      onDocumentPicked={ this.onDocumentPicked.bind(this) }
+                      onDocumentUnpicked={ this.onDocumentUnpicked.bind(this) }
                       />,
             this.element
         );

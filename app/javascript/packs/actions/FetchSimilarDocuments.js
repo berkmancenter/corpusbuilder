@@ -5,9 +5,7 @@ export default class FetchSimilarDocuments extends Action {
         return state.resolve(selector, () => {
             let url = `${state.baseUrl}/api/documents/similar`;
 
-            return this.get(url, { metadata: params.metadata }).then((data) => {
-                return data.documents;
-            });
+            return this.get(url, { metadata: params.metadata });
         });
     }
 }

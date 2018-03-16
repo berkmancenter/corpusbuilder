@@ -39,7 +39,7 @@ class V1::DocumentsAPI < Grape::API
     end
 
     params do
-      requires :metadata, type: JSON do
+      requires :metadata, type: Hash do
         requires :title, type: String
         optional :authority, type: String
         optional :date, type: String

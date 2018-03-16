@@ -8,7 +8,6 @@ import styles from './ProgressIndicator.scss';
 @observer
 export default class ProgressIndicator extends React.Component {
 
-    @observable
     processes = [];
 
     constructor(props) {
@@ -17,14 +16,20 @@ export default class ProgressIndicator extends React.Component {
         for(let eventDescriptor of props.events) {
             this.props.appState.on(eventDescriptor.name + ':start', ((_) => {
                 this.processes.push(eventDescriptor);
+                this.refresh();
             }).bind(this));
 
             this.props.appState.on(eventDescriptor.name + ':end', ((_) => {
                this.processes = this.processes.filter((e) => {
                    return e.name !== eventDescriptor.name;
                });
+               this.refresh();
             }).bind(this));
         }
+    }
+
+    refresh() {
+        setTimeout(this.forceUpdate.bind(this));
     }
 
     renderProcess(eventDescriptor) {

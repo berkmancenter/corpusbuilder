@@ -72,6 +72,9 @@ export default class Button extends React.Component {
                 this.props.onToggle(this.toggled);
             }
         }
+        e.preventDefault()
+        e.stopPropagation();
+        return false;
     }
 
     render() {

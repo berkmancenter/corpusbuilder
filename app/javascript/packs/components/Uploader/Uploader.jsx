@@ -9,7 +9,7 @@ import { PageFlow } from '../PageFlow';
 import { PageFlowItem } from '../PageFlowItem';
 import { Button } from '../Button';
 import { ProgressIndicator } from '../ProgressIndicator';
-import FetchDocumentPage from '../../actions/FetchDocumentPage';
+import FetchSimilarDocuments from '../../actions/FetchSimilarDocuments';
 
 import Request from '../../lib/Request';
 
@@ -35,15 +35,34 @@ export default class Uploader extends React.Component {
     ];
 
     @observable
-    similarDocuments = [ ];
+    metadata = null;
+
+    @observable
+    pickedDocument = null;
+
+    @computed
+    get similarDocuments() {
+        if(this.isMetadataReady) {
+            return FetchSimilarDocuments.run(
+                this.appState,
+                {
+                  select: {
+                  },
+                  metadata: this.metadata
+                }
+            )
+        }
+
+        return null;
+    }
 
     @computed
     get isMetadataReady() {
-        return this.props.metadata !== undefined &&
-            this.props.metadata !== null &&
-            this.props.metadata.title !== undefined &&
-            this.props.metadata.title !== null &&
-            this.props.metadata.title !== "";
+        return this.metadata !== undefined &&
+            this.metadata !== null &&
+            this.metadata.title !== undefined &&
+            this.metadata.title !== null &&
+            this.metadata.title !== "";
     }
 
     @computed
@@ -65,21 +84,23 @@ export default class Uploader extends React.Component {
     }
 
     componentWillUpdate(props) {
-        if(!this.isMetadataReady && props.metadata !== null && props.metadata !== undefined) {
-            this.similarDocuments = FetchSimilarDocuments.run(
-                this.props.appState,
-                {
-                  select: {
-                  },
-                  metadata: props.metadata
-                }
-            );
-        }
+        this.metadata = props.metadata;
     }
 
     onDocumentPicked(doc) {
-        if(this.props.onDocumentPicked !== undefined && this.props.onDocumentPicked !== null) {
-            this.props.onDocumentPicked(doc);
+        if(doc === this.pickedDocument) {
+            this.pickedDocument = null;
+
+            if(typeof this.props.onDocumentUnpicked === 'function') {
+                this.props.onDocumentUnpicked();
+            }
+        }
+        else {
+            if(this.props.onDocumentPicked !== undefined && this.props.onDocumentPicked !== null) {
+                this.props.onDocumentPicked(doc);
+            }
+
+            this.pickedDocument = doc;
         }
     }
 
@@ -94,20 +115,63 @@ export default class Uploader extends React.Component {
 
     renderSimilarDocuments() {
         let items = null;
-        if(this.similarDocuments.length > 0) {
-            items = this.similarDocuments.map((doc) => {
-                return [
-                    <div key="explain" className="corpusbuilder-uploader-explain">
-                        If any of the following documents represent the one described
-                        in the metadata: please click on the "Pick" button.
-                        Otherwise, please click on next to continue.
-                    </div>,
-                    <div key="list" className="corpusbuilder-uploader-similar-documents-item">
-                        { doc.title }
-                        <Button onClick={ this.onDocumentPicked.bind(this, doc) }>Pick</Button>
-                    </div>
-                ];
-            });
+        if(this.similarDocuments === undefined || this.similarDocuments === null) {
+            items = <i>Fetching similar documents, please wait...</i>;
+        }
+        else if(this.similarDocuments.length > 0) {
+            items = [
+                <div key="explain" className="corpusbuilder-uploader-explain">
+                    If any of the following documents represent the one described
+                    in the metadata: please click on the "Pick" button.
+                    Otherwise, please click on next to continue.
+                </div>
+            ];
+            items = items.concat(
+                this.similarDocuments.map((doc) => {
+                    let classes = [ "corpusbuilder-uploader-similar-documents-item" ];
+
+                    if(doc == this.pickedDocument) {
+                        classes.push('picked');
+                    }
+
+                    return [
+                        <div key="list" className={ classes.join(' ') }>
+                            <div className="corpusbuilder-uploader-similar-documents-item-top-label">
+                                Existing document:
+                            </div>
+                            <div className="corpusbuilder-uploader-similar-documents-item-body">
+                                <div className="corpusbuilder-uploader-similar-documents-item-row">
+                                    <div className="corpusbuilder-uploader-similar-documents-item-label">
+                                        Title:
+                                    </div>
+                                    <div className="corpusbuilder-uploader-similar-documents-item-value">
+                                        { doc.title }
+                                    </div>
+                                </div>
+                                <div className="corpusbuilder-uploader-similar-documents-item-row">
+                                    <div className="corpusbuilder-uploader-similar-documents-item-label">
+                                        Date:
+                                    </div>
+                                    <div className="corpusbuilder-uploader-similar-documents-item-value">
+                                        { doc.date }
+                                    </div>
+                                </div>
+                                <div className="corpusbuilder-uploader-similar-documents-item-row">
+                                    <div className="corpusbuilder-uploader-similar-documents-item-label">
+                                        Author:
+                                    </div>
+                                    <div className="corpusbuilder-uploader-similar-documents-item-value">
+                                        { doc.author }
+                                    </div>
+                                </div>
+                            </div>
+                            <Button onClick={ this.onDocumentPicked.bind(this, doc) }>
+                                { doc === this.pickedDocument ? 'Unpick' : 'Pick' }
+                            </Button>
+                        </div>
+                    ];
+                })
+            );
         }
         else {
             items = <i>No similar document has been found for given metadata. Please click next to continue</i>;
