@@ -92,10 +92,6 @@ module Branches
           branch_changes.select(&:removal?).
             concat(other_branch_changes.select(&:removal?)).
             map(&:from).map(&:id).uniq
-
-         # branch_changes.concat(other_branch_changes).select(&:removal?).select do |change|
-         #   merge_conflicts.none? { |conflict| conflict.includes?(change) }
-         # end.map(&:from).map(&:id).uniq
         end
       end
     end
@@ -106,7 +102,7 @@ module Branches
           Grapheme.create! conflict.output_grapheme.
             attributes.
             without("id", "inclusion", "revision_id", "surface_number", "status").
-            merge("status" => Grapheme.statuses[:conflict])
+            merge("status" => Grapheme.statuses[:conflict], "parent_ids" => conflict.ids)
         end
       end
     end

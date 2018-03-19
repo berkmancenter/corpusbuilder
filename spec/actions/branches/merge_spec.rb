@@ -173,4 +173,139 @@ describe Branches::Merge do
 
     expect master.reload.working.status == "working"
   end
+
+  it "doesnt result in a merge conflict if changes are made doing multiple merges" do
+    _, gs = line surface, [ "abcd", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ],
+    ]
+
+    ids = gs.map { |wgs| wgs.map(&:id) }
+
+    master = branch_off document, "master", editor, nil, gs
+    topic1 =  branch_off document, "topic1", editor, master
+    topic2 =  branch_off document, "topic2", editor, master
+
+    correct topic1, surface, editor,[ "abce", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic1
+    correct topic1, surface, editor,[ "abce", "ifgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic1
+
+    correct topic2, surface, editor, [ "zbcd", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic2
+    correct topic2, surface, editor, [ "zbcd", "efgh", "ujkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic2
+
+    merge master, topic1, editor
+    merge master, topic2, editor
+
+    expect master.reload.working.status == "working"
+  end
+
+  it "doesnt result in a merge conflict if changes are made doing multiple merges for same graphemes but same values" do
+    _, gs = line surface, [ "abcd", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ],
+    ]
+
+    ids = gs.map { |wgs| wgs.map(&:id) }
+
+    master = branch_off document, "master", editor, nil, gs
+    topic1 =  branch_off document, "topic1", editor, master
+    topic2 =  branch_off document, "topic2", editor, master
+
+    correct topic1, surface, editor,[ "abce", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic1
+    correct topic1, surface, editor,[ "abce", "ifgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic1
+
+    correct topic2, surface, editor,[ "abce", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic2
+    correct topic2, surface, editor,[ "abce", "ifgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic2
+
+    merge master, topic1, editor
+    merge master, topic2, editor
+
+    expect master.reload.working.status == "working"
+  end
+
+  it "results in the text being as corrected" do
+    _, gs = line surface, [ "abcd", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ],
+    ]
+
+    ids = gs.map { |wgs| wgs.map(&:id) }
+
+    master = branch_off document, "master", editor, nil, gs
+    topic1 =  branch_off document, "topic1", editor, master
+    topic2 =  branch_off document, "topic2", editor, master
+
+    correct topic1, surface, editor,[ "abce", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic1
+    correct topic1, surface, editor,[ "abce", "ifgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic1
+
+    correct topic2, surface, editor,[ "abce", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic2
+    correct topic2, surface, editor,[ "abce", "ifgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids
+    commit topic2
+
+    merge master, topic1, editor
+    merge master, topic2, editor
+
+    expect master.reload.revision.graphemes.map(&:value).join == "abcdeifghijkl"
+  end
 end

@@ -100,9 +100,11 @@ module VersionedManagementSpecHelper
   end
 
   def merge(branch1, branch2, editor)
-    Branches::Merge.run! branch: branch1,
+    action = Branches::Merge.run! branch: branch1,
       other_branch: branch2,
       current_editor_id: editor.id
+    branch1.reload
+    action
   end
 end
 
