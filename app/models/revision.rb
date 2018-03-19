@@ -45,6 +45,8 @@ class Revision < ApplicationRecord
       end,
       target: self
     )
+    self.graphemes.clear_memoized
+    self.graphemes
   end
 
   def grapheme_ids

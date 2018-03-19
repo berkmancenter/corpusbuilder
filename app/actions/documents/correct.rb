@@ -2,6 +2,10 @@ module Documents
   class Correct < Action::Base
     attr_accessor :document, :graphemes, :branch_name, :editor_id
 
+    validates :branch_name, presence: true
+    validates :document, presence: true
+    validates :editor_id, presence: true
+
     # validate :revision_is_in_working_state
 
     def execute

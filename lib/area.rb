@@ -47,6 +47,21 @@ class Area
     new ulx: ulx, uly: uly, lrx: lrx, lry: lry
   end
 
+  def self.from_raw_box(raw_box)
+    ulx, uly, lrx, lry = raw_box
+
+    new ulx: ulx, uly: uly, lrx: lrx, lry: lry
+  end
+
+  def self.span_raw_boxes(boxes)
+    ulx = boxes.map { |b| b[0] }.min
+    uly = boxes.map { |b| b[1] }.min
+    lrx = boxes.map { |b| b[2] }.max
+    lry = boxes.map { |b| b[3] }.max
+
+    new ulx: ulx, uly: uly, lrx: lrx, lry: lry
+  end
+
   def overlaps?(other)
     return false if other.nil?
 
