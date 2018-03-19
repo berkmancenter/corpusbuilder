@@ -34,6 +34,7 @@ gem 'exception_notification'
 gem 'ruby-progressbar'
 gem 'descriptive_statistics'
 gem 'oily_png'
+gem 'ruby-graphviz'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
