@@ -6,62 +6,48 @@ module Revisions
     validates :revision2, presence: true
 
     def execute
-      if revision1.id != revision2.id
-        Revision.find_by_sql(sql).first
-      else
-        revision1
+      Revision.find(closest_node_id)
+    end
+
+    def closest_node_id
+      memoized do
+        Revision.connection.execute(sql).to_a.first['id']
       end
     end
 
     def sql
       <<-SQL
-        select revisions.*
-        from revisions
-        inner join (
-          select
-            intersecting_id as id,
-            max(rank) max_rank
-          from (
-            select
-              path_intersection[1] as intersecting_id,
-              array_position(path, path_intersection[1]) + array_position(other_tree_path, path_intersection[1]) as rank
-            from (
-              with recursive tree(id, origin_id, parent_id, merged_with_id, merge_stop, path) as (
-                select id,
-                      id as origin_id,
-                    parent_id,
-                    merged_with_id,
-                    false,
-                    array[id] as path
-                from revisions
-                where id in ('#{revision1.id}', '#{revision2.id}')
-                union
-                select revisions.id,
-                       tree.origin_id,
-                       revisions.parent_id,
-                       revisions.merged_with_id,
-                       revisions.merged_with_id is not null,
-                       tree.path || revisions.id
-                from tree
-                inner join revisions
-                        on revisions.id = tree.parent_id
-                        or revisions.id = tree.merged_with_id
-              )
-              select tree.path,
-                    other_tree.id as other_tree_id,
-                    other_tree.path as other_tree_path,
-                    uuid_array_intersect(tree.path, other_tree.path) as path_intersection
-              from tree
-              inner join tree other_tree on tree.origin_id != other_tree.origin_id
-            ) paths
-            where path_intersection is not null
-            group by path, other_tree_path, path_intersection
-          ) intersections
-          group by intersecting_id
-          order by max_rank asc
-          limit 1
-        ) roots
-        on roots.id = revisions.id
+        with recursive ancestors1 as (
+          select revisions.id, revisions.parent_id, revisions.merged_with_id, 1 as rank
+          from revisions
+          where revisions.id = '#{revision1.id}'
+          union
+          select revisions.id, revisions.parent_id, revisions.merged_with_id, ancestors1.rank + 1
+          from revisions
+          inner join ancestors1
+                  on ancestors1.parent_id = revisions.id
+                  or ancestors1.merged_with_id = revisions.id
+        ),
+        ancestors2 as (
+          select revisions.id, revisions.parent_id, revisions.merged_with_id, 1 as rank
+          from revisions
+          where revisions.id = '#{revision2.id}'
+          union
+          select revisions.id, revisions.parent_id, revisions.merged_with_id, ancestors2.rank + 1
+          from revisions
+          inner join ancestors2
+                  on ancestors2.parent_id = revisions.id
+                  or ancestors2.merged_with_id = revisions.id
+        )
+        select ancestors1.id,
+              ancestors1.parent_id,
+              ancestors1.rank as rank1,
+              ancestors2.rank as rank2
+        from ancestors1
+        inner join ancestors2
+                on ancestors2.id = ancestors1.id
+        order by ancestors1.rank * ancestors2.rank asc
+        limit 1
       SQL
     end
   end

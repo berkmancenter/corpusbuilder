@@ -45,7 +45,7 @@ class Revision < ApplicationRecord
       end,
       target: self
     )
-    self.graphemes.clear_memoized
+    self.clear_memoized
     self.graphemes
   end
 
