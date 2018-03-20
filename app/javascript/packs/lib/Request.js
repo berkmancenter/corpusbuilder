@@ -70,9 +70,19 @@ export default class Request {
         });
     }
 
-    static post(url, data) {
+    static post(url, data, before) {
         return new Promise((resolve, reject) => {
-            qwest.post(url, JSON.stringify(data), { dataType: 'json' })
+            let payload = JSON.stringify(data);
+            let options = { dataType: 'json' };
+
+            if(data instanceof Blob) {
+                payload = new FormData();
+                payload.append('file', data);
+
+                options = null;
+            }
+
+            qwest.post(url, payload, options, before)
               .then((response) => {
                   let payload = JSON.parse(response.responseText);
                   if(response.status === 202) {

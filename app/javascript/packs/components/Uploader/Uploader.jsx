@@ -1,18 +1,17 @@
 import React from 'react';
 
-import State from '../../stores/State'
-
 import { observable, computed } from 'mobx';
 import { Provider, observer } from 'mobx-react'
-
 import { PageFlow } from '../PageFlow';
 import { PageFlowItem } from '../PageFlowItem';
 import { Button } from '../Button';
 import { ProgressIndicator } from '../ProgressIndicator';
+
+import State from '../../stores/State'
 import FetchSimilarDocuments from '../../actions/FetchSimilarDocuments';
-
+import UploadDocumentImages from '../../actions/UploadDocumentImages';
+import Dropzone from 'react-dropzone'
 import Request from '../../lib/Request';
-
 import styles from './Uploader.scss';
 
 @observer
@@ -33,6 +32,12 @@ export default class Uploader extends React.Component {
             </div>
         }
     ];
+
+    @observable
+    isUploading = false;
+
+    @observable
+    files = [ ];
 
     @observable
     metadata = null;
@@ -93,6 +98,21 @@ export default class Uploader extends React.Component {
         this.metadata = props.metadata;
     }
 
+    fileSizeLabel(file) {
+        if(file.size >= 10e5) {
+            return `${Math.round(file.size / 10e5)}MB`
+        }
+        else {
+            return `${Math.round(file.size / 10e2)}KB`
+        }
+    }
+
+    fileProgress(file) {
+        if(file.progress !== null) {
+            return `${Math.round(file.progress * 100)}%`;
+        }
+    }
+
     onDocumentPicked(doc) {
         if(doc === this.pickedDocument) {
             this.pickedDocument = null;
@@ -111,7 +131,44 @@ export default class Uploader extends React.Component {
     }
 
     onUploadNewChosen() {
+        if(this.pickedDocument === null) {
+            this.props.onDocumentUnpicked();
+            this.pickedDocument = null;
+        }
+
         this.uploadNewChosen = true;
+    }
+
+    onDrop(accepted, rejected) {
+        for(let file of accepted) {
+            this.files.push(observable({
+                file: file,
+                progress: null,
+                status: 'initial'
+            }));
+        }
+    }
+
+    onBackToSimilarDocuments() {
+        this.uploadNewChosen = false;
+    }
+
+    onFileUnpickClicked(file) {
+        this.files = this.files.filter((f) => {
+            return f.file !== file;
+        });
+    }
+
+    onUploadClicked() {
+        this.isUploading = true;
+
+        UploadDocumentImages.run(
+            this.appState,
+            {
+                select: {},
+                files: this.files
+            }
+        );
     }
 
     renderPreMeta() {
@@ -211,7 +268,55 @@ export default class Uploader extends React.Component {
     }
 
     renderImagesUpload() {
-        return <i>TODO: render the images uploader</i>;
+        let files = <i>No files chosen yet...</i>;
+
+        if(this.files.length > 0) {
+            files = (
+                <div className="corpusbuilder-uploader-images-upload-files">
+                    {
+                        this.files.map((file) => {
+                            return (
+                                <div className="corpusbuilder-uploader-images-upload-files-item">
+                                    <div className="corpusbuilder-uploader-images-upload-files-item-name">
+                                        { file.file.name }
+                                    </div>
+                                    <div className="corpusbuilder-uploader-images-upload-files-item-size">
+                                        { this.fileSizeLabel(file.file) }
+                                    </div>
+                                    <div className="corpusbuilder-uploader-images-upload-files-item-progress">
+                                        { this.fileProgress(file) }
+                                    </div>
+                                    <div className="corpusbuilder-uploader-images-upload-files-item-buttons">
+                                        <Button onClick={ this.onFileUnpickClicked.bind(this, file.file) }
+                                                disabled={ this.isUploading }>
+                                            Unpick
+                                        </Button>
+                                    </div>
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+            );
+        }
+
+        return (
+            <div className="corpusbuilder-uploader-images-upload">
+                <Dropzone onDrop={this.onDrop.bind(this)} disabled={ this.isUploading }>
+                    Drop Files Here
+                </Dropzone>
+                { files }
+                <div className="corpusbuilder-uploader-images-upload-buttons">
+                    <Button onClick={ this.onBackToSimilarDocuments.bind(this) } disabled={ this.isUploading }>
+                        Back
+                    </Button>
+                    <Button onClick={ this.onUploadClicked.bind(this) }
+                            disabled={ this.files.length === 0 || this.isUploading }>
+                        Upload!
+                    </Button>
+                </div>
+            </div>
+        );
     }
 
     renderImagesReady() {

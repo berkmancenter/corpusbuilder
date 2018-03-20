@@ -57,10 +57,10 @@ export default class Action {
         });
     }
 
-    post(url, params) {
+    post(url, params, before) {
         this.state.broadcastEvent(this.selector, null, 'start');
 
-        return Request.post(url, params)
+        return Request.post(url, params, null, before)
             .then((data, response) => {
                 this.state.broadcastEvent(this.selector, data);
             })
