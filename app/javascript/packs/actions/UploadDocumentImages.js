@@ -4,32 +4,54 @@ import Action from '../lib/Action';
 import Selector from '../lib/Selector';
 
 export default class UploadDocumentImages extends Action {
-    async execute(state, selector, params) {
-        let result = [ ];
+    execute(state, selector, params) {
+        return new Promise((resolve, reject) => {
+            let result = [ ];
+            let caughtError = null;
 
-        for(let file of params.files) {
-           let payload = {
-               file: file.file,
-               name: file.file.name
-           };
+            let uploads = params.files.map((file) => {
+                let payload = {
+                    file: file.file,
+                    name: file.file.name
+                };
 
-            let images = await this.post(`${state.baseUrl}/api/images`, file.file, null, (xhr) => {
-                xhr.upload.onprogress = action((e) => {
-                    file.progress = e.loaded / e.total;
-                });
-            });//}).then((images) => {
-            //    file.progress = 1;
+                return (() => {
+                    this.post(`${state.baseUrl}/api/images`, file.file, null, (xhr) => {
+                        xhr.upload.onprogress = action((e) => {
+                            file.progress = e.loaded / e.total;
+                        });
+                    });
+                }).bind(this);
+            });
 
+            uploads.reduce((state, upload) => {
+                if(state !== 0) {
+                    if(state === null) {
+                        return upload();
+                    }
+                    else {
+                        return state.then((images) => {
+                            result.push(images);
 
-            //    return images;
-            //});
-            for(let image of images) {
-                result.push(image);
-            }
+                            return upload();
+                        })
+                        .catch((err) => {
+                            caughtError = err;
 
-        }
-
-        return result;
+                            return 0;
+                        });
+                    }
+                }
+            }, null)
+            .finally(() => {
+                if(caughtError !== null) {
+                    reject(caughtError);
+                }
+                else {
+                    resolve(result);
+                }
+            });
+        });
     }
 }
 
