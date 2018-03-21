@@ -49,7 +49,7 @@ export default class ProgressIndicator extends React.Component {
             <div className="corpusbuilder-progress-indicator">
                 <div className="corpusbuilder-progress-indicator-items">
                     <div className="corpusbuilder-progress-indicator-spinner">
-                      <Spinner name="cube-grid" color="white" />
+                      <Spinner name="ball-grid-pulse" color="#777" fadeIn="0" />
                     </div>
                     { this.processes.map((e) => { return this.renderProcess(e) }) }
                 </div>
