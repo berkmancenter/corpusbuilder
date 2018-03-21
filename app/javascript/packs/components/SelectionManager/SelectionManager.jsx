@@ -16,8 +16,8 @@ export default class SelectionManager extends React.Component {
 
         if(selection.type === "Range") {
             let selectedText = selection.toString();
-            let startLineIx = parseInt(selection.anchorNode.parentElement.id.match(/\d+/)[0]);
-            let endLineIx = parseInt(selection.focusNode.parentElement.id.match(/\d+/)[0]);
+            let startLineIx = parseInt(selection.anchorNode.parentElement.parentElement.id.match(/\d+/)[0]);
+            let endLineIx = parseInt(selection.focusNode.parentElement.parentElement.id.match(/\d+/)[0]);
             let allLines = GraphemesUtils.lines(this.props.graphemes);
             let selectionLines = allLines.slice(startLineIx - 1, endLineIx);
             let selectionGraphemes = selectionLines.reduce((ret, line) => {

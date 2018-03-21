@@ -3,6 +3,7 @@ import { observable, computed } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import PagePositioningHelper from '../../lib/PagePositioningHelper';
 import MathUtils from '../../lib/MathUtils';
+import GraphemesUtils from '../../lib/GraphemesUtils';
 import s from './Highlight.scss'
 
 @observer
@@ -19,26 +20,7 @@ export default class Highlight extends React.Component {
 
     @computed
     get lines() {
-        if(this.props.graphemes === undefined || this.props.graphemes === null ||
-           this.props.graphemes.length === 0)
-        {
-            return [ ];
-        }
-
-        let initialState = {
-            result: [ [] ],
-        };
-
-        let lines = this.props.graphemes.reduce((state, grapheme) => {
-            state.result[ state.result.length - 1 ].push( grapheme );
-
-            if(grapheme.value.charCodeAt(0) === 0x202c) {
-                state.result.push( [ ] );
-            }
-
-            return state;
-        }, initialState).result;
-       return lines;
+        return GraphemesUtils.lines(this.props.graphemes);
     }
 
     @computed

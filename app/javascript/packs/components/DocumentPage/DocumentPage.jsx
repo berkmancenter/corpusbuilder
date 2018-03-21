@@ -18,6 +18,9 @@ export default class DocumentPage extends React.Component {
     @observable
     visualSelection = null;
 
+    @observable
+    cursor = 'auto';
+
     @computed
     get document() {
         return this.props.document;
@@ -165,10 +168,10 @@ export default class DocumentPage extends React.Component {
         }
 
         if(event.ctrlKey || event.metaKey) {
-            event.target.style.cursor = 'crosshair';
+            this.cursor = 'crosshair';
         }
         else {
-            event.target.style.cursor = 'auto';
+            this.cursor = 'auto';
         }
 
         if(event.buttons === 1 && (event.ctrlKey || event.metaKey)) {
@@ -223,6 +226,7 @@ export default class DocumentPage extends React.Component {
         let pageStyle = {
             width: this.width,
             top: this.props.mainPageTop,
+            cursor: this.cursor,
             height: Math.floor(this.surfaceHeight * this.ratio)
         };
 

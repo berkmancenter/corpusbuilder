@@ -3,15 +3,25 @@
     position: absolute;
     white-space: pre;
     unicode-bidi: normal;
+    left: 0px;
+    right: 0px;
+
+    &-word {
+      position: absolute;
+      transform-origin: top left;
+    }
   }
 
   &-document-line-editing {
     cursor: pointer;
+
+    span {
+      cursor: pointer;
+    }
   }
 
-  &-document-line-editing:hover {
+  &-document-line-editing-hover {
     background-image: none !important;
     background-color: rgba(167, 196, 229, 1.00);
-    height: auto !important;
   }
 }

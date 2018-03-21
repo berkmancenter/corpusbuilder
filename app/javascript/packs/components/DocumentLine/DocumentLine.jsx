@@ -22,6 +22,9 @@ export default class DocumentLine extends React.Component {
         this._mounted = false;
     }
 
+    @observable
+    hovered = false;
+
     get text() {
         let state = {
             result: "",
@@ -29,48 +32,13 @@ export default class DocumentLine extends React.Component {
         };
 
         return this.props.line.reduce((state, g, index) => {
-            let spaces = this.spacesBetween(state.lastGrapheme, g, index);
+            let spaces = ' ';
 
             state.result = `${state.result}${spaces}${g.value}`;
             state.lastGrapheme = g;
 
             return state;
         }, state).result;
-    }
-
-    @memoized
-    spacesBetween(previous, current, index) {
-        if(previous === null || current === null) {
-            return '';
-        }
-
-        let previousWord = this.wordIndex.get(previous);
-        let currentWord  = this.wordIndex.get(current);
-
-        if(previousWord === currentWord) {
-            return '';
-        }
-        else {
-            return ''.padStart(this.spacesNumBetween(previousWord, currentWord));
-        }
-    }
-
-    @memoized
-    spacesNumBetween(word1, word2) {
-        if(this.spaceWidth === null || word1 === undefined || word2 === undefined) {
-            return 1;
-        }
-
-        let box1 = GraphemesUtils.wordToBox(word1);
-        let box2 = GraphemesUtils.wordToBox(word2);
-
-        let absolutePixelDiff = box1.ulx < box2.ulx ? (box2.ulx - box1.lrx) : (box1.ulx - box2.lrx);
-        let gap = absolutePixelDiff * this.props.ratio;
-
-        return Math.max(
-            Math.ceil(( gap + this.letterSpacingByWord ) / ( this.spaceWidth + this.letterSpacingByWord )),
-            1
-        );
     }
 
     @computed
@@ -100,41 +68,9 @@ export default class DocumentLine extends React.Component {
     }
 
     @computed
-    get left() {
-        return this.concreteGraphemes
-            .reduce((min, g) => { return Math.min(min, g.area.ulx) }, 1e+22) * this.props.ratio;
-    }
-
-    @computed
     get top() {
         return this.concreteGraphemes
             .reduce((min, g) => { return Math.min(min, g.area.uly) }, 1e+22) * this.props.ratio;
-    }
-
-    @computed
-    get leftmostGrapheme() {
-        let result = null;
-
-        for(let element of this.props.line) {
-            if(result === null || element.area.ulx < result.area.ulx) {
-                result = element;
-            }
-        }
-
-        return result;
-    }
-
-    @computed
-    get rightmostGrapheme() {
-        let result = null;
-
-        for(let element of this.props.line) {
-            if(result === null || element.area.lrx > result.area.lrx) {
-                result = element;
-            }
-        }
-
-        return result;
     }
 
     @computed
@@ -143,42 +79,14 @@ export default class DocumentLine extends React.Component {
     }
 
     @computed
-    get visualLine() {
-       return GraphemesUtils.asReadingOrder(this.props.line);
-    }
-
-    @computed
     get words() {
-        return GraphemesUtils.lineWords(this.props.line);
-    }
+        return GraphemesUtils.lineWords(this.props.line)
+            .sort((word1, word2) => {
+                let maxPos1 = Math.max(...word1.map((g) => { return parseFloat(g.position_weight) } ));
+                let maxPos2 = Math.max(...word2.map((g) => { return parseFloat(g.position_weight) } ));
 
-    @computed
-    get wordIndex() {
-        return this.words.reduce((index, word) => {
-            for(let grapheme of word) {
-                index.set(grapheme, word);
-            }
-
-            return index;
-        }, new Map());
-    }
-
-    @computed
-    get firstWord() {
-        if(!this.hasWords) {
-            return null;
-        }
-
-        let index = 0;
-        let word = undefined;
-        let graphemes = this.props.line;
-
-        while(index < graphemes.length && word === undefined) {
-            word = this.wordIndex.get(graphemes[index]);
-            index++;
-        }
-
-        return word;
+                return maxPos1 - maxPos2;
+            });
     }
 
     @computed
@@ -210,77 +118,12 @@ export default class DocumentLine extends React.Component {
         return this.boundsFor(this.concreteGraphemes);
     }
 
-    @computed
-    get certaintiesMapDataURL() {
-        let canvas = document.createElement('canvas');
-        let context = canvas.getContext('2d');
-        let box = GraphemesUtils.lineToBox(this.props.line);
-
-        context.canvas.width = (box.lrx - box.ulx) * this.props.ratio;
-        context.canvas.height = (box.lry - box.uly) * this.props.ratio;
-
-        for(let word of this.words) {
-            let certainty = parseFloat(word[0].certainty);
-            let color = this.percentageToHsl(certainty);
-            let bounds = this.boundsFor(word);
-
-            context.fillStyle = color;
-            context.fillRect(
-                bounds.left - this.lineBounds.left,
-                0,
-                bounds.right - bounds.left,
-                this.lineBounds.bottom - this.lineBounds.top
-            );
-        }
-
-        return canvas.toDataURL();
-    }
-
-    @computed
-    get firstWordText() {
-        if(!this.hasWords) {
-            return null;
-        }
-        else {
-            return GraphemesUtils.wordText(this.firstWord);
-        }
-    }
-
-    get letterSpacingByWord() {
-        if(this.hasWords) {
-            let measuredWidth = this.measureText(this.firstWordText);
-            let box = GraphemesUtils.wordToBox(this.firstWord);
-            let countChars = this.firstWord.length;
-            let unscaledWidth = box.lrx - box.ulx;
-            let scaledWidth = unscaledWidth * this.props.ratio;
-
-            return ( scaledWidth - measuredWidth ) / ( countChars - ( this.firstWord.length > 1 ? 1 : 0) );
-        }
-        return null;
-    }
-
     get spaceWidth() {
         if(this._spaceWidth === null) {
             this._spaceWidth = this.measureText(' ');
         }
 
         return this._spaceWidth;
-    }
-
-    get letterSpacing() {
-       if(this.hasWords) {
-           let measuredWidth = this.measureText(this.text);
-           let countChars = this.text.length;
-           let box = GraphemesUtils.lineToBox(this.props.line);
-           let unscaledWidth = box.lrx - box.ulx;
-           let scaledWidth = unscaledWidth * this.props.ratio;
-
-           let result = ( scaledWidth - measuredWidth ) / ( countChars - 1 );
-
-           return isNaN(result) ? null : result;
-       }
-
-       return null;
     }
 
     measureText(text) {
@@ -303,6 +146,14 @@ export default class DocumentLine extends React.Component {
         }
     }
 
+    onWordMouseEnter() {
+        this.hovered = true;
+    }
+
+    onWordMouseLeave() {
+        this.hovered = false;
+    }
+
     @computed
     get elementId() {
         return `corpusbuilder-document-line-${this.props.number}`;
@@ -310,7 +161,17 @@ export default class DocumentLine extends React.Component {
 
     @computed
     get className() {
-        return `corpusbuilder-document-line ${ this.props.editing ? 'corpusbuilder-document-line-editing' : '' }`;
+        let classes = [ 'corpusbuilder-document-line' ];
+
+        if(this.props.editing) {
+            classes.push('corpusbuilder-document-line-editing');
+        }
+
+        if(this.hovered && this.props.editing) {
+            classes.push('corpusbuilder-document-line-editing-hover');
+        }
+
+        return classes.join(' ');
     }
 
     @computed
@@ -322,20 +183,45 @@ export default class DocumentLine extends React.Component {
         return this.props.line[0].zone_direction === 1 ? "rtl" : "ltr";
     }
 
+    renderWord(word, ix) {
+        let text = GraphemesUtils.wordText(word);
+        let box = GraphemesUtils.wordToBox(word);
+        let boxWidth = (box.lrx - box.ulx) * this.ratio;
+        let textWidth = this.measureText(text, this.fontSize);
+        let scale = textWidth > 0 ? boxWidth / textWidth : 1;
+
+        scale = scale > 2 ? 1 : scale;
+
+        let styles = {
+            fontSize: this.fontSize,
+            width: textWidth,
+            transform: `scaleX(${ scale })`,
+            left: box.ulx * this.ratio
+        };
+
+        if(this.showCertainties) {
+            styles.backgroundColor = this.percentageToHsl(word[0].certainty);
+        }
+
+        let result = [
+            <span style={ styles }
+                  className="corpusbuilder-document-line-word"
+                  key={ ix }
+                  >
+                { text }
+            </span>
+        ];
+
+        return result;
+    }
+
     render() {
         this._spaceWidth = null;
 
         let dynamicStyles = {
-            fontSize: this.fontSize,
             height: this.fontSize,
-            top: this.top,
-            left: this.left,
-            letterSpacing: this.letterSpacing
+            top: this.top
         };
-
-        if(this.showCertainties) {
-            dynamicStyles.backgroundImage = `url(${ this.certaintiesMapDataURL })`;
-        }
 
         return (
             <div className={ this.className }
@@ -344,8 +230,14 @@ export default class DocumentLine extends React.Component {
                  style={ dynamicStyles }
                  id={ this.elementId }
                  onClick={ this.onClick.bind(this) }
+                 onMouseEnter={ this.onWordMouseEnter.bind(this) }
+                 onMouseLeave={ this.onWordMouseLeave.bind(this) }
                  >
-               { this.text }
+               {
+                   this.words.map((word, ix) => {
+                       return this.renderWord(word, ix)
+                   })
+               }
             </div>
         );
     }

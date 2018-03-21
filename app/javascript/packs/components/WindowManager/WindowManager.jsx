@@ -252,16 +252,18 @@ export default class WindowManager extends React.Component {
     }
 
     measureText(text, fontSize) {
-        if(text === " ") {
-            if(this.rulerCache.has(Math.round(fontSize))) {
-                return this.rulerCache.get(Math.round(fontSize));
-            }
+        let key = `${text}-${Math.round(fontSize)}`;
+
+        if(this.rulerCache.has(key)) {
+            return this.rulerCache.get(key);
         }
 
         this.ruler.textContent = text;
         this.ruler.style.fontSize = fontSize + "px";
 
         let result = this.ruler.offsetWidth;
+
+        this.rulerCache.set(key, result);
 
         return result;
     }
