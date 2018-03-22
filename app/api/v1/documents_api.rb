@@ -10,7 +10,7 @@ class V1::DocumentsAPI < Grape::API
       requires :images, type: Array do
         requires :id, type: String
       end
-      requires :metadata, type: JSON do
+      requires :metadata, type: Hash do
         requires :title, type: String
         optional :authority, type: String
         optional :date, type: String
