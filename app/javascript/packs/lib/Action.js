@@ -60,9 +60,10 @@ export default class Action {
     post(url, params, before) {
         this.state.broadcastEvent(this.selector, null, 'start');
 
-        return Request.post(url, params, null, before)
+        return Request.post(url, params, before)
             .then((data, response) => {
                 this.state.broadcastEvent(this.selector, data);
+                return data;
             })
             .finally(() => {
                 this.state.broadcastEvent(this.selector, null, 'end');
@@ -75,6 +76,7 @@ export default class Action {
         return Request.put(url, params)
             .then((data, response) => {
                 this.state.broadcastEvent(this.selector, data);
+                return data;
             })
             .finally(() => {
                 this.state.broadcastEvent(this.selector, null, 'end');
@@ -85,6 +87,7 @@ export default class Action {
         return Request['delete'](url, params)
             .then((data) => {
                 this.state.broadcastEvent(this.selector, data);
+                return data;
             });
     }
 }

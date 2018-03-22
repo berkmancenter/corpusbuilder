@@ -40,6 +40,9 @@ export default class Uploader extends React.Component {
     files = [ ];
 
     @observable
+    uploadedImages = [ ];
+
+    @observable
     metadata = null;
 
     @observable
@@ -55,6 +58,7 @@ export default class Uploader extends React.Component {
                 this.appState,
                 {
                   select: {
+                    metadata: this.metadata
                   },
                   metadata: this.metadata
                 }
@@ -81,6 +85,10 @@ export default class Uploader extends React.Component {
         else if(!this.uploadNewChosen) {
             return 'similar-documents';
         }
+        else if(this.uploadedImages.length > 0 &&
+                this.uploadedImages.length === this.files.length) {
+            return 'images-ready';
+        }
         else {
             return 'images-upload';
         }
@@ -95,7 +103,16 @@ export default class Uploader extends React.Component {
     }
 
     componentWillUpdate(props) {
-        this.metadata = props.metadata;
+        if(props.metadata === null || props.metadata === undefined) {
+            return;
+        }
+
+        for(let key of Object.keys(props.metadata)) {
+            if(this.metadata === null || this.metadata[ key ] != props.metadata[ key ]) {
+                this.metadata = props.metadata;
+                return;
+            }
+        }
     }
 
     fileSizeLabel(file) {
@@ -168,7 +185,13 @@ export default class Uploader extends React.Component {
                 select: {},
                 files: this.files
             }
-        );
+        ).then((images) => {
+            this.uploadedImages = images;
+
+            if(typeof this.props.onImagesUploaded === 'function') {
+                this.props.onImagesUploaded(images);
+            }
+        });
     }
 
     renderPreMeta() {
@@ -320,12 +343,31 @@ export default class Uploader extends React.Component {
     }
 
     renderImagesReady() {
-        return <i>TODO: show the info that the images are ready</i>;
+        return (
+            <div className="corpusbuilder-uploader-images-ready">
+                Your uploads are ready.
+
+                <div className="corpusbuilder-uploader-images-upload-files">
+                    {
+                        this.files.map((file) => {
+                            return (
+                                <div className="corpusbuilder-uploader-images-upload-files-item">
+                                    <div className="corpusbuilder-uploader-images-upload-files-item-name">
+                                        { file.file.name }
+                                    </div>
+                                    <div className="corpusbuilder-uploader-images-upload-files-item-size">
+                                        { this.fileSizeLabel(file.file) }
+                                    </div>
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+            </div>
+        );
     }
 
     render() {
-        console.log("Uploader render with metadata:", this.props.metadata);
-
         return (
             <Provider {...this.sharedContext}>
                 <div className="corpusbuilder-uploader">

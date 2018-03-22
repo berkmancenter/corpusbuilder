@@ -102,16 +102,17 @@ export default class Selector {
             }
             else {
                 if(item === null) {
-                    throw "Found null in selector!";
-                }
-
-                let id = item.identifier || item.id;
-
-                if(id !== undefined && id !== null) {
-                    state[key] = { id: id };
+                    state[ key ] = null;
                 }
                 else {
-                    state[key] = this.simplifiedObject(item);
+                    let id = item.identifier || item.id;
+
+                    if(id !== undefined && id !== null) {
+                        state[key] = { id: id };
+                    }
+                    else {
+                        state[key] = this.toSimple(item);
+                    }
                 }
             }
 

@@ -52,6 +52,12 @@ class CorpusBuilderUploader {
         }
     }
 
+    onImagesUploaded(images) {
+        if(typeof this.options.onImagesUploaded === 'function') {
+            this.options.onImagesUploaded(images);
+        }
+    }
+
     render() {
         ReactDOM.render(
             <Uploader baseUrl={ this.options.baseUrl }
@@ -60,6 +66,7 @@ class CorpusBuilderUploader {
                       metadata={ this.metadata }
                       onDocumentPicked={ this.onDocumentPicked.bind(this) }
                       onDocumentUnpicked={ this.onDocumentUnpicked.bind(this) }
+                      onImagesUploaded={ this.onImagesUploaded.bind(this) }
                       />,
             this.element
         );

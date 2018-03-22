@@ -16,7 +16,7 @@ export default class UploadDocumentImages extends Action {
                 };
 
                 return (() => {
-                    this.post(`${state.baseUrl}/api/images`, file.file, null, (xhr) => {
+                    return this.post(`${state.baseUrl}/api/images`, file.file, (xhr) => {
                         xhr.upload.onprogress = action((e) => {
                             file.progress = e.loaded / e.total;
                         });
@@ -31,7 +31,9 @@ export default class UploadDocumentImages extends Action {
                     }
                     else {
                         return state.then((images) => {
-                            result.push(images);
+                            for(let image of images) {
+                                result.push(image);
+                            }
 
                             return upload();
                         })
@@ -43,6 +45,12 @@ export default class UploadDocumentImages extends Action {
                     }
                 }
             }, null)
+            .then((images) => {
+                for(let image of images) {
+                    result.push(image);
+                }
+                return images;
+            })
             .finally(() => {
                 if(caughtError !== null) {
                     reject(caughtError);
