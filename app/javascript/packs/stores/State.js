@@ -41,8 +41,42 @@ export default class State {
         }
     }
 
+    promise(selector, callback) {
+        return new Promise((resolve, reject) => {
+            let resource = selector.id !== null && selector.id !== undefined ? this.cache.get(selector.id) : undefined;
+
+            if(resource === undefined && callback !== undefined) {
+                let value = callback();
+
+                if(typeof value.then === 'function') {
+                    value.then(
+                        action(
+                            (data) => {
+                                if(selector.id !== undefined && selector.id !== null) {
+                                    this.cache.set(selector.id, data);
+                                }
+                                resolve(data)
+                            }
+                        )
+                    )
+                    .catch((err) => {
+                        reject(err);
+                    });
+                }
+                else {
+                    action(() => {
+                        if(selector.id !== undefined && selector.id !== null) {
+                            this.cache.set(selector.id, value);
+                        }
+                        resolve(value);
+                    })();
+                }
+            }
+        });
+    };
+
     resolve(selector, callback) {
-        let resource = this.cache.get(selector.id);
+        let resource = selector.id !== null && selector.id !== undefined ? this.cache.get(selector.id) : undefined;
 
         if(resource === undefined && callback !== undefined) {
             let value = callback();
@@ -51,7 +85,9 @@ export default class State {
                 value.then(
                     action(
                         (data) => {
-                            this.cache.set(selector.id, data);
+                            if(selector.id !== undefined && selector.id !== null) {
+                                this.cache.set(selector.id, data);
+                            }
                         }
                     )
                 );
@@ -59,7 +95,9 @@ export default class State {
             else {
                 action(() => {
                     resource = value;
-                    this.cache.set(selector.id, value);
+                    if(selector.id !== undefined && selector.id !== null) {
+                        this.cache.set(selector.id, value);
+                    }
                 })();
             }
         }

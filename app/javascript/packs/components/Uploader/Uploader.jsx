@@ -6,6 +6,7 @@ import { PageFlow } from '../PageFlow';
 import { PageFlowItem } from '../PageFlowItem';
 import { Button } from '../Button';
 import { ProgressIndicator } from '../ProgressIndicator';
+import { Circle } from 'rc-progress';
 
 import State from '../../stores/State'
 import FetchSimilarDocuments from '../../actions/FetchSimilarDocuments';
@@ -126,7 +127,7 @@ export default class Uploader extends React.Component {
 
     fileProgress(file) {
         if(file.progress !== null) {
-            return `${Math.round(file.progress * 100)}%`;
+            return <Circle percent={ Math.round(file.progress * 100) } strokeWidth="16" />;
         }
     }
 
@@ -195,176 +196,184 @@ export default class Uploader extends React.Component {
     }
 
     renderPreMeta() {
-        return (
-            <div className="corpusbuilder-uploader-explain">
-                You must provide document metadata first. At least the document
-                title is required to send the scans to be OCR'ed.
-            </div>
-        );
+        if(this.currentLevel === 'pre-metadata') {
+            return (
+                <div className="corpusbuilder-uploader-explain">
+                    You must provide document metadata first. At least the document
+                    title is required to send the scans to be OCR'ed.
+                </div>
+            );
+        }
     }
 
     renderSimilarDocuments() {
-        let items = null;
-        if(this.similarDocuments === undefined || this.similarDocuments === null) {
-            items = <i>Fetching similar documents, please wait...</i>;
-        }
-        else if(this.similarDocuments.length > 0) {
-            let docItems =
-                this.similarDocuments.map((doc) => {
-                    let classes = [ "corpusbuilder-uploader-similar-documents-item" ];
+        if(this.currentLevel === 'similar-documents') {
+            let items = null;
+            if(this.similarDocuments === undefined || this.similarDocuments === null) {
+                items = <i>Fetching similar documents, please wait...</i>;
+            }
+            else if(this.similarDocuments.length > 0) {
+                let docItems =
+                    this.similarDocuments.map((doc) => {
+                        let classes = [ "corpusbuilder-uploader-similar-documents-item" ];
 
-                    if(doc == this.pickedDocument) {
-                        classes.push('picked');
-                    }
+                        if(doc == this.pickedDocument) {
+                            classes.push('picked');
+                        }
 
-                    return [
-                        <div key="list" className={ classes.join(' ') }>
-                            <div className="corpusbuilder-uploader-similar-documents-item-top-label">
-                                Existing document:
-                            </div>
-                            <div className="corpusbuilder-uploader-similar-documents-item-body">
-                                <div className="corpusbuilder-uploader-similar-documents-item-row">
-                                    <div className="corpusbuilder-uploader-similar-documents-item-label">
-                                        Title:
+                        return [
+                            <div key="list" className={ classes.join(' ') }>
+                                <div className="corpusbuilder-uploader-similar-documents-item-top-label">
+                                    Existing document:
+                                </div>
+                                <div className="corpusbuilder-uploader-similar-documents-item-body">
+                                    <div className="corpusbuilder-uploader-similar-documents-item-row">
+                                        <div className="corpusbuilder-uploader-similar-documents-item-label">
+                                            Title:
+                                        </div>
+                                        <div className="corpusbuilder-uploader-similar-documents-item-value">
+                                            { doc.title }
+                                        </div>
                                     </div>
-                                    <div className="corpusbuilder-uploader-similar-documents-item-value">
-                                        { doc.title }
+                                    <div className="corpusbuilder-uploader-similar-documents-item-row">
+                                        <div className="corpusbuilder-uploader-similar-documents-item-label">
+                                            Date:
+                                        </div>
+                                        <div className="corpusbuilder-uploader-similar-documents-item-value">
+                                            { doc.date }
+                                        </div>
+                                    </div>
+                                    <div className="corpusbuilder-uploader-similar-documents-item-row">
+                                        <div className="corpusbuilder-uploader-similar-documents-item-label">
+                                            Author:
+                                        </div>
+                                        <div className="corpusbuilder-uploader-similar-documents-item-value">
+                                            { doc.author }
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="corpusbuilder-uploader-similar-documents-item-row">
-                                    <div className="corpusbuilder-uploader-similar-documents-item-label">
-                                        Date:
-                                    </div>
-                                    <div className="corpusbuilder-uploader-similar-documents-item-value">
-                                        { doc.date }
-                                    </div>
+                                <div className="corpusbuilder-uploader-similar-documents-item-preview">
+                                  <img src={ doc.images_sample[0].url } />
                                 </div>
-                                <div className="corpusbuilder-uploader-similar-documents-item-row">
-                                    <div className="corpusbuilder-uploader-similar-documents-item-label">
-                                        Author:
-                                    </div>
-                                    <div className="corpusbuilder-uploader-similar-documents-item-value">
-                                        { doc.author }
-                                    </div>
-                                </div>
+                                <Button onClick={ this.onDocumentPicked.bind(this, doc) }>
+                                    { doc === this.pickedDocument ? 'Unpick' : 'Pick' }
+                                </Button>
                             </div>
-                            <div className="corpusbuilder-uploader-similar-documents-item-preview">
-                              <img src={ doc.images_sample[0].url } />
-                            </div>
-                            <Button onClick={ this.onDocumentPicked.bind(this, doc) }>
-                                { doc === this.pickedDocument ? 'Unpick' : 'Pick' }
-                            </Button>
+                        ];
+                    });
+                docItems.push(
+                    <div key="new-one" className="corpusbuilder-uploader-similar-documents-item clickable"
+                        onClick={ this.onUploadNewChosen.bind(this) }>
+                        <div className="corpusbuilder-uploader-similar-documents-item-top-label-big">
+                            +
                         </div>
-                    ];
-                });
-            docItems.push(
-                <div key="new-one" className="corpusbuilder-uploader-similar-documents-item clickable"
-                     onClick={ this.onUploadNewChosen.bind(this) }>
-                    <div className="corpusbuilder-uploader-similar-documents-item-top-label-big">
-                        +
+                        <div className="corpusbuilder-uploader-similar-documents-item-top-label">
+                            Add New
+                        </div>
                     </div>
-                    <div className="corpusbuilder-uploader-similar-documents-item-top-label">
-                        Add New
+                );
+                items = [
+                    <div key="explain" className="corpusbuilder-uploader-explain">
+                        If any of the following documents represent the one described
+                        in the metadata: please click on the "Pick" button.
+                        Otherwise, please click on next to continue.
+                    </div>,
+                    <div className="corpusbuilder-uploader-similar-documents-list">
+                        { docItems }
                     </div>
+                ];
+            }
+            else {
+                items = <i>No similar document has been found for given metadata. Please click next to continue</i>;
+            }
+
+            return (
+                <div className="corpusbuilder-uploader-similar-documents">
+                    { items }
                 </div>
             );
-            items = [
-                <div key="explain" className="corpusbuilder-uploader-explain">
-                    If any of the following documents represent the one described
-                    in the metadata: please click on the "Pick" button.
-                    Otherwise, please click on next to continue.
-                </div>,
-                <div className="corpusbuilder-uploader-similar-documents-list">
-                    { docItems }
-                </div>
-            ];
         }
-        else {
-            items = <i>No similar document has been found for given metadata. Please click next to continue</i>;
-        }
-
-        return (
-            <div className="corpusbuilder-uploader-similar-documents">
-                { items }
-            </div>
-        );
     }
 
     renderImagesUpload() {
-        let files = <i>No files chosen yet...</i>;
+        if(this.currentLevel === 'images-upload') {
+            let files = <i>No files chosen yet...</i>;
 
-        if(this.files.length > 0) {
-            files = (
-                <div className="corpusbuilder-uploader-images-upload-files">
-                    {
-                        this.files.map((file) => {
-                            return (
-                                <div className="corpusbuilder-uploader-images-upload-files-item">
-                                    <div className="corpusbuilder-uploader-images-upload-files-item-name">
-                                        { file.file.name }
+            if(this.files.length > 0) {
+                files = (
+                    <div className="corpusbuilder-uploader-images-upload-files">
+                        {
+                            this.files.map((file) => {
+                                return (
+                                    <div className="corpusbuilder-uploader-images-upload-files-item">
+                                        <div className="corpusbuilder-uploader-images-upload-files-item-name">
+                                            { file.file.name }
+                                        </div>
+                                        <div className="corpusbuilder-uploader-images-upload-files-item-size">
+                                            { this.fileSizeLabel(file.file) }
+                                        </div>
+                                        <div className="corpusbuilder-uploader-images-upload-files-item-progress">
+                                            { this.fileProgress(file) }
+                                        </div>
+                                        <div className="corpusbuilder-uploader-images-upload-files-item-buttons">
+                                            <Button onClick={ this.onFileUnpickClicked.bind(this, file.file) }
+                                                    disabled={ this.isUploading }>
+                                                Unpick
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className="corpusbuilder-uploader-images-upload-files-item-size">
-                                        { this.fileSizeLabel(file.file) }
-                                    </div>
-                                    <div className="corpusbuilder-uploader-images-upload-files-item-progress">
-                                        { this.fileProgress(file) }
-                                    </div>
-                                    <div className="corpusbuilder-uploader-images-upload-files-item-buttons">
-                                        <Button onClick={ this.onFileUnpickClicked.bind(this, file.file) }
-                                                disabled={ this.isUploading }>
-                                            Unpick
-                                        </Button>
-                                    </div>
-                                </div>
-                            )
-                        })
-                    }
+                                )
+                            })
+                        }
+                    </div>
+                );
+            }
+
+            return (
+                <div className="corpusbuilder-uploader-images-upload">
+                    <Dropzone onDrop={this.onDrop.bind(this)} disabled={ this.isUploading }>
+                        Drop Files Here
+                    </Dropzone>
+                    { files }
+                    <div className="corpusbuilder-uploader-images-upload-buttons">
+                        <Button onClick={ this.onBackToSimilarDocuments.bind(this) } disabled={ this.isUploading }>
+                            Back
+                        </Button>
+                        <Button onClick={ this.onUploadClicked.bind(this) }
+                                disabled={ this.files.length === 0 || this.isUploading }>
+                            Upload!
+                        </Button>
+                    </div>
                 </div>
             );
         }
-
-        return (
-            <div className="corpusbuilder-uploader-images-upload">
-                <Dropzone onDrop={this.onDrop.bind(this)} disabled={ this.isUploading }>
-                    Drop Files Here
-                </Dropzone>
-                { files }
-                <div className="corpusbuilder-uploader-images-upload-buttons">
-                    <Button onClick={ this.onBackToSimilarDocuments.bind(this) } disabled={ this.isUploading }>
-                        Back
-                    </Button>
-                    <Button onClick={ this.onUploadClicked.bind(this) }
-                            disabled={ this.files.length === 0 || this.isUploading }>
-                        Upload!
-                    </Button>
-                </div>
-            </div>
-        );
     }
 
     renderImagesReady() {
-        return (
-            <div className="corpusbuilder-uploader-images-ready">
-                Your uploads are ready.
+        if(this.currentLevel === 'images-ready') {
+            return (
+                <div className="corpusbuilder-uploader-images-ready">
+                    Your uploads are ready.
 
-                <div className="corpusbuilder-uploader-images-upload-files">
-                    {
-                        this.files.map((file) => {
-                            return (
-                                <div className="corpusbuilder-uploader-images-upload-files-item">
-                                    <div className="corpusbuilder-uploader-images-upload-files-item-name">
-                                        { file.file.name }
+                    <div className="corpusbuilder-uploader-images-upload-files">
+                        {
+                            this.files.map((file) => {
+                                return (
+                                    <div className="corpusbuilder-uploader-images-upload-files-item">
+                                        <div className="corpusbuilder-uploader-images-upload-files-item-name">
+                                            { file.file.name }
+                                        </div>
+                                        <div className="corpusbuilder-uploader-images-upload-files-item-size">
+                                            { this.fileSizeLabel(file.file) }
+                                        </div>
                                     </div>
-                                    <div className="corpusbuilder-uploader-images-upload-files-item-size">
-                                        { this.fileSizeLabel(file.file) }
-                                    </div>
-                                </div>
-                            )
-                        })
-                    }
+                                )
+                            })
+                        }
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
     }
 
     render() {
