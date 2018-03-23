@@ -7,6 +7,7 @@ import { PageFlowItem } from '../PageFlowItem';
 import { Button } from '../Button';
 import { ProgressIndicator } from '../ProgressIndicator';
 import { Circle } from 'rc-progress';
+import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 
 import State from '../../stores/State'
 import FetchSimilarDocuments from '../../actions/FetchSimilarDocuments';
@@ -14,6 +15,56 @@ import UploadDocumentImages from '../../actions/UploadDocumentImages';
 import Dropzone from 'react-dropzone'
 import Request from '../../lib/Request';
 import styles from './Uploader.scss';
+
+const SortableFile = SortableElement((value) => {
+      let file = value.value[0];
+      let parentComponent = value.value[1];
+
+      let fileSizeLabel = (file) => {
+          if(file.size >= 10e5) {
+              return `${Math.round(file.size / 10e5)}MB`
+          }
+          else {
+              return `${Math.round(file.size / 10e2)}KB`
+          }
+      };
+
+      let fileProgress = (file) => {
+          if(file.progress !== null) {
+              return <Circle percent={ Math.round(file.progress * 100) } strokeWidth="16" />;
+          }
+      };
+
+      return (
+          <div className="corpusbuilder-uploader-images-upload-files-item">
+              <div className="corpusbuilder-uploader-images-upload-files-item-name">
+                  { file.file.name }
+              </div>
+              <div className="corpusbuilder-uploader-images-upload-files-item-size">
+                  { fileSizeLabel(file.file) }
+              </div>
+              <div className="corpusbuilder-uploader-images-upload-files-item-progress">
+                  { fileProgress(file) }
+              </div>
+              <div className="corpusbuilder-uploader-images-upload-files-item-buttons">
+                  <Button onClick={ parentComponent.onFileUnpickClicked.bind(parentComponent, file.file) }
+                          disabled={ parentComponent.isUploading }>
+                      Unpick
+                  </Button>
+              </div>
+          </div>
+      );
+});
+
+const SortableFileList = SortableContainer(({items}) => {
+    return (
+        <div className="corpusbuilder-uploader-images-upload-files">
+            {items.map((value, index) => (
+                <SortableFile key={`item-${index}`} index={index} value={value} />
+            ))}
+        </div>
+    );
+});
 
 @observer
 export default class Uploader extends React.Component {
@@ -113,21 +164,6 @@ export default class Uploader extends React.Component {
                 this.metadata = props.metadata;
                 return;
             }
-        }
-    }
-
-    fileSizeLabel(file) {
-        if(file.size >= 10e5) {
-            return `${Math.round(file.size / 10e5)}MB`
-        }
-        else {
-            return `${Math.round(file.size / 10e2)}KB`
-        }
-    }
-
-    fileProgress(file) {
-        if(file.progress !== null) {
-            return <Circle percent={ Math.round(file.progress * 100) } strokeWidth="16" />;
         }
     }
 
@@ -300,33 +336,34 @@ export default class Uploader extends React.Component {
             let files = <i>No files chosen yet...</i>;
 
             if(this.files.length > 0) {
-                files = (
-                    <div className="corpusbuilder-uploader-images-upload-files">
-                        {
-                            this.files.map((file) => {
-                                return (
-                                    <div className="corpusbuilder-uploader-images-upload-files-item">
-                                        <div className="corpusbuilder-uploader-images-upload-files-item-name">
-                                            { file.file.name }
-                                        </div>
-                                        <div className="corpusbuilder-uploader-images-upload-files-item-size">
-                                            { this.fileSizeLabel(file.file) }
-                                        </div>
-                                        <div className="corpusbuilder-uploader-images-upload-files-item-progress">
-                                            { this.fileProgress(file) }
-                                        </div>
-                                        <div className="corpusbuilder-uploader-images-upload-files-item-buttons">
-                                            <Button onClick={ this.onFileUnpickClicked.bind(this, file.file) }
-                                                    disabled={ this.isUploading }>
-                                                Unpick
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )
-                            })
-                        }
-                    </div>
-                );
+                files = <SortableFileList items={ this.files.map(f => [f, this]) } onSortEnd={ this.onSortEnd } />;
+               //files = (
+               //    <div className="corpusbuilder-uploader-images-upload-files">
+               //        {
+               //            this.files.map((file) => {
+               //                return (
+               //                    <div className="corpusbuilder-uploader-images-upload-files-item">
+               //                        <div className="corpusbuilder-uploader-images-upload-files-item-name">
+               //                            { file.file.name }
+               //                        </div>
+               //                        <div className="corpusbuilder-uploader-images-upload-files-item-size">
+               //                            { this.fileSizeLabel(file.file) }
+               //                        </div>
+               //                        <div className="corpusbuilder-uploader-images-upload-files-item-progress">
+               //                            { this.fileProgress(file) }
+               //                        </div>
+               //                        <div className="corpusbuilder-uploader-images-upload-files-item-buttons">
+               //                            <Button onClick={ this.onFileUnpickClicked.bind(this, file.file) }
+               //                                    disabled={ this.isUploading }>
+               //                                Unpick
+               //                            </Button>
+               //                        </div>
+               //                    </div>
+               //                )
+               //            })
+               //        }
+               //    </div>
+               //);
             }
 
             return (
