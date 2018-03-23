@@ -1,4 +1,4 @@
-import { computed } from 'mobx';
+import { memoized } from './Decorators';
 
 export default class Selector {
     select = {};
@@ -7,6 +7,7 @@ export default class Selector {
     constructor(tag, select) {
         this.select = select;
         this.tag = tag;
+        this._id = Math.round(Math.random() * 10e10).toString();
 
         for(let key of Object.keys(select)) {
             if(key !== "id") {
@@ -15,9 +16,17 @@ export default class Selector {
         }
     }
 
-    @computed
+    get cacheable() {
+        return this.id !== this._id;
+    }
+
     get id() {
-        return this.toString();
+        if(Object.keys(this.select).length === 0) {
+            return this._id;
+        }
+        else {
+            return this.toString();
+        }
     }
 
     toString() {

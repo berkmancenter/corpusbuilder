@@ -74,13 +74,21 @@ export default class DocumentStatus extends React.Component {
 
     renderError() {
         return (
-          <span class="corpusbuilder-error">An error occured and the document has not been correctly processed.</span>
+          <div>
+              <i className="fa fa-thumbs-down"></i>
+              &nbsp;
+              <span className="corpusbuilder-error">An error occured and the document has not been correctly processed.</span>
+          </div>
         )
     }
 
     renderReady() {
         return (
-          <span class="corpusbuilder-success">Document has been successfully processed</span>
+          <div>
+              <i className="fa fa-thumbs-up"></i>
+              &nbsp;
+              <span className="corpusbuilder-success">Document has been successfully processed</span>
+          </div>
         )
     }
 

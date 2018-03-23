@@ -43,7 +43,7 @@ export default class State {
 
     promise(selector, callback) {
         return new Promise((resolve, reject) => {
-            let resource = selector.id !== null && selector.id !== undefined ? this.cache.get(selector.id) : undefined;
+            let resource = selector.cacheable ? this.cache.get(selector.id) : undefined;
 
             if(resource === undefined && callback !== undefined) {
                 let value = callback();
@@ -52,7 +52,7 @@ export default class State {
                     value.then(
                         action(
                             (data) => {
-                                if(selector.id !== undefined && selector.id !== null) {
+                                if(selector.cacheable) {
                                     this.cache.set(selector.id, data);
                                 }
                                 resolve(data)
@@ -65,7 +65,7 @@ export default class State {
                 }
                 else {
                     action(() => {
-                        if(selector.id !== undefined && selector.id !== null) {
+                        if(selector.cacheable) {
                             this.cache.set(selector.id, value);
                         }
                         resolve(value);
@@ -76,7 +76,7 @@ export default class State {
     };
 
     resolve(selector, callback) {
-        let resource = selector.id !== null && selector.id !== undefined ? this.cache.get(selector.id) : undefined;
+        let resource = selector.cacheable ? this.cache.get(selector.id) : undefined;
 
         if(resource === undefined && callback !== undefined) {
             let value = callback();
@@ -85,7 +85,7 @@ export default class State {
                 value.then(
                     action(
                         (data) => {
-                            if(selector.id !== undefined && selector.id !== null) {
+                            if(selector.cacheable) {
                                 this.cache.set(selector.id, data);
                             }
                         }
@@ -95,7 +95,7 @@ export default class State {
             else {
                 action(() => {
                     resource = value;
-                    if(selector.id !== undefined && selector.id !== null) {
+                    if(selector.cacheable) {
                         this.cache.set(selector.id, value);
                     }
                 })();
