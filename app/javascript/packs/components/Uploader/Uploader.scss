@@ -14,6 +14,14 @@
     margin-bottom: 20px;
   }
 
+  &-images-ready {
+    padding: 2px;
+
+    .corpusbuilder-uploader-images-upload-files {
+      margin-top: 15px;
+    }
+  }
+
   &-images-upload {
     padding: 2px;
 
@@ -29,23 +37,41 @@
       &-item {
         padding: 10px;
         background: rgba(255, 255, 255, 0.5);
-        border: 5px solid #f2f2f2;
+        box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
+        margin-bottom: 5px;
         flex-shrink: 0;
         display: flex;
 
+        &-number {
+          margin-top: 8px;
+          color: #ccc;
+        }
+
         &-name {
-          margin-bottom: 10px;
           flex-grow: 2;
+          margin-top: 8px;
+          margin-left: 10px;
         }
 
         &-size {
           margin-right: 10px;
+          margin-left: 10px;
+          margin-top: 8px;
+          width: 50px;
+          text-align: center;
+          color: #ccc;
+        }
+
+        .corpusbuilder-button-delete {
+          background-image: linear-gradient(-180deg, #ee7a69 0%, #cc4b37 90%);
+          color: white !important;
         }
 
         &-progress {
-          svg {
-            transform: scale(0.25);
-          }
+          margin-right: 10px;
+          margin-left: 10px;
+          margin-top: 6px;
+          width: 100px;
         }
       }
     }
