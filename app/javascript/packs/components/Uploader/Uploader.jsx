@@ -24,6 +24,9 @@ class BaseFile extends React.Component {
         return this.props.value;
     }
 
+    @observable
+    preloaded = false;
+
     @computed
     get index() {
         return this.props.order;
@@ -35,6 +38,10 @@ class BaseFile extends React.Component {
     }
 
     fileSizeLabel(file) {
+        if(file === null) {
+            return '';
+        }
+
         if(file.size >= 10e5) {
             return `${Math.round(file.size / 10e5)}MB`
         }
@@ -96,7 +103,7 @@ class BaseFile extends React.Component {
                     Page { this.index + 1 }
                 </div>
                 <div className="corpusbuilder-uploader-images-upload-files-item-name">
-                    { this.file.file.name }
+                    { this.file.name }
                 </div>
                 { progress }
                 <div className="corpusbuilder-uploader-images-upload-files-item-size">
@@ -135,13 +142,6 @@ const SortableFileList = SortableContainer(BaseList);
 @observer
 export default class Uploader extends React.Component {
 
-    constructor(props) {
-        super(props);
-
-        this.appState = new State(this.props.baseUrl);
-        Request.setBaseUrl(props.baseUrl);
-    }
-
     progressEvents = [
         {
             name: 'FetchSimilarDocuments',
@@ -156,6 +156,9 @@ export default class Uploader extends React.Component {
 
     @observable
     files = [ ];
+
+    @observable
+    preloaded = false;
 
     @observable
     uploadedImages = [ ];
@@ -197,15 +200,15 @@ export default class Uploader extends React.Component {
 
     @computed
     get currentLevel() {
-        if(!this.isMetadataReady) {
+        if(this.preloaded || (this.uploadedImages.length > 0 &&
+                this.uploadedImages.length === this.files.length)) {
+            return 'images-ready';
+        }
+        else if(!this.isMetadataReady) {
             return 'pre-metadata';
         }
         else if(!this.uploadNewChosen) {
             return 'similar-documents';
-        }
-        else if(this.uploadedImages.length > 0 &&
-                this.uploadedImages.length === this.files.length) {
-            return 'images-ready';
         }
         else {
             return 'images-upload';
@@ -220,6 +223,13 @@ export default class Uploader extends React.Component {
         };
     }
 
+    constructor(props) {
+        super(props);
+
+        this.appState = new State(this.props.baseUrl);
+        Request.setBaseUrl(props.baseUrl);
+    }
+
     componentWillUpdate(props) {
         if(props.metadata === null || props.metadata === undefined) {
             return;
@@ -230,6 +240,18 @@ export default class Uploader extends React.Component {
                 this.metadata = props.metadata;
                 return;
             }
+        }
+
+        if((this.props.images || []).length !== (props.images || []).length) {
+            this.files = props.images.map(image => {
+                return {
+                  file: null,
+                  progress: 1,
+                  name: image.name,
+                  id: image.id
+                }
+            });
+            this.preloaded = true;
         }
     }
 
@@ -264,6 +286,7 @@ export default class Uploader extends React.Component {
             this.files.push(observable({
                 file: file,
                 progress: null,
+                name: file.name,
                 status: 'initial'
             }));
         }
@@ -404,6 +427,7 @@ export default class Uploader extends React.Component {
     renderImagesUpload() {
         if(this.currentLevel === 'images-upload') {
             let files = <i>No files chosen yet...</i>;
+            let dropzone = null;
 
             if(this.files.length > 0) {
                 files = <SortableFileList items={ this.files }
@@ -412,11 +436,19 @@ export default class Uploader extends React.Component {
                                           />;
             }
 
+            if(!this.isUploading) {
+                dropzone = (
+                    <div className="corpusbuilder-uploader-images-upload-dropzone">
+                        <Dropzone onDrop={this.onDrop.bind(this)} disabled={ this.isUploading }>
+                            Drop Files Here
+                        </Dropzone>
+                    </div>
+                );
+            }
+
             return (
                 <div className="corpusbuilder-uploader-images-upload">
-                    <Dropzone onDrop={this.onDrop.bind(this)} disabled={ this.isUploading }>
-                        Drop Files Here
-                    </Dropzone>
+                    { dropzone }
                     { files }
                     <div className="corpusbuilder-uploader-images-upload-buttons">
                         <Button onClick={ this.onBackToSimilarDocuments.bind(this) } disabled={ this.isUploading }>

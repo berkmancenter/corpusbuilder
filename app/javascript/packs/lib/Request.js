@@ -78,6 +78,7 @@ export default class Request {
             if(data instanceof Blob) {
                 payload = new FormData();
                 payload.append('file', data);
+                payload.append('name', data.name);
 
                 options = null;
             }

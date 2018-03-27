@@ -12,7 +12,7 @@ export default class UploadDocumentImages extends Action {
             let uploads = params.files.map((file) => {
                 let payload = {
                     file: file.file,
-                    name: file.file.name
+                    name: file.name
                 };
 
                 return (() => {

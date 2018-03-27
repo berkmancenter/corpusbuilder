@@ -76,7 +76,7 @@
       }
     }
 
-    > div:first-child {
+    &-dropzone > div:first-child {
       width: 100% !important;
       border: 4px dotted #ccc !important;
       margin-bottom: 15px;

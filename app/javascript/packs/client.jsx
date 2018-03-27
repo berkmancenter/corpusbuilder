@@ -61,11 +61,20 @@ class CorpusBuilderUploader {
     options = { };
     element = null;
     metadata = { };
+    images = null;
 
     setMetadata(metadata) {
         this.metadata = metadata;
 
         this.render();
+    }
+
+    setImages(images) {
+        if(images !== undefined) {
+            this.images = images;
+
+            this.render();
+        }
     }
 
     onDocumentPicked(doc) {
@@ -92,6 +101,7 @@ class CorpusBuilderUploader {
                       host={ this.element }
                       editorEmail={ this.options.editorEmail }
                       metadata={ this.metadata }
+                      images={ this.images }
                       onDocumentPicked={ this.onDocumentPicked.bind(this) }
                       onDocumentUnpicked={ this.onDocumentUnpicked.bind(this) }
                       onImagesUploaded={ this.onImagesUploaded.bind(this) }
