@@ -5,13 +5,14 @@ import { BranchesMenu } from '../BranchesMenu';
 import { SettingsMenu } from '../SettingsMenu';
 
 import { observable, computed } from 'mobx';
-import { Provider, observer } from 'mobx-react';
+import { inject, Provider, observer } from 'mobx-react';
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
 
 import s from './DocumentOptions.scss';
 import fontAwesome from 'font-awesome/scss/font-awesome.scss';
 
+@inject('editorEmail')
 @observer
 export default class DocumentOptions extends React.Component {
 
@@ -122,7 +123,10 @@ export default class DocumentOptions extends React.Component {
         return (
           <DropdownMenu {...this.menus.view}>
               <li>
-                  <button type="button" onClick={ this.props.onToggleDiff.bind(this, !this.props.showDiff) }>
+                  <button type="button"
+                          onClick={ this.props.onToggleDiff.bind(this, !this.props.showDiff) }
+                          disabled={ this.props.editorEmail === undefined || this.props.editorEmail === null }
+                          >
                       { this.props.showDiff ? '✓' : '' } Changes And Merging
                   </button>
               </li>
@@ -149,17 +153,26 @@ export default class DocumentOptions extends React.Component {
         return (
           <DropdownMenu {...this.menus.version}>
               <li>
-                  <button type="button" onClick={ this.props.onNewBranchRequest }>
+                  <button type="button"
+                          onClick={ this.props.onNewBranchRequest }
+                          disabled={ this.props.editorEmail === undefined || this.props.editorEmail === null }
+                          >
                       New Branch
                   </button>
               </li>
               <li>
-                  <button type="button" onClick={ this.props.onCommitRequest }>
+                  <button type="button"
+                          onClick={ this.props.onCommitRequest }
+                          disabled={ !this.props.currentVersion.editable }
+                          >
                       Commit
                   </button>
               </li>
               <li>
-                  <button type="button" onClick={ this.props.onResetChangesRequest }>
+                  <button type="button"
+                          onClick={ this.props.onResetChangesRequest }
+                          disabled={ !this.props.currentVersion.editable }
+                          >
                       Reset Changes
                   </button>
               </li>

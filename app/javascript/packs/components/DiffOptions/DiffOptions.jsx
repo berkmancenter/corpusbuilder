@@ -1,6 +1,6 @@
 import React from 'react';
 import { observable, computed } from 'mobx';
-import { observer } from 'mobx-react'
+import { inject, observer } from 'mobx-react'
 
 import { BranchesMenu } from '../BranchesMenu';
 import { Button } from '../Button';
@@ -102,7 +102,7 @@ export default class DiffOptions extends React.Component {
                     <div className="corpusbuilder-diff-options-buttons">
                         <Button onClick={ () => this.props.onMergeRequested(this.currentVersion) }
                                 visible={ this.hasDifferentVersions && !this.showsWorkingData }
-                                disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 }
+                                disabled={ this.props.diff === null || this.props.diff === undefined || this.props.diff.isEmpty || this.props.document.global.count_conflicts > 0 || !this.props.currentVersion.editable }
                                 >
                           Merge
                         </Button>

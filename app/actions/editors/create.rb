@@ -3,9 +3,15 @@ module Editors
     attr_accessor :email, :first_name, :last_name
 
     def execute
-      Editor.create! email: @email,
+      existing || Editor.create!(
+        email: @email,
         first_name: @first_name,
         last_name: @last_name
+      )
+    end
+
+    def existing
+      Editor.where(email: email).first
     end
   end
 end
