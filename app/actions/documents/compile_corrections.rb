@@ -1,6 +1,6 @@
 module Documents
   class CompileCorrections < Action::Base
-    attr_accessor :words, :document, :revision_id, :branch_name, :surface_number
+    attr_accessor :words, :document, :revision_id, :branch_name, :surface_number, :dir
 
     validate :revision_given
 
@@ -26,7 +26,7 @@ module Documents
 
     def line_diff
       memoized do
-        LineDiff.new(words, revision, surface_number)
+        LineDiff.new(words, revision, surface_number, dir)
       end
     end
 
@@ -69,12 +69,13 @@ module Documents
     end
 
     class LineDiff < CorrectionDiff
-      attr_accessor :words, :revision, :surface_number
+      attr_accessor :words, :revision, :surface_number, :dir
 
-      def initialize(words, revision, surface_number)
+      def initialize(words, revision, surface_number, dir)
         @words = words
         @revision = revision
         @surface_number = surface_number
+        @dir = dir
       end
 
       def specs
@@ -83,6 +84,17 @@ module Documents
             return source_graphemes.map do |grapheme|
               GraphemeDiff.new(grapheme, nil, nil).to_spec
             end
+          end
+
+          if directionality_change?
+            ds = source_graphemes.map do |grapheme|
+              GraphemeDiff.new(grapheme, nil, nil).to_spec
+            end
+            ds += entered_graphemes.map do |grapheme|
+              GraphemeDiff.new(nil, grapheme, WordDiff.new(nil, grapheme, self), true).to_spec
+            end
+
+            return ds
           end
 
           source_list = source_graphemes.dup
@@ -162,6 +174,14 @@ module Documents
 
       def deleting_line?
         words.all? { |word| word[:text].strip.empty? }
+      end
+
+      def directionality_change?
+        if source_graphemes.empty?
+          false
+        else
+          source_graphemes.first.zone.direction != dir.to_s
+        end
       end
 
       def word_diffs
@@ -403,7 +423,16 @@ module Documents
               direction: Bidi.infer_direction( visual_entered_text ),
               position_weight: (previous_weight + 0.5*(next_weight - previous_weight))
           else
-            source_graphemes.first.zone
+            old = source_graphemes.first.zone
+
+            if directionality_change?
+              Zone.create! surface_id: old.surface_id,
+                area: old.area,
+                direction: dir,
+                position_weight: old.position_weight
+            else
+              old
+            end
           end
         end
       end
@@ -436,10 +465,14 @@ module Documents
 
       def ltr?
         memoized do
-          if new_line?
-            Bidi.infer_direction(visual_entered_text) == :ltr
+          if dir.present?
+            dir == :ltr
           else
-            zone.ltr?
+            if new_line?
+              Bidi.infer_direction(visual_entered_text) == :ltr
+            else
+              zone.ltr?
+            end
           end
         end
       end
@@ -517,12 +550,13 @@ module Documents
     end
 
     class GraphemeDiff < CorrectionDiff
-      attr_accessor :source, :entered, :word_diff
+      attr_accessor :source, :entered, :word_diff, :override_weights
 
-      def initialize(source, entered, word_diff)
+      def initialize(source, entered, word_diff, override_weights = false)
         @source = source
         @entered = entered
         @word_diff = word_diff
+        @override_weights = override_weights
       end
 
       def to_spec
@@ -532,7 +566,7 @@ module Documents
             area: entered.area,
             zone_id: entered.zone_id,
             surface_number: word_diff.line_diff.surface_number,
-            position_weight: nil
+            position_weight: (override_weights ? entered.position_weight : nil)
           }
         elsif deletion?
           {
@@ -542,7 +576,7 @@ module Documents
         elsif modification? || merge_resolution?
           {
             id: source.id,
-            position_weight: nil,
+            position_weight: (override_weights ? entered.position_weight : nil),
             value: entered.value,
             zone_id: entered.zone_id,
             area: entered.area,

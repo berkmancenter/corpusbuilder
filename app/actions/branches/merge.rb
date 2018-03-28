@@ -52,9 +52,9 @@ module Branches
     end
 
     def added_ids
-      memoized do
+      memoized freeze: true do
         # all ids added by the other branch
-        other_branch_changes.reject(&:removal?).map(&:to).map(&:id)
+        other_branch_changes.reject(&:removal?).map(&:to).map(&:id) - duplicates.map(&:id)
       end
     end
 
@@ -65,7 +65,7 @@ module Branches
     end
 
     def branch_item_ids
-      memoized do
+      memoized freeze: true do
         time "calculating branch_item_ids in Branches::Merge" do
           all_branch_ids(branch)
         end
@@ -73,7 +73,7 @@ module Branches
     end
 
     def other_branch_ids
-      memoized do
+      memoized freeze: true do
         time "calculating other_branch_ids in Branches::Merge" do
           all_branch_ids(other_branch)
         end
@@ -81,23 +81,22 @@ module Branches
     end
 
     def conflicting_ids
-      memoized do
+      memoized freeze: true do
         merge_conflicts.map(&:ids).flatten
       end
     end
 
     def removed_ids
-      memoized do
+      memoized freeze: true do
         time "calculating removed_ids in Branches::Merge" do
-          branch_changes.select(&:removal?).
-            concat(other_branch_changes.select(&:removal?)).
-            map(&:from).map(&:id).uniq
+          (branch_changes + other_branch_changes).
+            map(&:from).reject(&:nil?).map(&:id).uniq
         end
       end
     end
 
     def conflict_graphemes
-      memoized do
+      memoized freeze: true do
         merge_conflicts.map do |conflict|
           Grapheme.create! conflict.output_grapheme.
             attributes.
@@ -108,7 +107,7 @@ module Branches
     end
 
     def branch_diff
-      memoized do
+      memoized freeze: true do
         Graphemes::QueryDiff.run(
           revision_left: root,
           revision_right: branch.revision,
@@ -118,13 +117,13 @@ module Branches
     end
 
     def branch_changes
-      memoized do
+      memoized freeze: true do
         compile_changes(branch_diff)
       end
     end
 
     def other_branch_changes
-      memoized do
+      memoized freeze: true do
         compile_changes(other_branch_diff)
       end
     end
@@ -162,7 +161,7 @@ module Branches
     end
 
     def other_branch_diff
-      memoized do
+      memoized freeze: true do
         Graphemes::QueryDiff.run(
           revision_left: root,
           revision_right: other_branch.revision,
@@ -180,80 +179,161 @@ module Branches
       end
     end
 
-    def merge_conflicts
-      memoized do
-        time "calculating merge_conflicts in Branches::Merge" do
-          return [] if branch_changes.empty? || other_branch_changes.empty?
+    def duplicates
+      memoized freeze: true do
+        time "calculating duplicates in Branches::Merge" do
+          if branch_changes.empty? || other_branch_changes.empty?
+            []
+          else
+            ours_ix = 0
+            theirs_ix = 0
 
-          ours_ix = 0
-          theirs_ix = 0
-
-          conflicts = []
-          ours = Set.new
-          theirs = Set.new
-          surface_number = branch_changes.first.surface_number
-
-          loop do
-            loop do
-              next_ours = branch_changes[ ours_ix ]
-
-              if next_ours.try(:surface_number) != surface_number
-                break
-              else
-                ours.add(next_ours)
-                ours_ix += 1
-              end
-            end
+            dups = []
+            ours = Set.new
+            theirs = Set.new
+            surface_number = branch_changes.first.surface_number
 
             loop do
-              next_theirs = other_branch_changes[ theirs_ix ]
+              loop do
+                next_ours = branch_changes[ ours_ix ]
 
-              if next_theirs.nil?
+                if next_ours.try(:surface_number) != surface_number
+                  break
+                else
+                  ours.add(next_ours)
+                  ours_ix += 1
+                end
+              end
+
+              loop do
+                next_theirs = other_branch_changes[ theirs_ix ]
+
+                if next_theirs.nil?
+                  break
+                elsif next_theirs.surface_number < surface_number
+                  theirs_ix += 1
+                elsif next_theirs.surface_number != surface_number
+                  break
+                else
+                  theirs.add(next_theirs)
+                  theirs_ix += 1
+                end
+              end
+
+              dups += ours.map do |our_change|
+                found = theirs.select do |other_change|
+                  our_change.to.present? && other_change.to.present? &&
+                    our_change.to.area == other_change.to.area &&
+                    our_change.to.value == other_change.to.value &&
+                    our_change.to.position_weight == other_change.to.position_weight
+                end
+
+                if found.present?
+                  found.each { |g| theirs.delete(g) }
+                else
+                  nil
+                end
+
+                found.present? ? found : nil
+              end.reject(&:nil?).flatten
+
+              ours.clear
+              theirs.clear
+              surface_number = branch_changes[ ours_ix ].try(:surface_number)
+
+              if ours_ix >= branch_changes.count || theirs_ix >= other_branch_changes.count
                 break
-              elsif next_theirs.surface_number < surface_number
-                theirs_ix += 1
-              elsif next_theirs.surface_number != surface_number
-                break
-              else
-                theirs.add(next_theirs)
-                theirs_ix += 1
               end
             end
 
-            conflicts += ours.map do |our_change|
-              found = theirs.find do |other_change|
-                our_change.area.overlaps?(other_change.area)
-              end
-
-              if found.present?
-                theirs.delete(found)
-
-                [ our_change, found ]
-              else
-                nil
-              end
-
-              found.present? ? [ our_change, found ] : nil
-            end.reject(&:nil?).map do |our_change, their_change|
-              Conflict.new(our_change, their_change)
-            end.reject(&:both_remove?)
-
-            ours.clear
-            theirs.clear
-            surface_number = branch_changes[ ours_ix ].try(:surface_number)
-
-            if ours_ix >= branch_changes.count || theirs_ix >= other_branch_changes.count
-              break
-            end
+            dups.map(&:to)
           end
+        end
+      end
+    end
 
-          conflicts
+    def merge_conflicts
+      memoized freeze: true do
+        time "calculating merge_conflicts in Branches::Merge" do
+          if branch_changes.empty? || other_branch_changes.empty?
+            []
+          else
+            ours_ix = 0
+            theirs_ix = 0
+
+            conflicts = []
+            ours = Set.new
+            theirs = Set.new
+            surface_number = branch_changes.first.surface_number
+
+            loop do
+              loop do
+                next_ours = branch_changes[ ours_ix ]
+
+                if next_ours.try(:surface_number) != surface_number
+                  break
+                else
+                  ours.add(next_ours)
+                  ours_ix += 1
+                end
+              end
+
+              loop do
+                next_theirs = other_branch_changes[ theirs_ix ]
+
+                if next_theirs.nil?
+                  break
+                elsif next_theirs.surface_number < surface_number
+                  theirs_ix += 1
+                elsif next_theirs.surface_number != surface_number
+                  break
+                else
+                  theirs.add(next_theirs)
+                  theirs_ix += 1
+                end
+              end
+
+              conflicts += ours.map do |our_change|
+                found = theirs.find do |other_change|
+                  our_change.area.overlaps?(other_change.area) &&
+                    (
+                      !(our_change.to.present? && other_change.to.present?) ||
+                      our_change.to.try(:area) != other_change.to.try(:area) ||
+                      our_change.to.try(:value) != other_change.to.try(:value) ||
+                      our_change.to.try(:position_weight) != other_change.to.try(:position_weight)
+                    )
+                end
+
+                if found.present?
+                  theirs.delete(found)
+
+                  [ our_change, found ]
+                else
+                  nil
+                end
+
+                found.present? ? [ our_change, found ] : nil
+              end.reject(&:nil?).map do |our_change, their_change|
+                Conflict.new(our_change, their_change)
+              end.reject(&:both_remove?)
+
+              ours.clear
+              theirs.clear
+              surface_number = branch_changes[ ours_ix ].try(:surface_number)
+
+              if ours_ix >= branch_changes.count || theirs_ix >= other_branch_changes.count
+                break
+              end
+            end
+
+            conflicts
+          end
         end
       end
     end
 
     def exclude_ids
-      memoized do
+      memoized freeze: true do
         Graphemes::QueryMergeExcludes.run!(
           branch_left: branch,
           branch_right: other_branch

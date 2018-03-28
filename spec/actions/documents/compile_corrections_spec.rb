@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe Documents::CompileCorrections do
   include ActiveJob::TestHelper
+  include VersionedManagementSpecHelper
 
   let(:document) do
     create :document
@@ -170,6 +171,34 @@ describe Documents::CompileCorrections do
     expect(modifications.count).to eq(3)
     expect(additions.sort_by { |a| a[:position_weight] }.map { |a| a[:value] }.join).to eq("je")
     expect(modifications.sort_by { |a| a[:position_weight] }.map { |a| a[:value] }.join).to eq("den")
+  end
+
+  it 'handles changes in line directionality correctly' do
+    _, gs = line surface, [ "abcd", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ],
+    ]
+
+    ids = gs.map { |wgs| wgs.map(&:id) }
+
+    master = branch_off document, "master", editor, nil, gs
+    topic1 =  branch_off document, "topic1", editor, master
+    topic2 =  branch_off document, "topic2", editor, master
+
+    corrections = correct topic1, surface, editor,[ "abcd", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ]
+    ], ids, :rtl
+    commit topic1
+
+    new_graphemes = corrections.flatten.select { |c| gs.flatten.none? { |g| g.id == c.id } }
+
+    expect new_graphemes.count == 3*4
+
+    expect(topic2.reload.revision.graphemes.first.zone.direction).to be == "ltr"
+    expect(topic1.reload.revision.graphemes.first.zone.direction).to be == "rtl"
   end
 
 end

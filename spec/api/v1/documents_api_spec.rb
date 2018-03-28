@@ -14,8 +14,7 @@ describe V1::DocumentsAPI, type: :request do
       "Accept" => "application/vnd.corpus-builder-v1+json",
       "X-App-Id" => client_app.id,
       "X-Editor-Id" => editor.id,
-      "X-Token" => client_app.encrypted_secret,
-      "Content-Type" => "application/json"
+      "X-Token" => client_app.encrypted_secret
     }
   end
 
@@ -50,19 +49,19 @@ describe V1::DocumentsAPI, type: :request do
     it_behaves_like "application authenticated route"
 
     let(:no_app_request) do
-      post url, params: data_minimal_correct.to_json, headers: headers.without('X-App-Id')
+      post url, params: data_minimal_correct, headers: headers.without('X-App-Id')
     end
 
     let(:no_token_request) do
-      post url, params: data_minimal_correct.to_json, headers: headers.without('X-Token')
+      post url, params: data_minimal_correct, headers: headers.without('X-Token')
     end
 
     let(:invalid_token_request) do
-      post url, params: data_minimal_correct.to_json, headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
+      post url, params: data_minimal_correct, headers: headers.merge('X-Token' => bcrypt('-- invalid --'))
     end
 
     let(:valid_request) do
-      post url, params: data_minimal_correct.to_json, headers: headers
+      post url, params: data_minimal_correct, headers: headers
     end
 
     let(:url) { "/api/documents" }
@@ -93,7 +92,7 @@ describe V1::DocumentsAPI, type: :request do
     let(:data_minimal_correct) do
       {
         images: [ { id: image2.id }, { id: image1.id } ],
-        metadata: { title: "Fancy Book" }.to_json,
+        metadata: { title: "Fancy Book" },
         editor_email: editor.email
       }
     end
@@ -105,19 +104,19 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "Fails when at least title in metadata is not provided" do
-      post url, params: data_empty_metadata.to_json, headers: headers
+      post url, params: data_empty_metadata, headers: headers
 
       expect(response.status).to eq(400)
     end
 
     it "Returns success when images and minimal metadata is given" do
-      post url, params: data_minimal_correct.to_json, headers: headers
+      post url, params: data_minimal_correct, headers: headers
 
       expect(response.status).to eq(201)
     end
 
     it "Creates a document that is in an initial state" do
-      post url, params: data_minimal_correct.to_json, headers: headers
+      post url, params: data_minimal_correct, headers: headers
 
       new_id = JSON.parse(response.body)["id"]
       document = Document.find new_id
@@ -126,7 +125,7 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "creates a master branch making gioven editor an owner" do
-      post url, params: data_minimal_correct.to_json, headers: headers
+      post url, params: data_minimal_correct, headers: headers
 
       new_id = JSON.parse(response.body)["id"]
       document = Document.find new_id
@@ -135,7 +134,7 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "updates the images order attribute based on their order in the params" do
-      post url, params: data_minimal_correct.to_json, headers: headers
+      post url, params: data_minimal_correct, headers: headers
 
       new_id = JSON.parse(response.body)["id"]
       document = Document.find new_id
@@ -146,7 +145,7 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "fails when a given image id doesn't exist" do
-      post url, params: data_minimal_correct.merge({ images: [ { id: -1 } ] }).to_json, headers: headers
+      post url, params: data_minimal_correct.merge({ images: [ { id: -1 } ] }), headers: headers
 
       expect(response.status).to eq(400)
     end
@@ -699,7 +698,7 @@ describe V1::DocumentsAPI, type: :request do
         topic_branch
 
         method.call url(document.id, 'master'),
-          params: { other_branch: 'topic' }.to_json,
+          params: { other_branch: 'topic' },
           headers: headers
       end
 
@@ -1003,19 +1002,19 @@ describe V1::DocumentsAPI, type: :request do
     it_behaves_like "editor requiring route"
 
     let(:no_app_request) do
-      post url(document.id), headers: headers.without('X-App-Id'), params: minimal_valid_params.to_json
+      post url(document.id), headers: headers.without('X-App-Id'), params: minimal_valid_params
     end
 
     let(:inexistant_editor_request) do
       post url(document.id),
         headers: headers.without('X-App-Id').merge('X-Editor-Id' => document.id),
-        params: minimal_valid_params.to_json
+        params: minimal_valid_params
     end
 
     let(:no_editor_request) do
       post url(document.id),
         headers: headers.without('X-App-Id').without('X-Editor-Id'),
-        params: minimal_valid_params.to_json
+        params: minimal_valid_params
     end
 
     let(:valid_editor_request) do
@@ -1023,11 +1022,11 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     let(:no_token_request) do
-      post url(document.id), headers: headers.without('X-Token'), params: minimal_valid_params.to_json
+      post url(document.id), headers: headers.without('X-Token'), params: minimal_valid_params
     end
 
     let(:invalid_token_request) do
-      post url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --')), params: minimal_valid_params.to_json
+      post url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --')), params: minimal_valid_params
     end
 
     let(:valid_request) do
@@ -1041,33 +1040,33 @@ describe V1::DocumentsAPI, type: :request do
     let(:wrong_app_request) do
       post url(document.id),
         headers: headers.merge('X-App-Id' => wrong_app.id, 'X-Token' => wrong_app.encrypted_secret),
-        params: minimal_valid_params.merge(revision: master_branch.name).to_json
+        params: minimal_valid_params.merge(revision: master_branch.name)
     end
 
     let(:good_revision_request) do
       post url(document.id),
         headers: headers,
-        params: minimal_valid_params.merge(revision: master_branch.revision_id).to_json
+        params: minimal_valid_params.merge(revision: master_branch.revision_id)
     end
 
     let(:good_branch_request) do
       post url(document.id),
         headers: headers.merge('X-Editor-Id' => another_editor.id),
-        params: minimal_valid_params.merge(revision: master_branch.name).to_json
+        params: minimal_valid_params.merge(revision: master_branch.name)
     end
 
     let(:bad_branch_request) do
-      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: 'idontexist').to_json
+      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: 'idontexist')
     end
 
     let(:bad_revision_request) do
-      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: document.id).to_json
+      post url(document.id), headers: headers, params: minimal_valid_params.merge(revision: document.id)
     end
 
     let(:no_editor_request) do
       post url(document.id),
         headers: headers.without('X-Editor-Id'),
-        params: minimal_valid_params.merge(revision: master_branch.name).without(:editor_id).to_json
+        params: minimal_valid_params.merge(revision: master_branch.name).without(:editor_id)
     end
 
     let(:master_branch) do
