@@ -53,8 +53,9 @@ class V1::DocumentsAPI < Grape::API
       authorize!
 
       # todo: implement querying only for the ones that are similar
-      present Documents::QueryAll.run!(
+      present Documents::QuerySimilar.run!(
         app: @current_app,
+        metadata: params[:metadata],
         status: Document.statuses[:ready]
       ).result, with: Document::Simple
     end

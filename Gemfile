@@ -36,6 +36,7 @@ gem 'descriptive_statistics'
 gem 'oily_png'
 gem 'ruby-graphviz'
 gem 'therubyracer'
+gem 'pragmatic_tokenizer'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

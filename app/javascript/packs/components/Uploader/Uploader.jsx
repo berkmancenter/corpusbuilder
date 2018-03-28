@@ -413,7 +413,25 @@ export default class Uploader extends React.Component {
                 ];
             }
             else {
-                items = <i>No similar document has been found for given metadata. Please click next to continue</i>;
+                let docItems = (
+                    <div key="new-one" className="corpusbuilder-uploader-similar-documents-item clickable"
+                        onClick={ this.onUploadNewChosen.bind(this) }>
+                        <div className="corpusbuilder-uploader-similar-documents-item-top-label-big">
+                            +
+                        </div>
+                        <div className="corpusbuilder-uploader-similar-documents-item-top-label">
+                            Add New
+                        </div>
+                    </div>
+                );
+                items = [
+                    <div key="explain" className="corpusbuilder-uploader-explain">
+                      No similar document has been found for given metadata. Please click next to continue
+                    </div>,
+                    <div className="corpusbuilder-uploader-similar-documents-list">
+                        { docItems }
+                    </div>
+                ];
             }
 
             return (
