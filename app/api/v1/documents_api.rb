@@ -183,6 +183,7 @@ class V1::DocumentsAPI < Grape::API
             requires :lry, type: String
           end
         end
+        optional :direction, type: Symbol, values: [ :ltr, :rtl ]
         requires :surface_number, type: Integer
       end
       put ':revision/tree' do
@@ -193,7 +194,8 @@ class V1::DocumentsAPI < Grape::API
           surface_number: params[:surface_number],
           revision_id: @revision_options[:revision_id],
           document: @document,
-          branch_name: @revision_options[:branch_name]
+          branch_name: @revision_options[:branch_name],
+          dir: params[:direction]
 
         action! Documents::Correct, @revision_options.merge(
           document: @document,

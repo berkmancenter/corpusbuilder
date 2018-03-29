@@ -7,7 +7,8 @@ export default class CorrectDocumentPage extends Action {
     execute(state, selector, params) {
         let payload = {
             surface_number: params.surfaceNumber,
-            words: params.words
+            words: params.words,
+            direction: params.direction
         };
 
         let branchVersion = selector.version.isRevision ? selector.version.branchVersion : version;

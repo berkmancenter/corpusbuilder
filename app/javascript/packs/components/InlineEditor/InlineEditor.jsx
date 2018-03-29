@@ -56,6 +56,9 @@ export default class InlineEditor extends React.Component {
     editedTextWords = null;
 
     @observable
+    dir = "ltr";
+
+    @observable
     selectedBox = null;
 
     originalBoxes = null;
@@ -83,14 +86,6 @@ export default class InlineEditor extends React.Component {
         }
 
         return "Delete Line";
-    }
-
-    get dir() {
-        if(this.props.line === undefined || this.props.line === null || this.props.line.length === 0) {
-            return "ltr";
-        }
-
-        return this.props.line[0].zone_direction === 1 ? "rtl" : "ltr";
     }
 
     @computed
@@ -224,6 +219,14 @@ export default class InlineEditor extends React.Component {
         );
         this.boxes.splice(ix, 1);
         this.selectedBox = null;
+    }
+
+    lineDir(props) {
+        if(props.line === undefined || props.line === null || props.line.length === 0) {
+            return "ltr";
+        }
+
+        return props.line[0].zone_direction === 1 ? "rtl" : "ltr";
     }
 
     onTextChanged(ix, e) {
@@ -446,6 +449,7 @@ export default class InlineEditor extends React.Component {
     }
 
     initText(props) {
+        this.dir = this.lineDir(props);
         this.graphemeWords = GraphemeUtils.lineWords(props.line);
         this.editedTextWords = this.graphemeWords
             .map((word) => {
@@ -505,7 +509,7 @@ export default class InlineEditor extends React.Component {
                 }
             );
 
-            this.props.onSaveRequested(this.props.document, words);
+            this.props.onSaveRequested(this.props.document, words, this.dir);
         }
     }
 
@@ -516,6 +520,11 @@ export default class InlineEditor extends React.Component {
 
     onToggleBoxes(show) {
         this.showBoxes = show;
+    }
+
+    onToggleDir(dir, toggled) {
+        let _toggled = dir === "ltr" ? toggled : !toggled;
+        this.dir = _toggled ? "ltr" : "rtl";
     }
 
     renderInput(box, ix) {
@@ -614,6 +623,20 @@ export default class InlineEditor extends React.Component {
                         {
                             this.renderInputs()
                         }
+                        <div className="corpusbuilder-inline-editor-dir">
+                            <Button onToggle={ this.onToggleDir.bind(this, "ltr") }
+                              toggles={ true }
+                              toggled={ this.dir === "ltr" }
+                              >
+                              LTR
+                            </Button>
+                            <Button onToggle={ this.onToggleDir.bind(this, "rtl") }
+                              toggles={ true }
+                              toggled={ this.dir === "rtl" }
+                              >
+                              RTL
+                            </Button>
+                        </div>
                         <div className="corpusbuilder-inline-editor-buttons">
                             <Button onToggle={ this.onToggleBoxes.bind(this) }
                               toggles={ true }

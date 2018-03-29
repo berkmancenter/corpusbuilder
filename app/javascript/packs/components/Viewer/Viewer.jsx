@@ -583,7 +583,7 @@ export default class Viewer extends React.Component {
         });
     }
 
-    saveLine(doc, words) {
+    saveLine(doc, words, direction) {
         CorrectDocumentPage.run(
             this.props.appState,
             {
@@ -593,7 +593,8 @@ export default class Viewer extends React.Component {
                     pageNumber: this.page
                 },
                 surfaceNumber: this.document.surfaces[0].number,
-                words: words
+                words: words,
+                direction: direction
             }
         ).then((_) => {
             this.showInlineEditor = false;

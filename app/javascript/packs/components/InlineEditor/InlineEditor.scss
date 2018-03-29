@@ -1,5 +1,16 @@
 .corpusbuilder {
   &-inline-editor {
+
+    &-dir {
+      text-align: center;
+
+      .corpusbuilder-button {
+        font-size: 11px;
+        line-height: 12px;
+        height: 20px;
+      }
+    }
+
     &-buttons {
       margin-top: 10px;
       position: relative;
