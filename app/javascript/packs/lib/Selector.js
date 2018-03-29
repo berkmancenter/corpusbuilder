@@ -5,23 +5,29 @@ export default class Selector {
     tag = "";
 
     constructor(tag, select) {
-        this.select = select;
+        this.select = select || {};
         this.tag = tag;
         this._id = Math.round(Math.random() * 10e10).toString();
 
-        for(let key of Object.keys(select)) {
+        for(let key of Object.keys(select || {})) {
             if(key !== "id") {
                 this[key] = select[key];
             }
         }
+
+        this._cacheable = this.id !== this._id;
+    }
+
+    set cacheable(val) {
+        this._cacheable = val;
     }
 
     get cacheable() {
-        return this.id !== this._id;
+        return this._cacheable;
     }
 
     get id() {
-        if(Object.keys(this.select).length === 0) {
+        if(Object.keys(this.select).length === 0 && !this.cacheable) {
             return this._id;
         }
         else {
