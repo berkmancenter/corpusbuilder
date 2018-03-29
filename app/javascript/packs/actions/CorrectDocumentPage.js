@@ -7,7 +7,7 @@ export default class CorrectDocumentPage extends Action {
     execute(state, selector, params) {
         let payload = {
             surface_number: params.surfaceNumber,
-            words: params.words,
+            words: params.words.filter(w => w['text'] !== null && w['text'] !== undefined),
             direction: params.direction
         };
 
