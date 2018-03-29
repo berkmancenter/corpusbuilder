@@ -1,8 +1,11 @@
 import React from 'react'
 import { computed, observable } from 'mobx'
 import { inject, observer } from 'mobx-react'
+
 import GraphemesUtils from '../../lib/GraphemesUtils';
 import MathUtils from '../../lib/MathUtils';
+import BoxesUtils from '../../lib/BoxesUtils';
+
 import { memoized } from '../../lib/Decorators';
 import styles from './DocumentLine.scss'
 
@@ -76,6 +79,25 @@ export default class DocumentLine extends React.Component {
     @computed
     get hasWords() {
         return this.words.length > 0;
+    }
+
+    @computed
+    get lineBox() {
+        if(this.props.line === undefined || this.props.line === null) {
+            return BoxesUtils.empty();
+        }
+
+        return GraphemesUtils.lineToBox(this.props.line);
+    }
+
+    @computed
+    get lineLeft() {
+        return this.lineBox.ulx;
+    }
+
+    @computed
+    get lineWidth() {
+        return this.lineBox.lrx - this.lineBox.ulx;
     }
 
     @computed
@@ -196,7 +218,7 @@ export default class DocumentLine extends React.Component {
             fontSize: this.fontSize,
             width: textWidth,
             transform: `scaleX(${ scale })`,
-            left: box.ulx * this.ratio
+            left: (box.ulx - this.lineLeft) * this.ratio
         };
 
         if(this.showCertainties) {
@@ -220,7 +242,9 @@ export default class DocumentLine extends React.Component {
 
         let dynamicStyles = {
             height: this.fontSize,
-            top: this.top
+            top: this.top,
+            left: this.lineLeft * this.ratio,
+            width: this.lineWidth * this.ratio
         };
 
         return (

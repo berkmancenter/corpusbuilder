@@ -6,6 +6,15 @@ export default class BoxesUtils {
                box1.lrx >= box2.ulx;
     }
 
+    static empty() {
+        return {
+            ulx: 0,
+            uly: 0,
+            lrx: 0,
+            lry: 0
+        }
+    }
+
     static boxValid(box) {
         return box.ulx > 0 && box.ulx < box.lrx &&
                box.lrx > 0 &&
