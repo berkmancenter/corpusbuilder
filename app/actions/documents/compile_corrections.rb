@@ -177,7 +177,7 @@ module Documents
       end
 
       def directionality_change?
-        if source_graphemes.empty?
+        if source_graphemes.empty? || dir.nil?
           false
         else
           source_graphemes.first.zone.direction != dir.to_s
