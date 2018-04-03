@@ -15,7 +15,7 @@ export default class DiffOptions extends React.Component {
             return 0;
         }
 
-        return this.props.diff.pages.length;
+        return this.props.diff.pageCount;
     }
 
     @computed

@@ -120,16 +120,28 @@ class V1::DocumentsAPI < Grape::API
       desc 'Returns a diff of changes for a revision with respect to other revision'
       params do
         optional :other_revision, type: String
+        requires :surface_number, type: Integer
       end
       get ':revision/diff' do
         revision1 = revision_from_params :revision
         revision2 = revision_from_params(:other_version, required: true)
 
-        present Graphemes::QueryDiff.run!(
+        diffs = Grapheme::Diff.represent(
+          Graphemes::QueryDiff.run!(
             revision_left: revision1,
-            revision_right: revision2
-          ).result,
-          with: Grapheme::Diff
+            revision_right: revision2,
+            surface_number: params[:surface_number]
+          ).result
+        )
+
+        stats = {
+          differing_surfaces: Graphemes::QueryDiffSurfaceNumbers.run!(
+            revision_left: revision1,
+            revision_right: revision2,
+          ).result
+        }
+
+        { diffs: diffs, stats: stats }
       end
 
       desc 'Merged changes from other branch or revision'

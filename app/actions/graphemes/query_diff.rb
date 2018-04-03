@@ -1,6 +1,6 @@
 module Graphemes
   class QueryDiff < Action::Base
-    attr_accessor :revision_left, :revision_right, :reject_mirrored
+    attr_accessor :revision_left, :revision_right, :reject_mirrored, :surface_number
 
     validates :revision_right, presence: true
 
@@ -35,6 +35,7 @@ module Graphemes
             from tree
             inner join correction_logs
               on correction_logs.revision_id = tree.id
+              #{ surface_number.present? ? "and correction_logs.surface_number = #{surface_number}" : '' }
           )
           select g.grapheme_id as id,
                 g.inclusion[1],

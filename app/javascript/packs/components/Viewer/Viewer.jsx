@@ -213,7 +213,8 @@ export default class Viewer extends React.Component {
                 select: {
                     document: { id: this.documentId },
                     version: this.currentVersion,
-                    otherVersion: this.currentDiffVersion
+                    otherVersion: this.currentDiffVersion,
+                    pageNumber: this.page
                 }
               }
             );

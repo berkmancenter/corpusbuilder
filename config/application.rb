@@ -17,7 +17,7 @@ module CorpusBuilder
       end
     end
 
-    config.middleware.use Rack::Deflater
+    # config.middleware.use Rack::Deflater
 
     config.generators do |g|
       g.orm :active_record, primary_key_type: :uuid

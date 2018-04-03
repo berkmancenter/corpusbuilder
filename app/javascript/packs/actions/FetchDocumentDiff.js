@@ -10,8 +10,8 @@ export default class FetchDocumentDiff extends Action {
             return state.resolve(selector, () => {
                 let url = `${state.baseUrl}/api/documents/${selector.document.id}/${selector.version.identifier}/diff`;
 
-                return this.get(url, { other_version: selector.otherVersion.identifier }).then((raw) => {
-                    return new Diff(raw);
+                return this.get(url, { other_version: selector.otherVersion.identifier, surface_number: selector.pageNumber }).then((raw) => {
+                    return new Diff(raw.diffs, raw.stats.differing_surfaces);
                 });
             });
         }

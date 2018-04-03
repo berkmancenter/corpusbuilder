@@ -35,6 +35,10 @@ export default class Diff {
         });
     }
 
+    get pageCount() {
+        return this._pagesAffected.length;
+    }
+
     @computed
     get isEmpty() {
         return this.rawDiff.length === 0;
@@ -115,7 +119,8 @@ export default class Diff {
         return new Diff([]);
     }
 
-    constructor(rawDiff) {
+    constructor(rawDiff, pagesAffected) {
         this.rawDiff = rawDiff;
+        this._pagesAffected = pagesAffected;
     }
 }

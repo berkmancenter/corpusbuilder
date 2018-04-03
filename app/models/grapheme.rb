@@ -31,7 +31,5 @@ class Grapheme < ApplicationRecord
     expose :id
     expose :inclusion
     expose :surface_number
-    expose :parent_ids
-    expose :zone_id
   end
 end
