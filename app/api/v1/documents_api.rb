@@ -212,7 +212,8 @@ class V1::DocumentsAPI < Grape::API
         action! Documents::Correct, @revision_options.merge(
           document: @document,
           graphemes: specs.result,
-          editor_id: @editor_id
+          editor_id: @editor_id,
+          surface_number: params[:surface_number]
         )
       end
 

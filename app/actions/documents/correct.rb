@@ -1,12 +1,11 @@
 module Documents
   class Correct < Action::Base
-    attr_accessor :document, :graphemes, :branch_name, :editor_id
+    attr_accessor :document, :graphemes, :branch_name, :editor_id, :surface_number
 
     validates :branch_name, presence: true
     validates :document, presence: true
     validates :editor_id, presence: true
-
-    # validate :revision_is_in_working_state
+    validates :surface_number, presence: true
 
     def execute
       @graphemes.each do |spec|
@@ -72,6 +71,7 @@ module Documents
       CorrectionLog.create! grapheme_id: grapheme_id,
         revision_id: revision_id,
         editor_id: editor_id,
+        surface_number: surface_number,
         status: status
     end
 

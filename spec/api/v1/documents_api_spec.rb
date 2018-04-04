@@ -609,6 +609,7 @@ describe V1::DocumentsAPI, type: :request do
       Documents::Correct.run! document: document,
         editor_id: editor.id,
         branch_name: 'development',
+        surface_number: 1,
         graphemes: (additions + changes + removals)
 
       Branches::Commit.run! branch: development_branch
@@ -711,6 +712,7 @@ describe V1::DocumentsAPI, type: :request do
 
           Documents::Correct.run! document: document,
             branch_name: topic_branch.name,
+            surface_number: 1,
             editor_id: editor.id,
             graphemes: [
               {
@@ -743,6 +745,7 @@ describe V1::DocumentsAPI, type: :request do
 
           Documents::Correct.run! document: document,
             branch_name: development_branch.name,
+            surface_number: 1,
             editor_id: editor.id,
             graphemes: [
               {
@@ -800,6 +803,7 @@ describe V1::DocumentsAPI, type: :request do
           travel 1.week
           Documents::Correct.run! document: document,
             branch_name: topic_branch.name,
+            surface_number: 1,
             editor_id: editor.id,
             graphemes: [
               {
@@ -819,6 +823,7 @@ describe V1::DocumentsAPI, type: :request do
 
           travel 1.week
           Documents::Correct.run! document: document,
+            surface_number: 1,
             branch_name: development_branch.name,
             editor_id: editor.id,
             graphemes: [

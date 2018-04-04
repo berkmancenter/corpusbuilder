@@ -12,14 +12,17 @@ module Branches
       Revisions::AddGraphemes.run!(
         revision_id: branch.working.id,
         grapheme_ids: (
-          added_ids + conflict_graphemes.map(&:id)
+          added_ids + conflict_graphemes.map(&:last).map(&:id)
         )
       )
 
-      conflict_graphemes.each do |conflict|
+      conflict_graphemes.each do |pair|
+        surface_number, conflict = pair
+
         CorrectionLog.create! grapheme: conflict,
           revision: branch.working,
           editor_id: current_editor_id,
+          surface_number: surface_number,
           status: CorrectionLog.statuses[:merge_conflict]
       end
 
@@ -98,10 +101,15 @@ module Branches
     def conflict_graphemes
       memoized freeze: true do
         merge_conflicts.map do |conflict|
-          Grapheme.create! conflict.output_grapheme.
-            attributes.
-            without("id", "inclusion", "revision_id", "surface_number", "status").
-            merge("status" => Grapheme.statuses[:conflict], "parent_ids" => conflict.ids)
+          [
+            conflict.output_grapheme.surface_number,
+            Grapheme.create!(
+              conflict.output_grapheme.
+              attributes.
+              without("id", "inclusion", "revision_id", "surface_number", "status").
+              merge("status" => Grapheme.statuses[:conflict], "parent_ids" => conflict.ids)
+            )
+          ]
         end
       end
     end

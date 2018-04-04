@@ -82,6 +82,7 @@ module VersionedManagementSpecHelper
 
     Documents::Correct.run! document: surface.document,
       graphemes: specs,
+      surface_number: surface.number,
       branch_name: branch.name,
       editor_id: editor.id
 

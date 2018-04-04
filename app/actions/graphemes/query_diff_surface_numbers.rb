@@ -21,7 +21,7 @@ module Graphemes
           )
           , corrected_graphemes(id) as (
             select correction_logs.grapheme_id as id,
-                  correction_logs.surface_number
+                   correction_logs.surface_number
             from tree
             inner join correction_logs
               on correction_logs.revision_id = tree.id
