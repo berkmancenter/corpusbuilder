@@ -120,7 +120,7 @@ class V1::DocumentsAPI < Grape::API
       desc 'Returns a diff of changes for a revision with respect to other revision'
       params do
         optional :other_revision, type: String
-        requires :surface_number, type: Integer
+        optional :surface_number, type: Integer
       end
       get ':revision/diff' do
         revision1 = revision_from_params :revision

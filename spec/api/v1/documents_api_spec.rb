@@ -899,21 +899,21 @@ describe V1::DocumentsAPI, type: :request do
       end
 
       it "returns all new graphemes with the status of addition" do
-        expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(4)
+        expect(valid_root_response["diffs"].select { |g| g["inclusion"] == "right" }.count).to eq(4)
       end
 
       it "returns old graphemes with the inclusion of deletion" do
-        expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
+        expect(valid_root_response["diffs"].select { |g| g["inclusion"] == "left" }.count).to eq(3)
       end
 
       it "returns all graphemes when root revision specified" do
-        expect(valid_root_response.select { |g| g["inclusion"] == "left" }.count).to eq(3)
-        expect(valid_root_response.select { |g| g["inclusion"] == "right" }.count).to eq(4)
+        expect(valid_root_response["diffs"].select { |g| g["inclusion"] == "left" }.count).to eq(3)
+        expect(valid_root_response["diffs"].select { |g| g["inclusion"] == "right" }.count).to eq(4)
       end
 
       it "returns just the right amount of attributes" do
-        expect(valid_root_response.first.keys.sort).to eq([
-          "id", "value", "area", "inclusion", "zone_id", "parent_ids", "surface_number"
+        expect(valid_root_response["diffs"].first.keys.sort).to eq([
+          "id", "value", "area", "inclusion"
         ].sort)
       end
     end

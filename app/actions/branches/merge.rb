@@ -128,34 +128,84 @@ module Branches
       end
     end
 
+    # TODO: the following common abstraction over the iteration
+    # over graphemes grouped by the surface number should get factored
+    # out into its own Enumerable
     def compile_changes(diffs)
       results = []
 
-      roots = Set.new(diffs.select { |g| g.inclusion == 'left' })
-      rights = Set.new(diffs.select { |g| g.inclusion == 'right' })
+      roots = diffs.select { |g| g.inclusion == 'left' }
+      rights = diffs.select { |g| g.inclusion == 'right' }
 
-      roots.each do |root_grapheme|
-        found = root_grapheme.special? ? nil : rights.find do |g|
-          !g.special? && root_grapheme.surface_number == g.surface_number &&
-            g.area.overlaps?(root_grapheme.area)
-        end
-
-        results.push(
-          Change.new(root_grapheme, found)
-        )
-
-        if found.present?
-          rights.delete(found)
-        end
-
-        roots.delete(root_grapheme)
+      if roots.empty? || rights.empty?
+        return [ ]
       end
 
-      rights.each do |right|
-        results.push(Change.new(nil, right))
-      end
+      ours_ix = 0
+      theirs_ix = 0
 
-      rights.clear
+      ours = Set.new
+      theirs = Set.new
+      surface_number = roots.first.surface_number
+
+      loop do
+        loop do
+          next_ours = roots[ ours_ix ]
+
+          if next_ours.try(:surface_number) != surface_number
+            break
+          else
+            ours.add(next_ours)
+            ours_ix += 1
+          end
+        end
+
+        loop do
+          next_theirs = rights[ theirs_ix ]
+
+          if next_theirs.nil?
+            break
+          elsif next_theirs.surface_number < surface_number
+            theirs_ix += 1
+          elsif next_theirs.surface_number != surface_number
+            break
+          else
+            theirs.add(next_theirs)
+            theirs_ix += 1
+          end
+        end
+
+        results += ours.map do |our_change|
+          found = theirs.find do |other_change|
+            our_change.area.overlaps?(other_change.area)
+          end
+
+          if found.present?
+            theirs.delete(found)
+          end
+
+          ours.delete(our_change)
+
+          Change.new(our_change, found)
+        end.reject(&:nil?)
+
+        ours.each do |g|
+          results << Change.new(g, nil)
+        end
+
+        theirs.each do |g|
+          results << Change.new(nil, g)
+        end
+
+        ours.clear
+        theirs.clear
+
+        surface_number = roots[ ours_ix ].try(:surface_number)
+
+        if ours_ix >= roots.count || theirs_ix >= rights.count
+          break
+        end
+      end
 
       results
     end

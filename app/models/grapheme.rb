@@ -30,6 +30,5 @@ class Grapheme < ApplicationRecord
     expose :value
     expose :id
     expose :inclusion
-    expose :surface_number
   end
 end
