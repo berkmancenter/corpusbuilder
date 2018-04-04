@@ -3,7 +3,6 @@ import GraphemeUtils from '../lib/GraphemesUtils';
 import WordDiff from './WordDiff';
 
 class Page {
-    @computed
     get surfaceNumber() {
         return this.graphemes[0].surface_number;
     }
@@ -14,32 +13,14 @@ class Page {
 }
 
 export default class Diff {
-    @computed
-    get pages() {
-        let initialState = {
-            result: [ ],
-            lastPage: null
-        };
-
-        return this.rawDiff.reduce((state, grapheme) => {
-            if(state.lastPage !== grapheme.surface_number) {
-                state.result.push([]);
-            }
-
-            state.result[ state.result.length - 1 ].push(grapheme)
-            state.lastPage = grapheme.surface_number;
-
-            return state;
-        }, initialState).result.map((graphemes) => {
-            return new Page(graphemes);
-        });
-    }
-
     get pageCount() {
         return this._pagesAffected.length;
     }
 
-    @computed
+    get pagesAffected() {
+        return this._pagesAffected || [];
+    }
+
     get isEmpty() {
         return this.rawDiff.length === 0;
     }
@@ -66,7 +47,7 @@ export default class Diff {
 
         let currentWords = GraphemeUtils.words(currentGraphemes);
         let otherWords = GraphemeUtils.words(otherGraphemes);
-        let diffGraphemes = this.pages[pageNumber - 1].graphemes;
+        let diffGraphemes = this.rawDiff;
 
         let currentMap = new Map();
         let otherMap = new Map();

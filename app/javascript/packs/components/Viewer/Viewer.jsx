@@ -328,16 +328,10 @@ export default class Viewer extends React.Component {
             // auto-set the diffPage when the current page changes
             autorun(() => {
                 if(this.diff !== null && this.diff !== undefined) {
-                    let index = 1;
 
-                    for(let diffPage of this.diff.pages) {
-                        if(diffPage.surfaceNumber === this.page) {
-                            this.diffPage = index;
-                            break;
-                        }
+                  let ix = this.diff.pagesAffected.indexOf(this.page);
 
-                        index++;
-                    }
+                  this.diffPage = ix !== -1 ? ix + 1 : 1;
                 }
             });
         });
@@ -751,10 +745,10 @@ export default class Viewer extends React.Component {
     onDiffSwitch(page) {
         this.diffPage = page;
 
-        let diffPage = this.diff.pages[ page - 1 ];
+        let diffPage = this.diff.pagesAffected[page - 1];
 
         if(diffPage !== undefined) {
-            this.navigate(diffPage.surfaceNumber);
+            this.navigate(diffPage);
         }
     }
 

@@ -9,10 +9,10 @@ export default class WordDiff {
                 return "modified";
             }
 
-            return "added";
+            return "deleted";
         }
         else {
-            return "deleted";
+            return "added";
         }
     }
 
