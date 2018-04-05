@@ -36,6 +36,7 @@ export default class Action {
                     Action.requests.get(this.selector.id).forEach((callback) => {
                         callback(null, error);
                     });
+                    throw error
                 })
                 .finally(() => {
                     Action.requests.delete(this.selector.id);
@@ -64,6 +65,10 @@ export default class Action {
             .then((data, response) => {
                 this.state.broadcastEvent(this.selector, data);
                 return data;
+            })
+            .catch((error) => {
+                this.state.broadcastEvent(this.selector, error, 'error');
+                throw error
             })
             .finally(() => {
                 this.state.broadcastEvent(this.selector, null, 'end');

@@ -10,6 +10,7 @@ import { Button } from '../Button';
 import { DocumentInfo } from '../DocumentInfo'
 import { DocumentRevisionsBrowser } from '../DocumentRevisionsBrowser'
 import { ProgressIndicator } from '../ProgressIndicator';
+import { MessagesIndicator } from '../MessagesIndicator';
 
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
@@ -328,6 +329,8 @@ export default class WindowManager extends React.Component {
                   <div>
                       <ProgressIndicator events={ this.progressEvents }>
                       </ProgressIndicator>
+                      <MessagesIndicator>
+                      </MessagesIndicator>
                       { this.renderDocumentPanes() }
                   </div>
               </Provider>

@@ -32,11 +32,20 @@ export default class State {
 
     broadcastEvent(selector, value, subname = null) {
         let eventName = subname === null ? selector.tag : `${selector.tag}:${subname}`;
-        let list = this.eventHandlers[ eventName ];
+        let eventNames = Object.keys(this.eventHandlers).filter((name) => {
+            return eventName.match(name) !== null;
+        });
+        let list = eventNames.reduce((state, name) => {
+            for(let handler of this.eventHandlers[ name ]) {
+                state.push(handler)
+            }
+
+            return state;
+        }, []);
 
         if(list !== undefined) {
             for(let handler of list) {
-                handler(selector.select, value);
+                handler(selector.select, value, eventName);
             }
         }
     }

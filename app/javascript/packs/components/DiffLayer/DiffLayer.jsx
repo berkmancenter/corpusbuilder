@@ -125,6 +125,17 @@ export default class DiffLayer extends React.Component {
       return null;
     }
 
+    renderPreview(mode) {
+        if(this.hasPreviewOpened) {
+            let hasDiff = mode === "after" ? this.openedDiff.hasAfterDiff : this.openedDiff.hasBeforeDiff;
+            let branchName = mode === "after" ? this.afterBranchName : this.beforeBranchName;
+            let graphemes = mode === "after" ? this.openedDiff.graphemes : this.openedDiff.otherGraphemes;
+            let boxes = mode === "after" ? this.currentBoxes : this.otherBoxes;
+            let onReported = mode === "after" ? this.onCurrentBoxesReported.bind(this) : this.onOtherBoxesReported.bind(this);
+            let dir = mode === "after" ? this.afterDir : this.beforeDir;
+        }
+    }
+
     renderCurrentPreview() {
       if(this.hasPreviewOpened) {
           if(this.openedDiff.hasAfterDiff) {
