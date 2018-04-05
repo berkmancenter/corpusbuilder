@@ -393,12 +393,10 @@ export default class BoxesEditor extends React.Component {
     }
 
     broadcastBoxes() {
+        let boxes = this.boxes.sort((box1, box2) => { return box1.ulx - box2.ulx });
         this.props.onBoxesReported(
-            this.boxes
-                .map(this.translateBox.bind(this))
-                .sort((box1, box2) => {
-                    return box1.ulx - box2.ulx;
-                })
+            boxes.map(this.translateBox.bind(this)),
+            boxes
         );
     }
 

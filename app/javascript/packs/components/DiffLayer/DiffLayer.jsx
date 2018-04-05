@@ -10,11 +10,18 @@ import GraphemeUtils from '../../lib/GraphemesUtils';
 
 import styles from './DiffLayer.scss'
 
+@inject('measureText')
 @observer
 export default class DiffLayer extends React.Component {
 
     @observable
     openedDiff = null;
+
+    @observable
+    ratio = 1;
+
+    @observable
+    fontSize = 12;
 
     @observable
     currentBoxes = [ ];
@@ -44,17 +51,7 @@ export default class DiffLayer extends React.Component {
     @computed
     get afterDir() {
         if(this.hasPreviewOpened) {
-            let line = GraphemeUtils.lines(this.props.document.surfaces[0].graphemes).find((line) => {
-                return line.find((g) => {
-                    return g.id === this.openedDiff.afterGraphemes[0].id;
-                }) !== undefined;
-            });
-
-            if(line === undefined) {
-                return null;
-            }
-
-            return line[0].value.codePointAt(0) === GraphemeUtils.rtlMark ? "rtl" : "ltr";
+            return this.openedDiff.word1[0].zone_direction === 1 ? "rtl" : "ltr";
         }
 
         return null;
@@ -86,43 +83,12 @@ export default class DiffLayer extends React.Component {
         this.onPreviewCloseRequest();
     }
 
-    onCurrentBoxesReported(boxes) {
+    onCurrentBoxesReported(_, boxes) {
         this.currentBoxes = boxes;
     }
 
-    onOtherBoxesReported(boxes) {
+    onOtherBoxesReported(_, boxes) {
         this.otherBoxes = boxes;
-    }
-
-    renderOtherPreview() {
-      if(this.hasPreviewOpened) {
-          if(this.openedDiff.hasBeforeDiff) {
-              return [
-                  <div key={ 1 } className="corpusbuilder-diff-label">
-                    On { this.beforeBranchName }:
-                  </div>,
-                  <VisualPreview key={ 2 } pageImageUrl={ this.pageImageUrl }
-                                line={ this.openedDiff.otherGraphemes }
-                                document={ this.props.document }
-                                boxes={ this.otherBoxes }
-                                showBoxes={ true }
-                                editable={ false }
-                                onBoxesReported={ this.onOtherBoxesReported.bind(this) }
-                                />,
-                  <input key={ 3 } disabled="disabled" dir={ this.beforeDir } value={ this.openedDiff.beforeText } />
-              ];
-          }
-          else {
-              return (
-                <div className="corpusbuilder-diff-label">
-                  On { this.beforeBranchName }:
-                  <div className="corpusbuilder-diff-nodata">---</div>
-                </div>
-              );
-          }
-      }
-
-      return null;
     }
 
     renderPreview(mode) {
@@ -133,38 +99,56 @@ export default class DiffLayer extends React.Component {
             let boxes = mode === "after" ? this.currentBoxes : this.otherBoxes;
             let onReported = mode === "after" ? this.onCurrentBoxesReported.bind(this) : this.onOtherBoxesReported.bind(this);
             let dir = mode === "after" ? this.afterDir : this.beforeDir;
+            let text = mode === "after" ? this.openedDiff.afterText : this.openedDiff.beforeText;
+
+            if(hasDiff) {
+                let box = boxes[0];
+                let inputStyles = {};
+
+                if(box !== undefined) {
+                    let fontSize = (box.lry - box.uly) * this.ratio;
+                    let boxWidth = (box.lrx - box.ulx) * this.ratio;
+                    let textWidth = this.props.measureText(text, fontSize);
+                    let scale = textWidth > 0 ? boxWidth / textWidth : 1;
+
+                    scale = scale > 2 ? 1 : scale;
+
+                    inputStyles = {
+                        left: box.ulx,
+                        width: textWidth,
+                        transform: `scaleX(${ scale })`,
+                        fontSize: fontSize
+                    };
+                }
+
+                return [
+                    <div key={ mode } className="corpusbuilder-diff-label">
+                      On { branchName }:
+                    </div>,
+                    <VisualPreview key={ 5 } pageImageUrl={ this.pageImageUrl }
+                                  line={ graphemes }
+                                  document={ this.props.document }
+                                  boxes={ boxes }
+                                  showBoxes={ true }
+                                  editable={ false }
+                                  onBoxesReported={ onReported }
+                                  />,
+                    <div className="corpusbuilder-diff-input-wrapper">
+                        <input style={ inputStyles } key={ mode + "input" } disabled="disabled" dir={ dir } value={ text } />
+                    </div>
+                ];
+            }
+            else {
+                return (
+                    <div className="corpusbuilder-diff-label">
+                      On { branchName }:
+                      <div className="corpusbuilder-diff-nodata">---</div>
+                    </div>
+                );
+            }
         }
-    }
 
-    renderCurrentPreview() {
-      if(this.hasPreviewOpened) {
-          if(this.openedDiff.hasAfterDiff) {
-              return [
-                  <div key={ 4 } className="corpusbuilder-diff-label">
-                    On { this.afterBranchName }:
-                  </div>,
-                  <VisualPreview key={ 5 } pageImageUrl={ this.pageImageUrl }
-                                line={ this.openedDiff.graphemes }
-                                document={ this.props.document }
-                                boxes={ this.currentBoxes }
-                                showBoxes={ true }
-                                editable={ false }
-                                onBoxesReported={ this.onCurrentBoxesReported.bind(this) }
-                                />,
-                  <input key={ 6 } disabled="disabled" dir={ this.afterDir } value={ this.openedDiff.afterText } />
-              ];
-          }
-          else {
-              return (
-                  <div className="corpusbuilder-diff-label">
-                    On { this.afterBranchName }:
-                    <div className="corpusbuilder-diff-nodata">---</div>
-                  </div>
-              );
-          }
-      }
-
-      return null;
+        return null;
     }
 
     renderCurrentButtons() {
@@ -190,12 +174,12 @@ export default class DiffLayer extends React.Component {
                                     onCloseRequested={ this.onPreviewCloseRequest.bind(this) }
                                     >
                       <div className="corpusbuilder-diff-preview">
-                          { this.renderCurrentPreview() }
+                          { this.renderPreview("after") }
                           { this.renderCurrentButtons() }
                           <div className="corpusbuilder-diff-separator">
                             &nbsp;
                           </div>
-                          { this.renderOtherPreview() }
+                          { this.renderPreview("before") }
                       </div>
                     </FloatingWindow>
                     {

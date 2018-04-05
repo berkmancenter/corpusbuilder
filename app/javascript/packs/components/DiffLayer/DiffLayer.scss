@@ -49,6 +49,33 @@
       margin-bottom: 6px;
     }
 
+    &-input-wrapper {
+      border: none;
+      width: 100%;
+      display: block;
+      font-size: 13px;
+      margin-top: 10px;
+      border-radius: 1px;
+      background-color: rgba(0, 0, 0, 0.04);
+      color: black;
+      box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
+      margin-bottom: 0px;
+      box-sizing: border-box;
+      padding: 10px 0px;
+      position: relative;
+
+      input {
+        display: block;
+        position: relative;
+        padding: 0px !important;
+        height: auto;
+        background: none !important;
+        box-shadow: none;
+        margin: 0px !important;
+        transform-origin: top left;
+      }
+    }
+
     &-separator {
       text-align: center;
       background: white;

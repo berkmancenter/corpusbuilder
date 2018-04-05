@@ -38,7 +38,7 @@ export default class WordDiff {
 
     @computed
     get beforeGraphemes() {
-        return (this.hasAfterDiff ? this.word2 : this.word1).sort((a, b) => {
+        return (this.hasAfterDiff && this.hasBeforeDiff ? this.word2 : this.word1).sort((a, b) => {
             if(a.position_weight < b.position_weight) {
                 return -1;
             }
@@ -96,15 +96,15 @@ export default class WordDiff {
     }
 
     get wasAdded() {
-        return this.status === "added";
+        return !this.hasBeforeDiff && this.hasAfterDiff;
     }
 
     get wasDeleted() {
-        return this.status === "deleted";
+        return this.hasBeforeDiff && !this.hasAfterDiff;
     }
 
     get wasModified() {
-        return this.status === "modified";
+        return this.hasBeforeDiff && this.hasAfterDiff;
     }
 
     @computed

@@ -140,9 +140,9 @@ export default class VisualPreview extends React.Component {
         this.props.onBoxSelectionChanged(box);
     }
 
-    onBoxesReported(boxes) {
+    onBoxesReported(boxes, scaled) {
         if(typeof this.props.onBoxesReported === 'function') {
-            this.props.onBoxesReported(boxes);
+            this.props.onBoxesReported(boxes, scaled);
         }
     }
 
