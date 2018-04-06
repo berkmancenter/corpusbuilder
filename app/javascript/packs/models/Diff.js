@@ -88,12 +88,36 @@ export default class Diff {
             return foundWords;
         };
 
-        return WordDiff.groupOverlapping(
+        let wordDiffs = WordDiff.groupOverlapping(
             findWords(currentWords, currentMap),
             findWords(otherWords, otherMap)
         ).map((wordGroup) => {
             return WordDiff.merge(wordGroup);
         });
+
+        let lines = wordDiffs.reduce(
+            (state, diff) => {
+                if(state[diff.graphemes[0].zone_id] === undefined) {
+                    state[diff.graphemes[0].zone_id] = []
+                }
+                state[diff.graphemes[0].zone_id].push(diff)
+                return state
+            }, {}
+        );
+
+        let seenIds = new Set();
+        let result = [ ];
+
+        for(let line of Object.values(lines)) {
+            for(let diff of line) {
+                if(!seenIds.has(diff.graphemes[0].id)) {
+                    result.push(diff);
+                    seenIds.add(diff.graphemes[0].id);
+                }
+            }
+        }
+
+        return result;
     }
 
     static empty() {
