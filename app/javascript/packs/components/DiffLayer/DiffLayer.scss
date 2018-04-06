@@ -26,19 +26,19 @@
       }
 
       &-conflict:after {
-        content: "!";
+        content: "✖";
         position: absolute;
-        top: -22px;
-        right: -22px;
+        top: -15px;
+        right: -15px;
         font-family: serif;
         display: block;
-        background: rgba(200, 20, 20, 1);
+        background: rgba(220, 100, 100, 1);
         color: white;
         text-align: center;
-        font-size: 17px;
-        font-weight: bold;
-        width: 25px;
-        height: 25px;
+        font-size: 10px;
+        width: 15px;
+        height: 15px;
+        line-height: 15px;
         border-radius: 100px 100px 100px 0px;
         opacity: 1;
       }
