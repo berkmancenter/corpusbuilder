@@ -14,7 +14,7 @@ class Page {
 
 export default class Diff {
     get pageCount() {
-        return this._pagesAffected.length;
+        return this.pagesAffected.length;
     }
 
     get pagesAffected() {
@@ -22,7 +22,7 @@ export default class Diff {
     }
 
     get isEmpty() {
-        return this.rawDiff.length === 0;
+        return (this.rawDiff || []).length === 0;
     }
 
     words(pageNumber, currentGraphemes, otherGraphemes, currentVersion, otherVersion) {

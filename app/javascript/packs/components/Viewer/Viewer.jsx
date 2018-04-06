@@ -327,11 +327,21 @@ export default class Viewer extends React.Component {
         setTimeout(() => {
             // auto-set the diffPage when the current page changes
             autorun(() => {
-                if(this.diff !== null && this.diff !== undefined) {
+                if(this.diff !== null && this.diff !== undefined && this.diff.pageCount !== 0) {
 
                   let ix = this.diff.pagesAffected.indexOf(this.page);
 
-                  this.diffPage = ix !== -1 ? ix + 1 : 1;
+                  if(ix == -1) {
+                    ix = 0;
+                  }
+
+                  if(this.diffPage !== this.diff.pagesAffected[ix]) {
+                      this.diffPage = this.diff.pagesAffected[ix];
+
+                      if(this.page !== this.diffPage) {
+                          this.navigate(this.diffPage);
+                      }
+                  }
                 }
             });
         });
@@ -766,7 +776,6 @@ export default class Viewer extends React.Component {
               }
             }
         );
-        this.diffPage = 1;
     }
 
     onSelected(graphemes) {

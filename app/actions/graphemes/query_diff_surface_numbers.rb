@@ -4,32 +4,28 @@ module Graphemes
 
     def execute
       sql = <<-sql
-        with recursive tree(id, parent_id, merged_with_id) as (
-            select id,
-                parent_id,
-                merged_with_id
-            from revisions
-            where id in ('#{revision_left.id}', '#{revision_right.id}')
-            union
-            select revisions.id,
-                revisions.parent_id,
-                revisions.merged_with_id
-            from tree
-            inner join revisions
-                    on    revisions.id = tree.parent_id
-                      or revisions.id = tree.merged_with_id
-          )
-          , corrected_graphemes(id) as (
-            select correction_logs.grapheme_id as id,
-                   correction_logs.surface_number
-            from tree
-            inner join correction_logs
-              on correction_logs.revision_id = tree.id
-          )
-        select distinct corrected_graphemes.surface_number from corrected_graphemes
+        select distinct surface_number
+        from correction_logs
+        where correction_logs.revision_id in (#{ path_ids.map { |p| "'#{p}'" }.join(', ') })
       sql
 
       Grapheme.connection.execute(sql).to_a.map { |r| r["surface_number"] }.sort
+    end
+
+    def path_ids
+      memoized do
+        (root_info.path1 - root_info.path2) + (root_info.path2 - root_info.path1)
+      end
+    end
+
+    def root_info
+      memoized do
+        Revisions::QueryClosestRoot.run!(
+          revision1: revision_left,
+          revision2: revision_right,
+          raw: true
+        ).result
+      end
     end
   end
 end
