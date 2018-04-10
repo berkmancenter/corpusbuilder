@@ -41,6 +41,7 @@ import { RemoveBranchWindow } from '../RemoveBranchWindow';
 import { Button } from '../Button';
 import { DiffLayer } from '../DiffLayer';
 import { Spinner } from '../Spinner';
+import { If } from '../If';
 
 import s from './Viewer.scss'
 
@@ -936,34 +937,41 @@ export default class Viewer extends React.Component {
                                          >
                     </AnnotationsSettings>
                   </div>
-                  <InlineEditor visible={ this.showInlineEditor }
-                                document={ doc }
-                                line={ this.editingLine }
-                                text={ this.editingText }
-                                visual={ this.editingVisual }
-                                showBoxes={ this.forceEditingBoxes }
-                                allowNewBoxes={ !this.forceEditingBoxes }
-                                page={ page }
-                                width={ width }
-                                visualOptions={ this.editingOptions }
-                                mainPageTop={ mainPageTop }
-                                onCloseRequested={ this.hideInlineEditor.bind(this) }
-                                onSaveRequested={ this.saveLine.bind(this) }
-                                onDeleteLineRequested={ this.deleteLine.bind(this) }
-                                onArrow={ this.onInlineEditorArrow.bind(this) }
-                                />
-                  <NewBranchWindow visible={ this.showNewBranchWindow }
-                                   document={ doc }
-                                   currentVersion={ this.currentVersion }
-                                   onCloseRequested={ this.hideNewBranchWindow.bind(this) }
-                                   onSaveRequested={ this.saveNewBranch.bind(this) }
-                                   />
+                  <If cond={ this.showInlineEditor }>
+                      <InlineEditor document={ doc }
+                                    visible={ this.showInlineEditor }
+                                    line={ this.editingLine }
+                                    text={ this.editingText }
+                                    visual={ this.editingVisual }
+                                    showBoxes={ this.forceEditingBoxes }
+                                    allowNewBoxes={ !this.forceEditingBoxes }
+                                    page={ page }
+                                    width={ width }
+                                    visualOptions={ this.editingOptions }
+                                    mainPageTop={ mainPageTop }
+                                    onCloseRequested={ this.hideInlineEditor.bind(this) }
+                                    onSaveRequested={ this.saveLine.bind(this) }
+                                    onDeleteLineRequested={ this.deleteLine.bind(this) }
+                                    onArrow={ this.onInlineEditorArrow.bind(this) }
+                                    />
+                  </If>
+                  <If cond={ this.showNewBranchWindow }>
+                      <NewBranchWindow visible={ this.showNewBranchWindow }
+                                      document={ doc }
+                                      currentVersion={ this.currentVersion }
+                                      onCloseRequested={ this.hideNewBranchWindow.bind(this) }
+                                      onSaveRequested={ this.saveNewBranch.bind(this) }
+                                      />
+                  </If>
+                  <If cond={ this.showBranchRemoval }>
                   <RemoveBranchWindow visible={ this.showBranchRemoval }
                                    document={ doc }
                                    currentVersion={ this.currentVersion }
                                    onCloseRequested={ this.hideBranchRemoveWindow.bind(this) }
                                    onRemoveBranchRequested={ this.removeBranch.bind(this) }
                                    />
+                  </If>
+                  <If cond={ this.showMergeWindow }>
                   <MergeBranchesWindow visible={ this.showMergeWindow }
                                    document={ doc }
                                    currentVersion={ this.currentVersion }
@@ -971,6 +979,8 @@ export default class Viewer extends React.Component {
                                    onCloseRequested={ this.hideMergeWindow.bind(this) }
                                    onMergeRequested={ this.mergeBranches.bind(this) }
                                    />
+                  </If>
+                  <If cond={ this.showAnnotationEditor }>
                   <AnnotationEditor visible={ this.showAnnotationEditor }
                                     document={ doc }
                                     page={ page }
@@ -980,30 +990,35 @@ export default class Viewer extends React.Component {
                                     onCloseRequested={ this.hideAnnotationEditor.bind(this) }
                                     onSaveRequested={ this.saveAnnotation.bind(this) }
                                     />
-                  <Annotations visible={ this.showAnnotations }
-                               document={ doc }
-                               annotations={ this.annotations }
-                               version={ this.currentVersion }
-                               showComments={ this.showComments }
-                               showCategories={ this.showCategories }
-                               showStructure={ this.showStructure }
-                               page={ page }
-                               width={ width }
-                               mainPageTop={ mainPageTop }
-                               onSaveRequested={ this.updateAnnotation.bind(this) }
-                               onDeleteRequested={ this.deleteAnnotation.bind(this) }
-                               />
-                  <DiffLayer diffWords={ this.diffWords }
-                             document={ doc }
-                             page={ page }
-                             visible={ this.showDiff }
-                             width={ width }
-                             mainPageTop={ mainPageTop }
-                             hasConflict={ this.hasConflict }
-                             onEditDiffRequested={ this.onEditDiffRequested.bind(this) }
-                             onPreviewOpened={ this.onDiffPreviewOpened.bind(this) }
-                             onPreviewClosed={ this.onDiffPreviewClosed.bind(this) }
-                             />
+                  </If>
+                  <If cond={ this.currentVersion }>
+                      <Annotations visible={ this.showAnnotations }
+                                  document={ doc }
+                                  annotations={ this.annotations }
+                                  version={ this.currentVersion }
+                                  showComments={ this.showComments }
+                                  showCategories={ this.showCategories }
+                                  showStructure={ this.showStructure }
+                                  page={ page }
+                                  width={ width }
+                                  mainPageTop={ mainPageTop }
+                                  onSaveRequested={ this.updateAnnotation.bind(this) }
+                                  onDeleteRequested={ this.deleteAnnotation.bind(this) }
+                                  />
+                  </If>
+                  <If cond={ this.showDiff }>
+                      <DiffLayer diffWords={ this.diffWords }
+                                document={ doc }
+                                visible={ this.showDiff }
+                                page={ page }
+                                width={ width }
+                                mainPageTop={ mainPageTop }
+                                hasConflict={ this.hasConflict }
+                                onEditDiffRequested={ this.onEditDiffRequested.bind(this) }
+                                onPreviewOpened={ this.onDiffPreviewOpened.bind(this) }
+                                onPreviewClosed={ this.onDiffPreviewClosed.bind(this) }
+                                />
+                  </If>
                   { otherContent }
                 </div>
                 { this.renderStatus() }
