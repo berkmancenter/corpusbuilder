@@ -147,7 +147,7 @@ describe V1::DocumentsAPI, type: :request do
     it "fails when a given image id doesn't exist" do
       post url, params: data_minimal_correct.merge({ images: [ { id: -1 } ] }), headers: headers
 
-      expect(response.status).to eq(400)
+      expect(response.status).to eq(422)
     end
   end
 
@@ -310,6 +310,81 @@ describe V1::DocumentsAPI, type: :request do
 
     let(:editor) do
       create :editor
+    end
+
+    context "PUT" do
+      it_behaves_like "application authenticated route"
+      it_behaves_like "revision accepting route"
+
+      def url(id, revision = nil)
+        revision ||= master_branch.name
+
+        "/api/documents/#{id}/#{revision}/tree"
+      end
+
+      let(:no_app_request) do
+        put url(document.id), headers: headers.without('X-App-Id'), params: minimal_params
+      end
+
+      let(:no_token_request) do
+        put url(document.id), headers: headers.without('X-Token'), params: minimal_params
+      end
+
+      let(:good_branch_request) do
+        put url(document.id), headers: headers, params: minimal_params
+      end
+
+      let(:good_revision_request) do
+        put url(document.id, master_branch.working.id), headers: headers, params: minimal_params
+      end
+
+      let(:bad_branch_request) do
+        put url(document.id, 'idontexist'), headers: headers, params: minimal_params
+      end
+
+      let(:bad_revision_request) do
+        put url(document.id, '92a23a24-b8d2-4c4d-a366-99233bbaad6c'), headers: headers, params: minimal_params
+      end
+
+      let(:success_status) do
+        200
+      end
+
+      let(:invalid_token_request) do
+        put url(document.id), headers: headers.merge('X-Token' => bcrypt('-- invalid --')), params: minimal_params
+      end
+
+      let(:valid_request) do
+        master_branch
+        surfaces
+        graphemes
+
+        put url(document.id), headers: headers, params: minimal_params
+      end
+
+      let(:minimal_params) do
+        {
+          words: [
+            {
+              grapheme_ids: graphemes.map(&:id),
+              text: ''
+            }
+          ],
+          surface_number: 1
+        }
+      end
+
+      context "when trying to correct a branch already in a locked state" do
+        before(:each) { master_branch.locked! }
+
+        let(:request) { good_branch_request }
+
+        it "results in 422 due to validation error" do
+          request
+
+          expect(response.status).to eq(422)
+        end
+      end
     end
 
     context "GET" do
@@ -701,6 +776,25 @@ describe V1::DocumentsAPI, type: :request do
         method.call url(document.id, 'master'),
           params: { other_branch: 'topic' },
           headers: headers
+      end
+
+      context "when trying to merge with branch already in a locked state" do
+        let(:master_branch) do
+          Branches::Create.run!(
+            name: 'master',
+            document_id: document.id,
+            editor_id: editor.id,
+            status: Branch.statuses[:locked]
+          ).result
+        end
+
+        let(:request) { valid_request }
+
+        it "results in 422 due to validation error" do
+          request
+
+          expect(response.status).to eq(422)
+        end
       end
 
       context "when applying changes with current revision changed but without conflicts" do
@@ -1127,7 +1221,7 @@ describe V1::DocumentsAPI, type: :request do
       topic_branch
       valid_request
 
-      expect(response.status).to eq(400)
+      expect(response.status).to eq(422)
       expect(Branch.where(name: 'topic').count).to eq(1)
     end
   end

@@ -35,7 +35,7 @@ module V1Base
 
     helpers do
       def status_fail
-        status 400
+        status 422
       end
 
       def uuid_pattern

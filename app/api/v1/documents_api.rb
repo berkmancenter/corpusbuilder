@@ -152,7 +152,14 @@ class V1::DocumentsAPI < Grape::API
         infer_editor!
 
         current_branch = @document.branches.where(name: params[:branch]).first
+
+        if current_branch.locked?
+          return error!('Cannot merge to a locked branch. Other operation in place - please try again later.', 422)
+        end
+
         other_branch = @document.branches.where(name: params[:other_branch]).first
+
+        current_branch.locked!
 
         async! Branches::Merge,
           branch: current_branch,

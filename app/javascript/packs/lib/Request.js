@@ -64,8 +64,8 @@ export default class Request {
                       resolve(payload)
                   }
               })
-              .catch((error) => {
-                  reject(error);
+              .catch((error, xhr, body) => {
+                  reject(body);
               });
         });
     }

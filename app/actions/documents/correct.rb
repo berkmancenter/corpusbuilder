@@ -1,11 +1,13 @@
 module Documents
   class Correct < Action::Base
-    attr_accessor :document, :graphemes, :branch_name, :editor_id, :surface_number
+    attr_accessor :document, :graphemes, :branch_name, :editor_id, :surface_number, :revision_id
 
-    validates :branch_name, presence: true
     validates :document, presence: true
     validates :editor_id, presence: true
     validates :surface_number, presence: true
+    validate :revision_is_in_working_state
+    validate :branch_for_working_revision_exists
+    validate :branch_is_not_locked
 
     def execute
       @graphemes.each do |spec|
@@ -80,20 +82,52 @@ module Documents
     end
 
     def revision
-      @_revision ||= Revision.working.where(
-          parent_id: @document.branches.where(name: @branch_name).select("branches.revision_id")
-      ).first
+      memoized do
+        if revision_id.present?
+          Revision.find(revision_id)
+        else
+          Revision.working.where(
+              parent_id: @document.branches.where(name: @branch_name).select("branches.revision_id")
+          ).first
+        end
+      end
+    end
+
+    def branch
+      memoized do
+        @document.branches.
+          where(revision_id: revision.parent_id).
+          first
+      end
     end
 
     def revision_is_in_working_state
       if !revision.working?
         if revision_id.present?
           errors.add(:revision_id, "must point at an uncommitted revision")
+        else
+          if branch_name.present?
+            error.add(:branch_name, "points at a branch with inconsistent state, having a working revision not set to a working state")
+          end
         end
+      end
+    end
 
-        if branch_name.present?
-          error.add(:branch_name, "points at a branch with inconsistent state, having a working revision not set to a working state")
+    def branch_for_working_revision_exists
+      if !branch.present?
+        if revision_id.present?
+          errors.add(:revision_id, "must point at a working revision of existing branch")
+        else
+          if branch_name.present?
+            error.add(:branch_name, "must point at an existing branch inside a document")
+          end
         end
+      end
+    end
+
+    def branch_is_not_locked
+      if branch.locked?
+        errors.add(:base, "another operation is taking place on a branch, please try again later")
       end
     end
 

@@ -48,6 +48,8 @@ module Branches
       end
 
       branch
+    ensure
+      branch.regular!
     end
 
     def no_conflicts?

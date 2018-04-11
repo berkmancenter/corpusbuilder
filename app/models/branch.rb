@@ -2,6 +2,8 @@ class Branch < ApplicationRecord
   belongs_to :revision
   belongs_to :editor
 
+  enum status: [ :regular, :locked ]
+
   validates :editor_id, presence: true
 
   def working

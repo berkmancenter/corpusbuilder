@@ -1,6 +1,6 @@
 module Branches
   class Create < Action::Base
-    attr_accessor :document_id, :parent_revision_id, :editor_id, :name
+    attr_accessor :document_id, :parent_revision_id, :editor_id, :name, :status
 
     validates :document_id, presence: true
     validates :editor_id, presence: true
@@ -10,7 +10,8 @@ module Branches
     def execute
       branch = Branch.create! revision_id: next_revision.id,
         name: @name,
-        editor_id: @editor_id
+        editor_id: @editor_id,
+        status: status || Branch.statuses[:regular]
 
       next_working
 

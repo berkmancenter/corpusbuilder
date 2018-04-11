@@ -12,7 +12,7 @@ export default class MessagesIndicator extends React.Component {
 
     @computed
     get timeSpan() {
-        return this.props.timeSpan || 1500;
+        return this.props.timeSpan || 4500;
     }
 
     constructor(props) {
@@ -52,7 +52,7 @@ export default class MessagesIndicator extends React.Component {
         }
         else {
             for(let key of Object.keys(eventDescriptor.value)) {
-                let keyString = key === 'base' ? '' : `${key}: `;
+                let keyString = key === 'base' || key === 'error' ? '' : `${key}: `;
                 let valueString = "";
 
                 if(typeof eventDescriptor.value[key] === 'object' && eventDescriptor.value[key].length !== undefined) {
