@@ -9,7 +9,11 @@ module Graphemes
         where correction_logs.revision_id in (#{ path_ids.map { |p| "'#{p}'" }.join(', ') })
       sql
 
-      Grapheme.connection.execute(sql).to_a.map { |r| r["surface_number"] }.sort
+      if path_ids.present?
+        Grapheme.connection.execute(sql).to_a.map { |r| r["surface_number"] }.sort
+      else
+        []
+      end
     end
 
     def path_ids

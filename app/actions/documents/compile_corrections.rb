@@ -670,11 +670,12 @@ module Documents
 
       def area
         memoized do
+          areas = visually_ordered.map(&:area)
           Area.new(
-            ulx: visually_ordered.first.area.ulx,
-            uly: visually_ordered.first.area.uly,
-            lrx: visually_ordered.last.area.lrx,
-            lry: visually_ordered.last.area.lry
+            ulx: areas.map(&:ulx).min,
+            uly: areas.map(&:uly).min,
+            lrx: areas.map(&:lrx).max,
+            lry: areas.map(&:lry).max
           )
         end
       end
