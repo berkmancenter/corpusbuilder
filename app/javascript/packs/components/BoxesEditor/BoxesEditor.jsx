@@ -99,7 +99,8 @@ export default class BoxesEditor extends React.Component {
     inferBoxes() {
         if(this.props.boxes === null || this.props.boxes === undefined ||
            this.props.boxes.length === 0) {
-            this.boxes = GraphemesUtils.wordBoxes(this.props.line)
+            this.boxes = GraphemesUtils.lineWords(this.props.line)
+                                       .map(GraphemesUtils.wordToBox)
                                        .map(this.scaleBoxDown.bind(this));
             this.broadcastBoxes();
         }
