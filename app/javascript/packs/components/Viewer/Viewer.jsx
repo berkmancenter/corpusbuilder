@@ -328,7 +328,7 @@ export default class Viewer extends React.Component {
         setTimeout(() => {
             // auto-set the diffPage when the current page changes
             autorun(() => {
-                if(this.diff !== null && this.diff !== undefined && this.diff.pageCount !== 0) {
+                if(this.showDiff && this.diff !== null && this.diff !== undefined && this.diff.pageCount !== 0) {
 
                   let ix = this.diff.pagesAffected.indexOf(this.page);
 
