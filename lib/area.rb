@@ -27,6 +27,22 @@ class Area
     self
   end
 
+  def width
+    @lrx - @ulx
+  end
+
+  def height
+    @lry - @uly
+  end
+
+  def x
+    @ulx
+  end
+
+  def y
+    @uly
+  end
+
   def [](ix)
     six = ix.to_s
 
