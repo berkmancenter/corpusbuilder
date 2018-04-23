@@ -155,6 +155,10 @@ module Documents
               (source_graphemes.last.try(:position_weight) || 0) + diff_span.diffs.count + 1
             }.call
 
+            if open_position_weight > close_position_weight
+              open_position_weight, close_position_weight = [ close_position_weight, open_position_weight ]
+            end
+
             addmod_specs.each_with_index do |addmod_spec, index|
               addmod_spec[:position_weight] = open_position_weight +
                 ( index + 1 ) * (
