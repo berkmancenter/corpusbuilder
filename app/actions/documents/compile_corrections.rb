@@ -485,7 +485,9 @@ module Documents
 
       def source_graphemes
         memoized do
-          Grapheme.where(id: grapheme_ids).to_a
+          Graphemes::GroupWords.run!(
+            graphemes: Grapheme.where(id: grapheme_ids).to_a
+          ).result.flatten
         end
       end
 

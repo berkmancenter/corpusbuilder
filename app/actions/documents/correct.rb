@@ -102,12 +102,12 @@ module Documents
     end
 
     def revision_is_in_working_state
-      if !revision.working?
+      if !revision.working? && !revision.conflict?
         if revision_id.present?
           errors.add(:revision_id, "must point at an uncommitted revision")
         else
           if branch_name.present?
-            error.add(:branch_name, "points at a branch with inconsistent state, having a working revision not set to a working state")
+            errors.add(:branch_name, "points at a branch with inconsistent state, having a working revision not set to a working state")
           end
         end
       end
