@@ -63,8 +63,8 @@ describe Documents::CompileCorrections do
         create_grapheme(char, area, visual_positions[char_index], 100*ix + graphemes.count, word.chars.count)
     end
 
-    document.master.revision.grapheme_ids << graphemes.flatten.map(&:id)
-    document.master.working.grapheme_ids << graphemes.flatten.map(&:id)
+    document.master.revision.graphemes << graphemes.flatten
+    document.master.working.graphemes << graphemes.flatten
 
     graphemes
   end
@@ -171,6 +171,31 @@ describe Documents::CompileCorrections do
     expect(modifications.count).to eq(3)
     expect(additions.sort_by { |a| a[:position_weight] }.map { |a| a[:value] }.join).to eq("je")
     expect(modifications.sort_by { |a| a[:position_weight] }.map { |a| a[:value] }.join).to eq("den")
+  end
+
+  it 'handles reverals correctly' do
+    corrections = run_example(
+      {
+        { "one" => "((97,20),(88,0))" } => { "one" => "((97,20),(88,0))" },
+        { "أطبا" => "((109,20),(100,0))" } => { "ابطأ" => "((109,20),(100,0))" },
+        { "three" => "((124,20),(112,0))" } =>  { "three" => "((124,20),(112,0))" }
+      },
+      :rtl
+    ).flatten
+
+    Documents::Correct.run!(
+      document: document,
+      graphemes: corrections,
+      revision_id: document.reload.master.working.id,
+      editor_id: editor.id,
+      surface_number: 1
+    )
+
+    text = Graphemes::GroupWords.run!(
+      graphemes: document.master.working.graphemes.to_a
+    ).result.map { |word| word.map(&:value).join('') }.join(' ')
+
+    expect(text).to eq('one ابطأ three')
   end
 
   it 'handles changes in line directionality correctly' do

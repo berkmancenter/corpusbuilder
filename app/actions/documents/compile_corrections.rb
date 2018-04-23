@@ -534,7 +534,7 @@ module Documents
       def grapheme_diffs
         memoized do
           source_alignment, entered_alignment = needleman_wunsch(source, entered,
-                                                                 gap_penalty: -1) do |left, right|
+                                                                 gap_penalty: -10) do |left, right|
             graphemes_need_change(left, right) ? -1 : 1
           end
 
