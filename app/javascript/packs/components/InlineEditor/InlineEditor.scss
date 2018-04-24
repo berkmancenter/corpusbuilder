@@ -56,13 +56,19 @@
       cursor: text;
       position: relative;
 
-      input {
+      .corpusbuilder-inline-editor-input {
         margin: 0px;
         background-color: transparent;
         box-shadow: none;
         padding: 0px;
         position: absolute;
         transform-origin: top left;
+        height: 35px;
+        line-height: 35px;
+      }
+
+      .corpusbuilder-inline-editor-input:focus {
+        outline: none;
       }
 
       input:hover, input:focus, input:active {
