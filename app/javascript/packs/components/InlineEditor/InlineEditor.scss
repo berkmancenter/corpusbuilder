@@ -63,8 +63,14 @@
         padding: 0px;
         position: absolute;
         transform-origin: top left;
-        height: 35px;
-        line-height: 35px;
+        height: 29px;
+        line-height: 29px;
+        margin-top: 3px;
+        border-radius: 2px;
+      }
+
+      .corpusbuilder-inline-editor-input {
+        background: rgba(255, 255, 100, 0.5);
       }
 
       .corpusbuilder-inline-editor-input:focus {
