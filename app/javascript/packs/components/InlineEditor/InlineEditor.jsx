@@ -49,6 +49,9 @@ export default class InlineEditor extends React.Component {
     @observable
     graphemeWords = [ ];
 
+    removedWords = [ ];
+    removedBoxes = [ ];
+
     @observable
     boxes = [ ];
 
@@ -213,10 +216,10 @@ export default class InlineEditor extends React.Component {
         let ix = this.boxes.findIndex((b) => {
             return BoxesUtils.boxesEqual(b, this.selectedBox);
         });
-        this.editedTextWords.splice(
-            ix,
-            1
-        );
+        this.editedTextWords.splice(ix, 1);
+        this.removedWords.push(this.graphemeWords[ix]);
+        this.removedBoxes.push(this.boxes[ix]);
+        this.graphemeWords.splice(ix, 1);
         this.boxes.splice(ix, 1);
         this.selectedBox = null;
     }
@@ -451,6 +454,8 @@ export default class InlineEditor extends React.Component {
     initText(props) {
         this.dir = this.lineDir(props);
         this.graphemeWords = GraphemeUtils.lineWords(props.line);
+        this.removedWords = [ ];
+        this.removedBoxes = [ ];
         this.editedTextWords = this.graphemeWords
             .map((word) => {
                 return word.sort((g1, g2) => { return parseFloat(g1.position_weight) - parseFloat(g2.position_weight) })
@@ -499,6 +504,16 @@ export default class InlineEditor extends React.Component {
             let graphemeWords = this.dir === 'rtl' ? this.graphemeWords.reverse() : this.graphemeWords;
             let boxes = this.dir === 'rtl' ? this.boxes.reverse() : this.boxes;
 
+            let removed = this.removedWords.map(
+                (word, ix) => {
+                    return {
+                        text: '',
+                        area: this.removedBoxes[ix],
+                        grapheme_ids: word.map((g) => { return g.id })
+                    }
+                }
+            );
+
             let words = graphemeWords.map(
                 (word, ix) => {
                     return {
@@ -507,7 +522,7 @@ export default class InlineEditor extends React.Component {
                         grapheme_ids: word.map((g) => { return g.id })
                     }
                 }
-            );
+            ).concat(removed);
 
             this.props.onSaveRequested(this.props.document, words, this.dir);
         }
