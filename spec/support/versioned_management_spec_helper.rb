@@ -21,7 +21,7 @@ module VersionedManagementSpecHelper
       create(
         :grapheme,
         value: char,
-        zone_id: first_line.id,
+        zone_id: zone.id,
         position_weight: pos,
         area: Area.new(
           ulx: box.ulx + delta_x,
@@ -48,10 +48,10 @@ module VersionedManagementSpecHelper
     graphemes
   end
 
-  def line(surface, words, boxes)
+  def line(surface, words, boxes, dir = nil)
     zone = create :zone,
       area: Area.span_raw_boxes(boxes),
-      direction: Bidi.infer_direction(words.join(' ')),
+      direction: Zone.directions[ dir || Bidi.infer_direction(words.join(' ')) ],
       surface_id: surface.id
 
     ids = words.each_with_index.map do |text_word, ix|

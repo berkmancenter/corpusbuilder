@@ -19,10 +19,13 @@ module Bidi
 
   def self.to_logical(text, direction)
     positions = to_logical_indices(text, direction)
+    chars = Array.new(positions.size)
 
-    positions.map do |index|
-      text[index]
-    end.join
+    positions.each_with_index do |lix, vix|
+      chars[lix] = text[vix]
+    end
+
+    chars.join('')
   end
 
   def self.to_visual_indices(text, direction)

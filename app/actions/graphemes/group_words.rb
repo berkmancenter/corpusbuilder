@@ -5,13 +5,13 @@ module Graphemes
     attr_accessor :graphemes
 
     def execute
-      visual_graphemes.each_with_index.inject([[]]) do |words, pair|
-        grapheme, ix = pair
+      return [] if graphemes.empty?
 
+      logical_graphemes.inject([[]]) do |words, grapheme|
         if grapheme.nil?
           words << []
         else
-          words[ words.count - 1 ] << visual_graphemes[ logical_indices[ ix ] ]
+          words[ words.count - 1 ] << grapheme
         end
 
         words
@@ -34,17 +34,31 @@ module Graphemes
       visual_graphemes.map { |g| g.try(:value) || ' ' }.join('')
     end
 
-    def visual_graphemes
-      result = [ ]
+    def logical_graphemes
+      memoized do
+        result = Array.new(visual_graphemes.size)
 
-      for word in visual_words
-        for grapheme in word
-          result << grapheme
+        logical_indices.each_with_index do |lix, vix|
+          result[lix] = visual_graphemes[vix]
         end
-        result << nil
-      end
 
-      result[0..-2]
+        result
+      end
+    end
+
+    def visual_graphemes
+      memoized do
+        result = [ ]
+
+        for word in visual_words
+          for grapheme in word
+            result << grapheme
+          end
+          result << nil
+        end
+
+        result[0..-2]
+      end
     end
 
     def visual_words

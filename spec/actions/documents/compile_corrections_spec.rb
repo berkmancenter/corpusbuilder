@@ -173,12 +173,12 @@ describe Documents::CompileCorrections do
     expect(modifications.sort_by { |a| a[:position_weight] }.map { |a| a[:value] }.join).to eq("den")
   end
 
-  it 'handles reverals correctly' do
+  it 'handles reversals correctly' do
     corrections = run_example(
       {
-        { "one" => "((97,20),(88,0))" } => { "one" => "((97,20),(88,0))" },
+        { "one" => "((124,20),(112,0))" } =>  { "one" => "((124,20),(112,0))" },
         { "أطبا" => "((109,20),(100,0))" } => { "ابطأ" => "((109,20),(100,0))" },
-        { "three" => "((124,20),(112,0))" } =>  { "three" => "((124,20),(112,0))" }
+        { "three" => "((97,20),(88,0))" } => { "three" => "((97,20),(88,0))" }
       },
       :rtl
     ).flatten

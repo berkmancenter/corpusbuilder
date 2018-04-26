@@ -53,7 +53,7 @@ describe Graphemes::GroupWords do
       [ 100, 0, 140, 10 ],
       [ 50, 0, 90, 10 ],
       [ 0, 0, 40, 10 ]
-    ]
+    ], :rtl
 
     ids = gs.map { |wgs| wgs.map(&:id) }
     Grapheme.find(ids[1]).each { |g| g.update_attributes!(position_weight: g.position_weight - 2000) }
