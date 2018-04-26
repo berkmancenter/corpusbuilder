@@ -198,6 +198,74 @@ describe Documents::CompileCorrections do
     expect(text).to eq('one ابطأ three')
   end
 
+  it 'handles multiple spans within words correctly' do
+    corrections = run_example(
+      {
+        { "abcdefgh" => "((97,20),(88,0))" } => { "12cde34h" => "((97,20),(88,0))" },
+        { "uwxyz" => "((124,20),(112,0))" } =>  { "u1x23" => "((124,20),(112,0))" }
+      }
+    ).flatten
+
+    Documents::Correct.run!(
+      document: document,
+      graphemes: corrections,
+      revision_id: document.reload.master.working.id,
+      editor_id: editor.id,
+      surface_number: 1
+    )
+
+    text = Graphemes::GroupWords.run!(
+      graphemes: document.master.working.graphemes.to_a
+    ).result.map { |word| word.map(&:value).join('') }.join(' ')
+
+    expect(text).to eq('12cde34h u1x23')
+  end
+
+  it 'handles repetitions correctly' do
+    corrections = run_example(
+      {
+        { "abcdefgh" => "((97,20),(88,0))" } => { "abcdefgh" => "((97,20),(88,0))" },
+        { "II" => "((124,20),(112,0))" } =>  { "I" => "((124,20),(112,0))" }
+      }
+    ).flatten
+
+    Documents::Correct.run!(
+      document: document,
+      graphemes: corrections,
+      revision_id: document.reload.master.working.id,
+      editor_id: editor.id,
+      surface_number: 1
+    )
+
+    text = Graphemes::GroupWords.run!(
+      graphemes: document.master.working.graphemes.to_a
+    ).result.map { |word| word.map(&:value).join('') }.join(' ')
+
+    expect(text).to eq('abcdefgh I')
+  end
+
+  it 'handles new lines correctly' do
+    corrections = run_example(
+      {
+        "1234" => { "1234" => "((97,20),(88,0))" },
+      }
+    ).flatten
+
+    Documents::Correct.run!(
+      document: document,
+      graphemes: corrections,
+      revision_id: document.reload.master.working.id,
+      editor_id: editor.id,
+      surface_number: 1
+    )
+
+    text = Graphemes::GroupWords.run!(
+      graphemes: document.master.working.graphemes.to_a
+    ).result.map { |word| word.map(&:value).join('') }.join(' ')
+
+    expect(text).to eq('1234')
+  end
+
   it 'handles changes in line directionality correctly' do
     _, gs = line surface, [ "abcd", "efgh", "ijkl" ], [
       [ 0, 0, 40, 10 ],

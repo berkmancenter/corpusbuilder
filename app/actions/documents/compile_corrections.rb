@@ -97,78 +97,77 @@ module Documents
             return ds
           end
 
-          source_list = source_graphemes.dup
-          entered_list = entered_graphemes.dup
+          change_specs = [ ]
 
-          all_diffs = word_diffs.map(&:grapheme_diffs).flatten
+          new_span = -> {
+            OpenStruct.new({
+              open: nil,
+              close: nil,
+              diffs: [ ]
+            })
+          }
 
-          diffs = all_diffs.reject(&:deletion?).group_by do |grapheme_diff|
-            grapheme_diff.entered.id
-          end
+          word_diffs.each_with_index do |current_word_diff, ix|
+            if current_word_diff.deletion?
+              change_specs << current_word_diff.grapheme_diffs.map(&:to_spec)
+            else
+              previous_word = previous_source_word(current_word_diff.source)
+              next_word = next_source_word(current_word_diff.source)
+              current_span = nil
+              previous_old = nil
 
-          initial_state = OpenStruct.new({ result: [ ], current_span: nil, previous: nil })
+              close_span = -> {
+                return if current_span.nil?
 
-          diff_spans = if new_line? or deleting_line?
-            [
-              OpenStruct.new({
-                open: nil,
-                close: nil,
-                diffs: diffs.values.flatten
-              })
-            ]
-          else
-            run = entered_list.inject(initial_state) do |state, grapheme|
-              if diffs.has_key?(grapheme.id)
-                state.current_span ||= OpenStruct.new({ open: nil, close: nil, diffs: [ ] })
-                state.current_span.open ||= source_list.find do |g|
-                  state.previous.present? && !graphemes_need_change(g, state.previous)
+                # we have a span of diffs which has just ended
+                # and we need to assign proper specs with weights
+                open = 0
+                close = 0
+
+                if current_word_diff.addition?
+                  open = (previous_word.nil? ? [] : previous_word.try(:position_weight)).max || 0
+                  close = (next_word.nil? ? [] : next_word.map(&:position_weight)).min ||
+                    (open + current_word_diff.entered.count)
+                else
+                  open = current_span.open.try(:position_weight) ||
+                    current_word_diff.source.map(&:position_weight).min
+                  close = current_span.close.try(:position_weight) ||
+                    current_word_diff.source.map(&:position_weight).max
                 end
-                state.current_span.diffs.push(diffs[ grapheme.id ].first)
-              else
-                if state.current_span.present?
-                  state.current_span.close = source_list.find do |g|
-                    !graphemes_need_change(g, grapheme)
+
+                addmod_specs = current_span.diffs.map(&:to_spec)
+
+                addmod_specs.each_with_index do |addmod_spec, index|
+                  addmod_spec[:position_weight] = open +
+                    ( index + 1 ) * (
+                      ( close - open ) /
+                      ( addmod_specs.count + 1.0 )
+                    )
+                end
+
+                current_span = nil
+                change_specs << addmod_specs
+              }
+
+              current_word_diff.grapheme_diffs.each do |grapheme_diff|
+                if grapheme_diff.deletion? || grapheme_diff.noop?
+                  change_specs << [ grapheme_diff.to_spec ] if grapheme_diff.deletion?
+                  if current_span.present? && current_span.diffs.count > 0
+                    current_span.close = grapheme_diff.source
+                    close_span.call
                   end
-                  state.result.push(state.current_span)
-                  state.current_span = nil
+                  previous_old = grapheme_diff.source
+                elsif grapheme_diff.addition? || grapheme_diff.modification? || grapheme_diff.merge_resolution?
+                  current_span ||= new_span.call
+                  current_span.open ||= previous_old
+                  current_span.diffs << grapheme_diff
                 end
               end
-
-              state.previous = grapheme
-
-              state
+              close_span.call
             end
-
-            run.result.push(run.current_span).reject(&:nil?)
           end
 
-          diff_spans.map do |diff_span|
-            grapheme_diffs = diff_span.diffs.sort_by { |diff| diff.entered.position_weight }
-
-            addmod_specs = grapheme_diffs.map(&:to_spec)
-
-            open_position_weight = diff_span.open.try(:position_weight) || -> {
-              (source_graphemes.first.try(:position_weight) || 0) - diff_span.diffs.count - 1
-            }.call
-
-            close_position_weight = diff_span.close.try(:position_weight) || -> {
-              (source_graphemes.last.try(:position_weight) || 0) + diff_span.diffs.count + 1
-            }.call
-
-            if open_position_weight > close_position_weight
-              open_position_weight, close_position_weight = [ close_position_weight, open_position_weight ]
-            end
-
-            addmod_specs.each_with_index do |addmod_spec, index|
-              addmod_spec[:position_weight] = open_position_weight +
-                ( index + 1 ) * (
-                  ( close_position_weight - open_position_weight ) /
-                  ( grapheme_diffs.count + 1.0 )
-                )
-            end
-
-            addmod_specs
-          end.flatten + all_diffs.select(&:deletion?).map(&:to_spec)
+          change_specs.flatten
         end
       end
 
@@ -219,25 +218,28 @@ module Documents
 
       def source_words
         memoized do
-          initial_state = OpenStruct.new({ result: [], last_lrx: nil })
-
-          source_graphemes_filtered.sort_by { |g| g.area.ulx }.inject(initial_state) do |state, grapheme|
-            if state.last_lrx.nil? || grapheme.area.ulx - state.last_lrx > 0
-              state.result.push([])
-            end
-
-            state.result[ state.result.count - 1 ].push(grapheme)
-            state.last_lrx = grapheme.area.lrx
-
-            state
-          end.result.map do |graphemes|
-            Word.new(graphemes)
-          end
+          Graphemes::GroupWords.run!(
+            graphemes: source_graphemes
+          ).result.map { |word| Word.new(word) }
         end
       end
 
+      def previous_source_word(word)
+        ix = source_words.find_index(word)
+
+        ix.nil? || ix == 0 ? nil : source_words[ ix - 1 ]
+      end
+
+      def next_source_word(word)
+        ix = source_words.find_index(word)
+
+        ix.nil? ? nil : source_words[ ix + 1 ]
+      end
+
       def visually_sorted_source_words
-        source_words.sort_by { |word| word.area.ulx }
+        memoized do
+          source_words.sort_by { |word| word.area.ulx }
+        end
       end
 
       def visual_entered_text
@@ -415,7 +417,7 @@ module Documents
                 next_weight = zones.find { |zone| zone.position_weight > previous_weight }.
                   try(:position_weight) || (previous_weight + 1)
               else
-                next_weight = clusters.first.lines.first.position_weight
+                next_weight = clusters.first.try(:lines).try(:first).try(:position_weight) || 1
 
                 previous_weight = zones.find { |zone| zone.position_weight < previous_weight }.
                   try(:position_weight) || (next_weight - 1)
@@ -540,8 +542,16 @@ module Documents
 
           source_alignment.zip(entered_alignment).map do |from, to|
             GraphemeDiff.new(from, to, self)
-          end.select(&:differ?)
+          end
         end
+      end
+
+      def addition?
+        source.nil? && entered.present?
+      end
+
+      def deletion?
+        source.present? && entered.nil?
       end
 
       def differ?
@@ -603,6 +613,11 @@ module Documents
 
       def differ?
         addition? || deletion? || modification? || merge_resolution?
+      end
+
+      def noop?
+        source.present? && entered.present? &&
+          !( source.value != entered.value || source.area != entered.area )
       end
 
       def merge_resolution?

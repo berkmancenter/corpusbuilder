@@ -17,6 +17,14 @@ module Bidi
     end.join
   end
 
+  def self.to_logical(text, direction)
+    positions = to_logical_indices(text, direction)
+
+    positions.map do |index|
+      text[index]
+    end.join
+  end
+
   def self.to_visual_indices(text, direction)
     null = FFI::Pointer::NULL
 
