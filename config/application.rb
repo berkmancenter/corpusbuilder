@@ -27,6 +27,7 @@ module CorpusBuilder
     config.autoload_paths += Dir["#{config.root}/lib"]
 
     config.active_job.queue_adapter = :delayed_job
+    config.active_record.schema_format = :sql
 
     if Rails.env.development?
       config.web_console.whitelisted_ips = '172.19.0.1'
