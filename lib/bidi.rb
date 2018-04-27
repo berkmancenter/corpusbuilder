@@ -29,61 +29,78 @@ module Bidi
   end
 
   def self.to_visual_indices(text, direction)
-    null = FFI::Pointer::NULL
+    begin
+      null = FFI::Pointer::NULL
 
-    t = FFI::MemoryPointer.new(:uint32, text.codepoints.count)
-    t.put_array_of_uint32(0, text.codepoints)
+      t = FFI::MemoryPointer.new(:uint32, text.codepoints.count)
+      t.put_array_of_uint32(0, text.codepoints)
 
-    pos = FFI::MemoryPointer.new(:int, text.codepoints.count)
+      pos = FFI::MemoryPointer.new(:int, text.codepoints.count)
 
-    dir_spec = FFI::MemoryPointer.new(:long)
-    dir_spec.write_long( direction == :rtl ? 273 : 272)
+      dir_spec = FFI::MemoryPointer.new(:long)
+      dir_spec.write_long( direction == :rtl ? 273 : 272)
 
-    success = Lib.fribidi_log2vis(t, text.codepoints.count, dir_spec, null, null, pos, null)
+      success = Lib.fribidi_log2vis(t, text.codepoints.count, dir_spec, null, null, pos, null)
 
-    if success
-      return pos.read_array_of_int(text.codepoints.count)
-    else
-      raise StandardError, "Failed to infer the visual ordering of the text"
+      if success
+        return pos.read_array_of_int(text.codepoints.count)
+      else
+        raise StandardError, "Failed to infer the visual ordering of the text"
+      end
+    ensure
+      t.free if defined?(t)
+      pos.free if defined?(pos)
+      dir_spec.free if defined?(dir_spec)
     end
   end
 
   def self.to_logical_indices(text, direction)
-    null = FFI::Pointer::NULL
+    begin
+      null = FFI::Pointer::NULL
 
-    t = FFI::MemoryPointer.new(:uint32, text.codepoints.count)
-    t.put_array_of_uint32(0, text.codepoints)
+      t = FFI::MemoryPointer.new(:uint32, text.codepoints.count)
+      t.put_array_of_uint32(0, text.codepoints)
 
-    pos = FFI::MemoryPointer.new(:int, text.codepoints.count)
+      pos = FFI::MemoryPointer.new(:int, text.codepoints.count)
 
-    dir_spec = FFI::MemoryPointer.new(:long)
-    dir_spec.write_long( direction == :rtl ? 273 : 272)
+      dir_spec = FFI::MemoryPointer.new(:long)
+      dir_spec.write_long( direction == :rtl ? 273 : 272)
 
-    success = Lib.fribidi_log2vis(t, text.codepoints.count, dir_spec, null, pos, null, null)
+      success = Lib.fribidi_log2vis(t, text.codepoints.count, dir_spec, null, pos, null, null)
 
-    if success
-      return pos.read_array_of_int(text.codepoints.count)
-    else
-      raise StandardError, "Failed to infer the logical ordering of the text"
+      if success
+        return pos.read_array_of_int(text.codepoints.count)
+      else
+        raise StandardError, "Failed to infer the logical ordering of the text"
+      end
+    ensure
+      t.free if defined?(t)
+      pos.free if defined?(pos)
+      dir_spec.free if defined?(dir_spec)
     end
   end
 
   def self.infer_direction(text)
-    t = FFI::MemoryPointer.new(:uint32, text.codepoints.count)
-    t.put_array_of_uint32(0, text.codepoints)
+    begin
+      t = FFI::MemoryPointer.new(:uint32, text.codepoints.count)
+      t.put_array_of_uint32(0, text.codepoints)
 
-    b = FFI::MemoryPointer.new(:long, text.codepoints.count)
+      b = FFI::MemoryPointer.new(:long, text.codepoints.count)
 
-    Lib.fribidi_get_bidi_types(t, text.codepoints.count, b)
+      Lib.fribidi_get_bidi_types(t, text.codepoints.count, b)
 
-    result = Lib.fribidi_get_par_direction(b, text.codepoints.count)
+      result = Lib.fribidi_get_par_direction(b, text.codepoints.count)
 
-    if result == 273
-      :rtl
-    elsif result == 272
-      :ltr
-    else
-      :on
+      if result == 273
+        :rtl
+      elsif result == 272
+        :ltr
+      else
+        :on
+      end
+    ensure
+      t.free if defined?(t)
+      b.free if defined?(pos)
     end
   end
 end

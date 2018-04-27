@@ -1,14 +1,12 @@
 require 'securerandom'
+require 'progressbar/memory_formatter'
 
 module Documents::Export
   class Dataset < Action::Base
-    attr_accessor :document, :image_format, :boxes_format, :show_cli_progress
+    attr_accessor :document, :image_format, :boxes_format, :show_cli_progress, :print_mem_usage
 
     def execute
-      {
-        dir: extract_path,
-        zones: extracted_zones
-      }
+      extract_zones
     end
 
     def extract_path
@@ -22,21 +20,35 @@ module Documents::Export
 
     def progressbar
       memoized do
-        TTY::ProgressBar.new("Extracting dataset (#{ extract_path }) - :percent [:bar] :eta", total: zones.count)
+        relative = Pathname.new(extract_path).relative_path_from(Rails.root)
+        memory = print_mem_usage ? ' :memory' : ''
+        bar = TTY::ProgressBar.new(
+          "Extracting dataset (#{ relative }) - :current/:total :percent :rate/s ( mean :mean_rate/s ) [:bar] :eta#{ memory }",
+          total: zones.count
+        )
+        bar.use MemoryFormatter if print_mem_usage
+        bar
       end
     end
 
-    def extracted_zones
+    def extract_zones
       last_surface_id = nil
+      image = nil
 
-      zones.each_with_index.map do |zone, ix|
-        image = surface_image(zone) if zone.surface_id != last_surface_id
+      zones.each_with_index do |zone, ix|
+        if zone.surface_id != last_surface_id
+          image = surface_image(zone)
+          GC.start
+        end
 
         extract_line(zone, image).tap do |_|
           if show_cli_progress
+            progressbar.log("Current surface number: #{zone.surface.number}") if zone.surface_id != last_surface_id
             progressbar.advance(1)
           end
         end
+
+        last_surface_id = zone.surface_id
       end
     end
 
