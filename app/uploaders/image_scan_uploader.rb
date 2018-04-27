@@ -1,5 +1,8 @@
 class ImageScanUploader < CarrierWave::Uploader::Base
+  include CarrierWave::MiniMagick
+
   storage :file
+  process :convert => 'png'
 
   def has_document? picture
     model.has_document?
