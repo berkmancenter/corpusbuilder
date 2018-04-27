@@ -175,6 +175,15 @@ export default class VisualPreview extends React.Component {
                 this.canvas.width,
                 this.scaledLineHeight * 2
             );
+
+            if(this.canvas.height > this.canvas.parentElement.offsetHeight) {
+                let delta = this.canvas.height - this.canvas.parentElement.offsetHeight;
+
+                this.canvas.parentElement.scrollTop = delta / 2;
+            }
+            else {
+                this.canvas.parentElement.scrollTop = 0;
+            }
         }
     }
 

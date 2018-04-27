@@ -19,6 +19,8 @@
 
     &-canvas-area {
       position: relative;
+      max-height: 300px;
+      overflow: scroll;
     }
   }
 }

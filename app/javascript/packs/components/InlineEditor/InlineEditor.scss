@@ -52,21 +52,20 @@
       color: black;
       -webkit-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
       box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
-      height: 35px;
       cursor: text;
       position: relative;
 
       .corpusbuilder-inline-editor-input {
         margin: 0px;
         background-color: transparent;
+        position: relative;
         box-shadow: none;
         padding: 0px;
-        position: absolute;
         transform-origin: top left;
-        height: 29px;
-        line-height: 29px;
-        margin-top: 3px;
         border-radius: 2px;
+        display: inline-block;
+        height: auto !important;
+        min-height: 35px;
       }
 
       .corpusbuilder-inline-editor-input:focus {

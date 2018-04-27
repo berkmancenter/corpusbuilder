@@ -542,7 +542,7 @@ export default class InlineEditor extends React.Component {
         this.dir = _toggled ? "ltr" : "rtl";
     }
 
-    renderInput(box, ix) {
+    renderInput(box, ix, offset) {
         let text = this.editedTextWords[ ix ];
 
         if(text !== undefined && text !== null) {
@@ -553,7 +553,7 @@ export default class InlineEditor extends React.Component {
             scale = scale > 2 ? 1 : scale;
 
             let styles = {
-                left: box.ulx * this.ratio,
+                left: box.ulx * this.ratio - offset,
                 width: textWidth,
                 transform: `scaleX(${ scale })`,
                 fontSize: this.fontSize
@@ -578,6 +578,7 @@ export default class InlineEditor extends React.Component {
 
     renderInputs() {
         let ixs = this.boxes.map((_, ix) => { return ix });
+        let offset = 0;
 
         return (
             <div className="corpusbuilder-inline-editor-shell"
@@ -586,7 +587,14 @@ export default class InlineEditor extends React.Component {
                  >
                 {
                     ixs.map((ix) => {
-                        return this.renderInput(this.boxes[ ix ], ix)
+                        let input = this.renderInput(this.boxes[ ix ], ix, offset);
+                        if(input !== null) {
+                            offset = offset + input.props.style.width;
+                        }
+                        else {
+                            offset = 0;
+                        }
+                        return input;
                     })
                 }
             </div>
