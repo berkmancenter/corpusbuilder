@@ -21,12 +21,12 @@ module Documents::Export
     def progressbar
       memoized do
         relative = Pathname.new(extract_path).relative_path_from(Rails.root)
-        memory = print_mem_usage ? ' :memory' : ''
+        memory = print_mem_usage != false ? ' :memory' : ''
         bar = TTY::ProgressBar.new(
           "Extracting dataset (#{ relative }) - :current/:total :percent :rate/s ( mean :mean_rate/s ) [:bar] :eta#{ memory }",
           total: zones.count
         )
-        bar.use MemoryFormatter if print_mem_usage
+        bar.use MemoryFormatter if print_mem_usage != false
         bar
       end
     end
