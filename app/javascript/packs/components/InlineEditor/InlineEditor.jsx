@@ -263,13 +263,13 @@ export default class InlineEditor extends React.Component {
         else if(e.altKey) {
             if(e.keyCode === 37) {
                 this.focusWord(
-                    this.dir === "rtl" ? ix - 1 : ix + 1,
+                    ix - 1,
                     this.dir === "rtl" ? "start" : "end"
                 );
             }
             else if(e.keyCode === 39) {
                 this.focusWord(
-                    this.dir === "rtl" ? ix + 1 : ix - 1,
+                    ix + 1,
                     this.dir === "rtl" ? "end" : "start"
                 );
             }

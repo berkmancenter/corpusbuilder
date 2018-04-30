@@ -52,7 +52,8 @@ module VersionedManagementSpecHelper
     zone = create :zone,
       area: Area.span_raw_boxes(boxes),
       direction: Zone.directions[ dir || Bidi.infer_direction(words.join(' ')) ],
-      surface_id: surface.id
+      surface_id: surface.id,
+      position_weight: (Zone.select('max(position_weight) as max_weight').reorder(nil).first.max_weight || 0) + 1
 
     ids = words.each_with_index.map do |text_word, ix|
       word(zone, text_word, boxes[ ix ], ix)

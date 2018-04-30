@@ -266,6 +266,31 @@ describe Documents::CompileCorrections do
     expect(text).to eq('1234')
   end
 
+  it 'assigns lines correct ordering in a simple one column scenario' do
+    _, gs1 = line surface, [ "abcd", "efgh", "ijkl" ], [
+      [ 0, 0, 40, 10 ],
+      [ 50, 0, 90, 10 ],
+      [ 100, 0, 140, 10 ],
+    ]
+    _, gs2 = line surface, [ "oprs", "tuwx", "yz" ], [
+      [ 0, 40, 40, 50 ],
+      [ 50, 40, 90, 50 ],
+      [ 100, 40, 140, 50 ],
+    ]
+
+    master = branch_off document, "master", editor, nil, (gs1 + gs2)
+
+    corrections = correct master, surface, editor, [ "123", "456", "789" ], [
+      [ 0, 20, 40, 30 ],
+      [ 50, 20, 90, 30 ],
+      [ 100, 20, 140, 30 ]
+    ], [], :rtl
+
+    zone = Zone.find(corrections.first.first[:zone_id])
+
+    expect(zone.position_weight).to eq(1.5)
+  end
+
   it 'handles changes in line directionality correctly' do
     _, gs = line surface, [ "abcd", "efgh", "ijkl" ], [
       [ 0, 0, 40, 10 ],
