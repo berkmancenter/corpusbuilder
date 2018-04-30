@@ -1,9 +1,17 @@
 module Documents::Export
   class ExportLinePng < Action::Base
-    attr_accessor :zone, :document, :dir_path, :image
+    attr_accessor :zone, :document, :dir_path, :image, :save
 
     def execute
-      cropped_image.save out_path
+      if should_save?
+        cropped_image.save out_path
+      else
+        cropped_image
+      end
+    end
+
+    def should_save?
+      save != false
     end
 
     def out_path
