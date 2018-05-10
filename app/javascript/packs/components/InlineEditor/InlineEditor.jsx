@@ -146,7 +146,12 @@ export default class InlineEditor extends React.Component {
 
     @computed
     get font() {
-        return this.inferFont(this.props.line);
+        return this.props.inferFont(this.props.line);
+    }
+
+    @computed
+    get fontFamily() {
+        return this.font.ready ? this.font.familyName : 'sans-serif';
     }
 
     @computed
@@ -201,6 +206,8 @@ export default class InlineEditor extends React.Component {
     get inputStyles() {
         return {
             fontSize: this.fontSize,
+            fontFamily: this.fontFamily,
+            opacity: this.font.applied ? 1 : 0,
             letterSpacing: this.letterSpacing,
             paddingLeft : this.paddingLeft,
             paddingRight: this.paddingRight
@@ -552,14 +559,16 @@ export default class InlineEditor extends React.Component {
 
         if(text !== undefined && text !== null) {
             let boxWidth = (box.lrx - box.ulx) * this.ratio;
-            let textWidth = this.props.measureText(text, this.fontSize);
+            let textWidth = this.props.measureText(text, this.fontSize, this.font);
             let scale = textWidth > 0 ? boxWidth / textWidth : 1;
 
             let styles = {
                 left: box.ulx * this.ratio - offset,
                 width: textWidth,
                 transform: `scaleX(${ scale })`,
-                fontSize: this.fontSize
+                fontSize: this.fontSize,
+                fontFamily: this.fontFamily,
+                opacity: this.font.applied ? 1 : 0
             };
 
             return (
