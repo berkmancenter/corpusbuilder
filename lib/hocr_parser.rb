@@ -144,10 +144,13 @@ class HocrParser < Parser
     else
       pop.area.ulx = line_area.lrx
       pop.area.lrx = line_area.lrx
-      directional.area.lrx = line_area.ulx
-      directional.area.ulx = line_area.ulx
-      directional.area.uly = pop.area.uly = line_area.uly
-      directional.area.lry = pop.area.lry = line_area.lry
+
+      if directional.present?
+        directional.area.lrx = line_area.ulx
+        directional.area.ulx = line_area.ulx
+        directional.area.uly = pop.area.uly = line_area.uly
+        directional.area.lry = pop.area.lry = line_area.lry
+      end
     end
     [
       (has_previous_zone ? pop : nil),
