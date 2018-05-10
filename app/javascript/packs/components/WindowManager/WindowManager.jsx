@@ -15,7 +15,11 @@ import { MessagesIndicator } from '../MessagesIndicator';
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
 
+import Font from '../../models/Font';
 import Request from '../../lib/Request';
+import FontUtils from '../../lib/FontUtils';
+import GraphemesUtils from '../../lib/GraphemesUtils';
+import BoxesUtils from '../../lib/BoxesUtils';
 
 import styles from './WindowManager.scss';
 import fontAwesome from 'font-awesome/scss/font-awesome.scss'
@@ -33,6 +37,8 @@ export default class WindowManager extends React.Component {
 
     lastCountAll = 1000;
     rulerCache = new Map();
+    fontCache = new Map();
+    measureCache = new Map();
 
     @observable
     dockMode = false;
@@ -112,7 +118,9 @@ export default class WindowManager extends React.Component {
         return {
             appState: this.appState,
             editorEmail: this.props.editorEmail,
-            measureText: this.measureText.bind(this)
+            measureText: this.measureText.bind(this),
+            measureFontSize: this.measureFontSize.bind(this),
+            inferFont: this.inferFont.bind(this),
         };
     }
 
@@ -252,21 +260,72 @@ export default class WindowManager extends React.Component {
         };
     }
 
-    measureText(text, fontSize) {
-        let key = `${text}-${fontSize}`;
+    measureText(text, fontSize, font) {
+        let key = `${text}-${fontSize}-${font.familyName}`;
 
         if(this.rulerCache.has(key)) {
             return this.rulerCache.get(key);
         }
 
         this.ruler.textContent = text;
+        this.ruler.style.fontFamily = font.familyName;
         this.ruler.style.fontSize = fontSize + "px";
 
         let result = this.ruler.offsetWidth;
 
-        this.rulerCache.set(key, result);
+        if(font.ready) {
+            //this.rulerCache.set(key, result);
+        }
 
         return result;
+    }
+
+    /* Computes the correct font-size to apply to graphemes
+     * given the font and ratio - to make them visually fill
+     * their union bounding box */
+    measureFontSize(graphemes, font, ratio) {
+        let ids = graphemes.map(g => g.id).join('');
+        let key = `${ids}-${font.fontName}-${ratio}`;
+
+        if(font.ready && this.measureCache.has(key)) {
+            return this.measureCache.get(key);
+        }
+
+        let wordBoxes = GraphemesUtils.wordBoxes(graphemes);
+        let lineBox = BoxesUtils.union(wordBoxes);
+        let lineHeight = (lineBox.lry - lineBox.uly) * ratio;
+
+        if(font.ready) {
+            let ascender10pxSize = 10 * font.ascender / font.unitsPerEm;
+            let descender10pxSize = 10 * font.descender / font.unitsPerEm;
+            let height10pxSize = Math.abs(ascender10pxSize) + Math.abs(descender10pxSize);
+            let scalingFactor = lineHeight / height10pxSize;
+            let fontSize = 10 * scalingFactor;
+
+            this.measureCache.set(key, fontSize);
+
+            return fontSize;
+        }
+
+        return (lineBox.lry - lineBox.uly) * ratio;
+    }
+
+    inferFont(graphemes) {
+        let meta = FontUtils.inferFontName(graphemes);
+        let fontName = meta.name;
+        let fontUrl = meta.url;
+        let font = null;
+
+        if(this.fontCache.has(fontName)) {
+            font = this.fontCache.get(fontName);
+        }
+
+        if(font === null || font.failed) {
+            font = new Font(fontName, fontUrl, this.props.directUrl);
+            this.fontCache.set(fontName, font);
+        }
+
+        return font;
     }
 
     @computed

@@ -15,6 +15,8 @@ import DomUtils from '../../lib/DomUtils';
 import styles from './InlineEditor.scss'
 
 @inject('measureText')
+@inject('measureFontSize')
+@inject('inferFont')
 @observer
 export default class InlineEditor extends React.Component {
 
@@ -143,14 +145,22 @@ export default class InlineEditor extends React.Component {
     }
 
     @computed
+    get font() {
+        return this.props.inferFont(this.props.line);
+    }
+
+    @computed
+    get fontFamily() {
+        return this.font.ready ? this.font.familyName : 'sans-serif';
+    }
+
+    @computed
     get fontSize() {
         if(this.boxes === undefined || this.boxes === null || this.boxes.length === 0) {
             return 'auto';
         }
         else {
-            let meanBoxHeight = MathUtils.mean(this.boxes.map((box) => { return box.lry - box.uly; }));
-
-            return meanBoxHeight * this.ratio;
+            return this.props.measureFontSize(this.props.line, this.font, this.ratio);
         }
     }
 
@@ -159,7 +169,7 @@ export default class InlineEditor extends React.Component {
         if(this.boxes !== null && this.boxes !== undefined && this.boxes.length !== 0) {
             let lineBox = BoxesUtils.union(this.boxes);
             let lineWidth = lineBox.lrx - lineBox.ulx;
-            let textWidth = this.props.measureText(this.editedText, this.fontSize);
+            let textWidth = this.props.measureText(this.editedText, this.fontSize, this.font);
 
             return (this.ratio * lineWidth - textWidth) / ( this.editedText.length - 1);
         }
@@ -196,6 +206,8 @@ export default class InlineEditor extends React.Component {
     get inputStyles() {
         return {
             fontSize: this.fontSize,
+            fontFamily: this.fontFamily,
+            opacity: this.font.applied ? 1 : 0,
             letterSpacing: this.letterSpacing,
             paddingLeft : this.paddingLeft,
             paddingRight: this.paddingRight
@@ -547,16 +559,16 @@ export default class InlineEditor extends React.Component {
 
         if(text !== undefined && text !== null) {
             let boxWidth = (box.lrx - box.ulx) * this.ratio;
-            let textWidth = this.props.measureText(text, this.fontSize);
+            let textWidth = this.props.measureText(text, this.fontSize, this.font);
             let scale = textWidth > 0 ? boxWidth / textWidth : 1;
-
-            scale = scale > 2 ? 1 : scale;
 
             let styles = {
                 left: box.ulx * this.ratio - offset,
                 width: textWidth,
                 transform: `scaleX(${ scale })`,
-                fontSize: this.fontSize
+                fontSize: this.fontSize,
+                fontFamily: this.fontFamily,
+                opacity: this.font.applied ? 1 : 0
             };
 
             return (

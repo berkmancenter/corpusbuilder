@@ -10,11 +10,12 @@ import { memoized } from '../../lib/Decorators';
 import styles from './DocumentLine.scss'
 
 @inject('measureText')
+@inject('measureFontSize')
+@inject('inferFont')
 @observer
 export default class DocumentLine extends React.Component {
 
     _spaceWidth = null;
-    _measurer = null;
     _mounted = false;
 
     componentDidMount() {
@@ -50,10 +51,18 @@ export default class DocumentLine extends React.Component {
     }
 
     @computed
+    get font() {
+        return this.props.inferFont(this.props.line);
+    }
+
+    @computed
+    get fontFamily() {
+        return this.font.ready ? this.font.familyName : 'sans-serif';
+    }
+
+    @computed
     get fontSize() {
-        return this.props.line
-          .map((g) => { return g.area.lry - g.area.uly })
-          .reduce((sum, height) => { return sum + height }, 0) * this.props.ratio / this.props.line.length;
+        return this.props.measureFontSize(this.props.line, this.font, this.ratio);
     }
 
     @computed
@@ -149,7 +158,7 @@ export default class DocumentLine extends React.Component {
     }
 
     measureText(text) {
-        return this.props.measureText(text, this.fontSize);
+        return this.props.measureText(text, this.fontSize, this.font);
     }
 
     onClick() {
@@ -212,10 +221,10 @@ export default class DocumentLine extends React.Component {
         let textWidth = this.measureText(text, this.fontSize);
         let scale = textWidth > 0 ? boxWidth / textWidth : 1;
 
-        scale = scale > 2 ? 1 : scale;
-
         let styles = {
             fontSize: this.fontSize,
+            fontFamily: this.fontFamily,
+            opacity: this.font.applied ? 1 : 0,
             width: textWidth,
             transform: `scaleX(${ scale })`,
             left: (box.ulx - this.lineLeft) * this.ratio
