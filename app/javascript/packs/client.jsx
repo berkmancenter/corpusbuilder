@@ -9,6 +9,7 @@ class CorpusBuilder {
     static init(element, options) {
         ReactDOM.render(
             <WindowManager baseUrl={ options.baseUrl }
+                           directUrl={ options.directUrl }
                            documentId={ options.documentId }
                            allowImages={ options.allowImages || false }
                            host={ element }

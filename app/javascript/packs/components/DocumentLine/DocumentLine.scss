@@ -5,6 +5,7 @@
     unicode-bidi: normal;
     left: 0px;
     right: 0px;
+    transition: opacity 1s ease-in-out;
 
     &-word {
       position: absolute;
