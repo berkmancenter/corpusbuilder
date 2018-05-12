@@ -25,7 +25,8 @@ describe Documents::Create do
     {
       images: [ { id: image1.id }, { id: image2.id } ],
       metadata: {
-        title: "A good read"
+        title: "A good read",
+        languages: [ "ara" ]
       },
       app: client_app,
       editor_email: editor.email

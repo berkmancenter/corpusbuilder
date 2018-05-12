@@ -92,7 +92,7 @@ describe V1::DocumentsAPI, type: :request do
     let(:data_minimal_correct) do
       {
         images: [ { id: image2.id }, { id: image1.id } ],
-        metadata: { title: "Fancy Book" },
+        metadata: { title: "Fancy Book", languages: [ "ara" ] },
         editor_email: editor.email
       }
     end

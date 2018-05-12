@@ -37,6 +37,7 @@ gem 'chunky_png'
 gem 'ruby-graphviz'
 gem 'therubyracer'
 gem 'pragmatic_tokenizer'
+gem 'language_list'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

@@ -84,6 +84,12 @@ class CorpusBuilderUploader {
         }
     }
 
+    onLanguagesPicked(languageCodes) {
+        if(typeof this.options.onLanguagesPicked === 'function') {
+            this.options.onLanguagesPicked(languageCodes);
+        }
+    }
+
     onDocumentUnpicked() {
         if(typeof this.options.onDocumentUnpicked === 'function') {
             this.options.onDocumentUnpicked();
@@ -105,6 +111,7 @@ class CorpusBuilderUploader {
                       images={ this.images }
                       onDocumentPicked={ this.onDocumentPicked.bind(this) }
                       onDocumentUnpicked={ this.onDocumentUnpicked.bind(this) }
+                      onLanguagesPicked={ this.onLanguagesPicked.bind(this) }
                       onImagesUploaded={ this.onImagesUploaded.bind(this) }
                       />,
             this.element

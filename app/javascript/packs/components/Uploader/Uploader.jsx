@@ -5,6 +5,7 @@ import { Provider, observer } from 'mobx-react'
 import { PageFlow } from '../PageFlow';
 import { PageFlowItem } from '../PageFlowItem';
 import { Button } from '../Button';
+import { LanguagesInput } from '../LanguagesInput';
 import { ProgressIndicator } from '../ProgressIndicator';
 import { Line } from 'rc-progress';
 import { SortableContainer, SortableElement, arrayMove } from 'react-sortable-hoc';
@@ -156,6 +157,9 @@ export default class Uploader extends React.Component {
 
     @observable
     files = [ ];
+
+    @observable
+    languages = [ ];
 
     @observable
     preloaded = false;
@@ -318,6 +322,14 @@ export default class Uploader extends React.Component {
                 this.props.onImagesUploaded(images);
             }
         });
+    }
+
+    onLanguagesPicked(languages) {
+        this.languages = languages;
+
+        if(typeof this.props.onLanguagesPicked === 'function') {
+            this.props.onLanguagesPicked(languages);
+        }
     }
 
     onSortEnd({oldIndex, newIndex}) {
@@ -486,22 +498,10 @@ export default class Uploader extends React.Component {
         if(this.currentLevel === 'images-ready') {
             return (
                 <div className="corpusbuilder-uploader-images-ready">
-                    Your uploads are ready.
+                    Your uploads are ready. Please provide the list of languages being used
+                    in the uploaded scans:
 
-                    <div className="corpusbuilder-uploader-images-upload-files">
-                        {
-                            this.files.map((file, i) => {
-                                return (
-                                    <BaseFile value={ file }
-                                              order={ i }
-                                              progress={ false }
-                                              actions={ false }
-                                              handle={ false }
-                                              />
-                                )
-                            })
-                        }
-                    </div>
+                    <LanguagesInput languages={ this.languages } onChange={ this.onLanguagesPicked.bind(this) } />
                 </div>
             );
         }
