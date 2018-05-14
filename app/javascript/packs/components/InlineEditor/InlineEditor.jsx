@@ -160,7 +160,9 @@ export default class InlineEditor extends React.Component {
             return 'auto';
         }
         else {
-            return this.props.measureFontSize(this.props.line, this.font, this.ratio);
+            let size = this.props.measureFontSize(this.props.line, this.font, this.ratio);
+
+            return size === 0 ? 12 : size;
         }
     }
 
@@ -305,6 +307,10 @@ export default class InlineEditor extends React.Component {
 
     onInputFocus(box, ix, e) {
         this.selectedBox = box;
+    }
+
+    onInputBlur() {
+        this.selectedBox = null;
     }
 
     onShellClick(e) {
@@ -562,6 +568,17 @@ export default class InlineEditor extends React.Component {
             let textWidth = this.props.measureText(text, this.fontSize, this.font);
             let scale = textWidth > 0 ? boxWidth / textWidth : 1;
 
+            if(this.selectedBox === box) {
+                if(scale > 1.25) {
+                    scale = 1;
+                    textWidth = boxWidth;
+                }
+            }
+
+            if(textWidth === 0) {
+                textWidth = boxWidth;
+            }
+
             let styles = {
                 left: box.ulx * this.ratio - offset,
                 width: textWidth,
@@ -580,6 +597,7 @@ export default class InlineEditor extends React.Component {
                       dir={ this.dir }
                       key={ ix }
                       onFocus={ this.onInputFocus.bind(this, box, ix) }
+                      onBlur={ this.onInputBlur.bind(this) }
                       className="corpusbuilder-inline-editor-input"
                       />
             );
