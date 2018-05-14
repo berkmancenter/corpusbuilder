@@ -23,6 +23,10 @@ export default class BoxesUtils {
     }
 
     static union(boxes) {
+        if(boxes.length === 0) {
+            return BoxesUtils.empty();
+        }
+
         let minUlx = boxes.reduce((min, b) => { return Math.min(min, b.ulx) }, boxes[0].ulx);
         let minUly = boxes.reduce((min, b) => { return Math.min(min, b.uly) }, boxes[0].uly);
         let maxLrx = boxes.reduce((max, b) => { return Math.max(max, b.lrx) }, boxes[0].lrx);

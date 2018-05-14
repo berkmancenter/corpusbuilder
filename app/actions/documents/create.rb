@@ -8,6 +8,7 @@ module Documents
     validates :editor_email, presence: true
 
     validate :editor_exists
+    validate :proper_languages_provided
 
     def execute
       document = Document.create! title: @metadata[:title],
@@ -66,6 +67,20 @@ module Documents
     def editor_exists
       if !editor.present?
         errors.add(:editor_email, "doesn't specify an editor that exists in the system")
+      end
+    end
+
+    def languages
+      metadata[:languages]
+    end
+
+    def proper_languages_provided
+      if languages.blank? || !languages.is_a?(Enumerable)
+        return errors.add(:metadata, "doesn't specify the list of languages")
+      end
+
+      if languages.any? { |lang| LanguageList::LanguageInfo.find(lang).nil? }
+        errors.add(:metadata, "contains incorrectly specified languages - they should be best described using ISO-639-3 codes")
       end
     end
   end
