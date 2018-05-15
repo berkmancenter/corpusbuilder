@@ -310,7 +310,9 @@ export default class InlineEditor extends React.Component {
     }
 
     onInputBlur() {
-        this.selectedBox = null;
+        setTimeout(_ => {
+            this.selectedBox = null;
+        }, 100);
     }
 
     onShellClick(e) {
