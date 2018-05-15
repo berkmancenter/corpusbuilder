@@ -8,7 +8,7 @@ module Documents
     validates :editor_email, presence: true
 
     validate :editor_exists
-    validate :proper_languages_provided
+    #validate :proper_languages_provided
 
     def execute
       document = Document.create! title: @metadata[:title],

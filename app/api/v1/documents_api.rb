@@ -18,7 +18,7 @@ class V1::DocumentsAPI < Grape::API
         optional :license, type: String
         optional :notes, type: String
         optional :publisher, type: String
-        requires :languages, type: Array[String]
+        optional :languages, type: Array[String]
       end
       requires :editor_email, type: String
       optional :backend, type: String
