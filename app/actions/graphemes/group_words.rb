@@ -7,14 +7,13 @@ module Graphemes
     def execute
       return [] if graphemes.empty?
 
-      logical_graphemes.inject([[]]) do |words, grapheme|
-        if grapheme.nil?
-          words << []
-        else
-          words[ words.count - 1 ] << grapheme
-        end
+      visual_words.map do |word|
+        word.sort { |a, b| logical_indices[a.id] <=> logical_indices[b.id] }
+      end.sort do |a, b|
+        amax = a.map { |g| logical_indices[ g.id ] }.max
+        bmax = b.map { |g| logical_indices[ g.id ] }.max
 
-        words
+        amax <=> bmax
       end
     end
 
@@ -26,24 +25,37 @@ module Graphemes
 
     def logical_indices
       memoized do
-        Bidi.to_logical_indices(visual_text, zone.direction.to_sym)
+        Bidi.to_logical_indices(visual_text, zone.direction.to_sym).
+             each_with_index.
+             inject({}) do |state, ixs|
+               lix, vix = ixs
+               grapheme = visual_graphemes[ vix ]
+
+               if grapheme.present?
+                 state[ grapheme.id ] = lix
+               end
+
+               state
+             end
+      end
+    end
+
+    def visual_words
+      memoized do
+        visual_graphemes.inject([[]]) do |words, grapheme|
+          if grapheme.nil?
+            words << []
+          else
+            words[ words.count - 1 ] << grapheme
+          end
+
+          words
+        end
       end
     end
 
     def visual_text
       visual_graphemes.map { |g| g.try(:value) || ' ' }.join('')
-    end
-
-    def logical_graphemes
-      memoized do
-        result = Array.new(visual_graphemes.size)
-
-        logical_indices.each_with_index do |lix, vix|
-          result[lix] = visual_graphemes[vix]
-        end
-
-        result
-      end
     end
 
     def visual_graphemes
