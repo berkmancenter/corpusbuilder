@@ -319,5 +319,35 @@ describe Documents::CompileCorrections do
     expect(topic1.reload.revision.graphemes.first.zone.direction).to be == "rtl"
   end
 
+  it 'preserves correct order for syriac words' do
+    original_text_words = [
+      [1829, 1825, 1815, 46], [1813, 1815, 1808], [1808, 1835, 1836, 1823, 1818, 1836],
+      [1813, 1829, 1810, 1834, 1816], [1836, 1835, 776, 1829, 1808], [1813, 1834, 776, 1821, 1826],
+      [1808], [1813, 1808, 1825, 1834, 1826, 1826], [46]
+    ].map { |ws| ws.pack("U*") }
+
+    text_words = [
+      [1829, 1825, 1815, 46], [1813, 1815, 1808], [1808, 1835, 1836, 1823, 1818, 1836],
+      [1813, 1829, 1810, 1834, 1816], [1836, 1835, 776, 1829, 1808], [1813, 1834, 776, 1821, 1826],
+      [1808, 1821, 1826], [1813, 1808, 1825, 1834, 1826, 1826], [46]
+    ].map { |ws| ws.pack("U*") }
+
+    text_boxes = [
+      [1345.9999999999998, 2117.0, 1479.9999999999998, 2138.0], [1216.0, 2111.0, 1318.9999999999998, 2139.0],
+      [992.0, 2107.0, 1188.0, 2139.0], [826.0, 2107.0, 957.9999999999999, 2138.0],
+      [660.0, 2105.9999999999995, 797.0, 2137.0], [556.0, 2105.9999999999995, 631.9999999999999, 2152.0],
+      [430.4142259414226, 2108.0, 533.9707112970711, 2172.9385460251046], [233.0, 2105.0, 404.0, 2149.9999999999995],
+      [206.99999999999997, 2127.0, 214.0, 2133.9999999999995]
+    ]
+
+    _, gs = line surface, original_text_words, text_boxes, :rtl
+    ids = gs.map { |wgs| wgs.map(&:id) }
+    master = branch_off document, "master", editor, nil, gs
+
+    corrections = correct_ master, surface, editor, text_words, text_boxes, ids, :rtl
+
+    expect(corrections.map { |c| c[:position_weight] }.uniq.count).to eq(3)
+  end
+
 end
 
