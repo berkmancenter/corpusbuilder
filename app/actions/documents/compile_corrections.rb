@@ -135,6 +135,16 @@ module Documents
                     current_word_diff.source.map(&:position_weight).max
                 end
 
+                if open == close
+                  if next_word.nil?
+                    close = open + 10e-3
+                  else
+                    close = open + (
+                      next_word.map(&:position_weight).min - open
+                    ) / 2
+                  end
+                end
+
                 addmod_specs = current_span.diffs.map(&:to_spec)
 
                 addmod_specs.each_with_index do |addmod_spec, index|

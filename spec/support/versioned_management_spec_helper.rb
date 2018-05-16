@@ -62,6 +62,26 @@ module VersionedManagementSpecHelper
     [ zone, ids ]
   end
 
+  def correct_(branch, surface, editor, words, raw_boxes, ids, dir = nil)
+    boxes = raw_boxes.map { |raw_box| Area.from_raw_box(raw_box) }
+
+    corrections = words.each_with_index.map do |text_word, ix|
+      {
+        grapheme_ids: ids[ ix ],
+        text: text_word,
+        area: boxes[ ix ]
+      }
+    end
+
+    Documents::CompileCorrections.run!(
+      words: corrections,
+      surface_number: surface.number,
+      document: surface.document,
+      branch_name: branch.name,
+      dir: dir
+    ).result
+  end
+
   def correct(branch, surface, editor, words, raw_boxes, ids, dir = nil)
     boxes = raw_boxes.map { |raw_box| Area.from_raw_box(raw_box) }
 
