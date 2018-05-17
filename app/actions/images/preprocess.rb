@@ -5,8 +5,7 @@ module Images
     validates :image, presence: true
 
     def execute
-      # binarize # both Tesseract and Kraken have that built in
-      # using the same algorithm (Otsu)
+      binarize
       deskew
       dewarp
       store
@@ -20,7 +19,7 @@ module Images
     end
 
     def deskew
-      Leptonica::Tools.deskew image.image_scan.path, deskewed_temp_path
+      Leptonica::Tools.deskew binarized_temp_path, deskewed_temp_path
     end
 
     def dewarp
