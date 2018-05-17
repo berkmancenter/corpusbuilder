@@ -13,10 +13,13 @@ module Documents
       Rails.logger.info "Compiling the document page for image_id = #{image_id}"
 
       nodes
+
       copy_data_into_surfaces
       copy_data_into_zones
       copy_data_into_graphemes
       copy_data_into_graphemes_revisions
+
+      nodes
     end
 
     def nodes
@@ -36,11 +39,6 @@ module Documents
               id: SecureRandom.uuid
             surfaces << last_surface
           when "zone"
-            if zone_graphemes.count == 2
-              # we only have directionals here so we can get rid of them
-              # to have a cleaner document
-              graphemes -= zone_graphemes
-            end
             dir = Bidi.infer_direction(zone_graphemes.map(&:value).join(''))
             last_zone.direction = Zone.directions[dir] if last_zone.present?
             zone_graphemes = []
@@ -64,6 +62,9 @@ module Documents
             fail "Invalid OCR element name: #{element.name}"
           end
         end
+
+        dir = Bidi.infer_direction(zone_graphemes.map(&:value).join(''))
+        last_zone.direction = Zone.directions[dir] if last_zone.present?
 
         OpenStruct.new({
           graphemes: graphemes.to_a,
@@ -151,6 +152,10 @@ module Documents
 
     def image
       @_image ||= Image.find @image_id
+    end
+
+    def create_development_dumps?
+      true
     end
   end
 end

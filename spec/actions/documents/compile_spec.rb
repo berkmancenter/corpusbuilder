@@ -13,11 +13,11 @@ describe Documents::Compile do
       Parser::Element.new(name: "grapheme", certainty: 0.4, area: Area.new(lrx: 40, lry: 10, ulx: 30, uly: 0), value: 'l'),
       Parser::Element.new(name: "grapheme", certainty: 0.5, area: Area.new(lrx: 50, lry: 10, ulx: 40, uly: 0), value: 'o'),
       Parser::Element.new(name: "zone", area: Area.new(lrx: 60, lry: 20, ulx: 0, uly: 10)),
-      Parser::Element.new(name: "grapheme", certainty: 0.7, area: Area.new(lrx: 20, lry: 20, ulx: 10, uly: 10), value: 'o'),
-      Parser::Element.new(name: "grapheme", certainty: 0.6, area: Area.new(lrx: 10, lry: 20, ulx: 0, uly: 10), value: 'w'),
-      Parser::Element.new(name: "grapheme", certainty: 0.8, area: Area.new(lrx: 30, lry: 20, ulx: 20, uly: 10), value: 'r'),
-      Parser::Element.new(name: "grapheme", certainty: 0.9, area: Area.new(lrx: 40, lry: 20, ulx: 30, uly: 10), value: 'l'),
-      Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: 'd')
+      Parser::Element.new(name: "grapheme", certainty: 0.7, area: Area.new(lrx: 20, lry: 20, ulx: 10, uly: 10), value: 'ܬ'),
+      Parser::Element.new(name: "grapheme", certainty: 0.6, area: Area.new(lrx: 10, lry: 20, ulx: 0, uly: 10), value: 'ܥ'),
+      Parser::Element.new(name: "grapheme", certainty: 0.8, area: Area.new(lrx: 30, lry: 20, ulx: 20, uly: 10), value: 'ܒ'),
+      Parser::Element.new(name: "grapheme", certainty: 0.9, area: Area.new(lrx: 40, lry: 20, ulx: 30, uly: 10), value: 'ܕ'),
+      Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: '.')
     ].lazy
   end
 
@@ -148,7 +148,7 @@ describe Documents::Compile do
     expect(graphemes[4].value).to eq('o')
     expect(graphemes[4].certainty).to eq(0.5)
     expect(graphemes[4].zone_id).to eq(zones.first.id)
-    expect(graphemes[9].value).to eq('d')
+    expect(graphemes[9].value).to eq('.')
     expect(graphemes[9].certainty).to eq(0.99)
     expect(graphemes[9].zone_id).to eq(zones.last.id)
   end
@@ -157,7 +157,7 @@ describe Documents::Compile do
     proper_call
 
     expect(graphemes.map(&:position_weight)).to eq((1..(graphemes.count)).to_a)
-    expect(graphemes.map(&:value).join).to eq("helloowrld")
+    expect(graphemes.map(&:value).join).to eq("helloܬܥܒܕ.")
   end
 
   it "attaches the newly created graphemes to the master branch of the document" do
@@ -170,6 +170,13 @@ describe Documents::Compile do
     proper_call
 
     expect(master_branch.working.graphemes.map(&:id).sort).to eq(graphemes.map(&:id).sort)
+  end
+
+  it "properly processed the direction of zones" do
+    proper_call
+
+    expect(zones.first.direction).to eq("ltr")
+    expect(zones.last.direction).to eq("rtl")
   end
 end
 
