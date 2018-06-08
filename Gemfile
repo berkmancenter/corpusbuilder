@@ -38,6 +38,8 @@ gem 'ruby-graphviz'
 gem 'therubyracer'
 gem 'pragmatic_tokenizer'
 gem 'language_list'
+gem 'unicode-scripts'
+gem 'unicode-categories'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

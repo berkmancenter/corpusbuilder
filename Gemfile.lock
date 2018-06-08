@@ -309,6 +309,8 @@ GEM
       unf_ext
     unf_ext (0.0.7.4)
     unicode (0.4.4.4)
+    unicode-categories (1.3.0)
+    unicode-scripts (1.3.0)
     virtus (1.0.5)
       axiom-types (~> 0.1)
       coercible (~> 1.0)
@@ -377,6 +379,8 @@ DEPENDENCIES
   trestle-auth
   tty-progressbar
   uglifier (>= 1.3.0)
+  unicode-categories
+  unicode-scripts
   web-console (>= 3.3.0)
   webmock
   webpacker

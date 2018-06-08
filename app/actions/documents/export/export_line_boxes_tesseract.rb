@@ -19,7 +19,7 @@ module Documents::Export
             uly: state.last_line_box.uly + 1,
             lry: state.last_line_box.lry + 2
           )
-          state.lines << "\t #{box_to_text(separator_box)} 0"
+          state.lines << " #{box_to_text(separator_box)} 0"
         end
 
         for grapheme in graphemes
@@ -29,6 +29,10 @@ module Documents::Export
         state.last_line_box = line_box
         state
       end.lines.join("\n")
+    end
+
+    def after
+      Documents::Export::ExportUnicharsetTesseract.run! dir_path: dir_path
     end
 
     def box_to_text(box)

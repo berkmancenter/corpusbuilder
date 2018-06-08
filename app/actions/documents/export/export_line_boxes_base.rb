@@ -3,7 +3,10 @@ module Documents::Export
     attr_accessor :zone, :document, :dir_path
 
     def execute
-      out_path.tap { IO.write out_path, text }
+      out_path.tap { IO.write out_path, text }.tap { after }
+    end
+
+    def after
     end
 
     def out_path
