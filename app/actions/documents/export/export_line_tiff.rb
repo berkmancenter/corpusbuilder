@@ -7,14 +7,19 @@ module Documents::Export
     end
 
     def out_path
-      File.join dir_path, "#{zone.id}.tiff"
+      File.join dir_path, "#{zone.id}.tif"
     end
 
     def imported_from_png
       memoized do
         MiniMagick::Image.read(
           cropped_png.to_blob(:fast_rgb)
-        )
+        ).mogrify do |builder|
+          # adding 15 pixels around the line image
+          # because tesseract
+          builder.send('bordercolor', 'white')
+          builder.send('border', 15)
+        end
       end
     end
 

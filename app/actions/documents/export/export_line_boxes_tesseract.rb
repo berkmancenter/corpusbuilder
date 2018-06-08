@@ -8,7 +8,7 @@ module Documents::Export
         last_line_box: nil
       )
 
-      words.inject(init_state) do |state, graphemes|
+      visually_sorted_words.inject(init_state) do |state, graphemes|
         line_box = Area.span_boxes graphemes.map(&:area)
         line_box_text = box_to_text(line_box)
 
@@ -31,15 +31,26 @@ module Documents::Export
       end.lines.join("\n")
     end
 
+    def visually_sorted_words
+      memoized do
+        words.map do |graphemes|
+          graphemes.sort_by { |g| g.area.ulx }
+        end.sort_by { |w| w.first.area.ulx }
+      end
+    end
+
     def after
       Documents::Export::ExportUnicharsetTesseract.run! dir_path: dir_path
     end
 
     def box_to_text(box)
-      left = 0
-      bottom = 0
-      right = box.width
-      top = box.height
+      # moving it by (15, 15) as tesseract exported images
+      # have 15 pixels border:
+
+      left = 15
+      bottom = 15
+      right = box.width + 15
+      top = box.height + 15
 
       [ left, bottom, right, top ].join ' '
     end
