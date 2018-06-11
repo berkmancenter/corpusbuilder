@@ -43,6 +43,10 @@ module Documents::Export
       Documents::Export::ExportUnicharsetTesseract.run! dir_path: dir_path
     end
 
+    def extension
+      "box"
+    end
+
     def box_to_text(box)
       # moving it by (15, 15) as tesseract exported images
       # have 15 pixels border:

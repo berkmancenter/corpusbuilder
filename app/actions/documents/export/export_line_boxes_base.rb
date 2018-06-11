@@ -10,7 +10,11 @@ module Documents::Export
     end
 
     def out_path
-      File.join dir_path, "#{zone.id}.gt.txt"
+      File.join dir_path, "#{zone.id}.#{extension}"
+    end
+
+    def extension
+      "gt.txt"
     end
 
     def words
