@@ -5,30 +5,41 @@ module Documents::Export
     def text
       init_state = OpenStruct.new(
         lines: [ ],
-        last_line_box: nil
+        last_word_box: nil
       )
 
-      visually_sorted_words.inject(init_state) do |state, graphemes|
-        line_box = Area.span_boxes graphemes.map(&:area)
-        line_box_text = box_to_text(line_box)
+      run = visually_sorted_words.inject(init_state) do |state, graphemes|
+        word_box = Area.span_boxes graphemes.map(&:area)
 
-        if state.last_line_box.present?
+        if !state.lines.empty?
           separator_box = Area.new(
-            ulx: state.last_line_box.ulx,
-            lrx: state.last_line_box.ulx + 1,
-            uly: state.last_line_box.uly + 1,
-            lry: state.last_line_box.lry + 2
+            ulx: state.last_word_box.ulx + 1,
+            lrx: state.last_word_box.ulx + 2,
+            uly: state.last_word_box.uly,
+            lry: state.last_word_box.lry
           )
           state.lines << " #{box_to_text(separator_box)} 0"
         end
 
-        for grapheme in graphemes
-          state.lines << "#{ grapheme.value } #{line_box_text} 0"
+        graphemes.each_with_index do |grapheme, index|
+          state.lines << "#{ grapheme.value } #{grapheme_box_text(word_box, index, graphemes.count)} 0"
         end
 
-        state.last_line_box = line_box
+        state.last_word_box = word_box
         state
-      end.lines.join("\n")
+      end
+
+      lines = run.lines
+      last_box = Area.new(
+        ulx: line_box.lrx + 1,
+        lrx: line_box.lrx + 2,
+        uly: line_box.uly,
+        lry: line_box.lry
+      )
+      lines << "\t #{box_to_text(last_box)}"
+      lines << ""
+
+      lines.join("\n")
     end
 
     def visually_sorted_words
@@ -47,14 +58,48 @@ module Documents::Export
       "box"
     end
 
+    def grapheme_box_text(line_box, index, count_all)
+      box_to_text grapheme_box(line_box, index, count_all)
+    end
+
+    def grapheme_box(line_box, index, count_all)
+      single_width = line_box.width / count_all
+
+      Area.new ulx: (line_box.ulx + index * single_width),
+        uly: line_box.uly,
+        lrx: (line_box.ulx + (index + 1) * single_width),
+        lry: line_box.lry
+    end
+
+    def line_box
+      memoized do
+        Area.span_boxes words.flatten.map(&:area)
+      end
+    end
+
+    def normalize_box(box)
+      Δx = line_box.ulx
+      Δy = line_box.uly
+
+      Area.new ulx: (box.ulx - Δx),
+        uly: (box.uly - Δy),
+        lrx: (box.lrx - Δx),
+        lry: (box.lry - Δy)
+    end
+
     def box_to_text(box)
       # moving it by (15, 15) as tesseract exported images
       # have 15 pixels border:
 
-      left = 15
-      bottom = 15
-      right = box.width + 15
-      top = box.height + 15
+      normalized = normalize_box box
+
+      # weird math stems from the tesseract coords system
+      # which has the y axis backwards
+
+      left = normalized.ulx + 15
+      bottom = (line_box.height - normalized.lry) + 15
+      right = normalized.lrx + 15
+      top = (line_box.height - normalized.lry + normalized.height) + 15
 
       [ left, bottom, right, top ].join ' '
     end

@@ -46,7 +46,7 @@ module Documents::Export
     end
 
     def cat_box_files
-      "cat #{ File.join(dir_path, "*.gt.txt") }"
+      "cat #{ File.join(dir_path, "*.box") }"
     end
 
     def unicharset_file_path
