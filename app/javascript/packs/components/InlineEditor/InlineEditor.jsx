@@ -216,6 +216,10 @@ export default class InlineEditor extends React.Component {
         }
     }
 
+    clearLine() {
+        this.editedTextWords = this.editedTextWords.map(_ => "");
+    }
+
     deleteLine() {
         if(this.deleteClickedOnce) {
             if(typeof this.props.onDeleteLineRequested === 'function') {
@@ -714,6 +718,9 @@ export default class InlineEditor extends React.Component {
                                     classes={ this.deleteButtonClasses }
                                     >
                               { this.deleteButtonTitle }
+                            </Button>
+                            <Button onClick={ this.clearLine.bind(this) }>
+                              Clear Line Text
                             </Button>
                             <div className="corpusbuilder-inline-editor-buttons-aside">
                                 <Button onClick={ this.resetText.bind(this) }>
