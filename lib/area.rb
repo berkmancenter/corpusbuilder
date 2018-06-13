@@ -27,6 +27,13 @@ class Area
     self
   end
 
+  def include?(other)
+    ulx <= other.ulx &&
+      lrx >= other.lrx &&
+      uly <= other.uly &&
+      lry >= other.lry
+  end
+
   def width
     @lrx - @ulx
   end
