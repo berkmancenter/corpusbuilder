@@ -9,6 +9,14 @@ module Action
     include Memoizable
     include Benchmarkable
 
+    def self.finally(*method_symbols)
+      @__finally ||= []
+
+      method_symbols.each do |method|
+        @__finally << method
+      end
+    end
+
     def self.run!(params = {}, instance = new)
       if params.nil? && has_setters?(instance)
         raise ArgumentError, "Expected parameters passed to action #{name}"
@@ -51,6 +59,10 @@ module Action
 
       begin
         run!(params, instance)
+
+        (@__finally || []).each do |symbol|
+          instance.send symbol
+        end
       rescue => e
         Rails.logger.error "Error!: #{e.message}"
         Rails.logger.error "Backtrace:"
