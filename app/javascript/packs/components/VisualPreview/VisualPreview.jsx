@@ -161,8 +161,8 @@ export default class VisualPreview extends React.Component {
             let context = this.canvas.getContext('2d');
 
             this.canvas.width = this.canvas.parentNode.offsetWidth;
-            this.canvas.height = this.scaledLineHeight * 2;
-            this.canvasArea.style.height = `${this.scaledLineHeight * 2}px`;
+            this.canvas.height = Math.ceil(this.scaledLineHeight * 2);
+            this.canvasArea.style.height = `${Math.ceil(this.scaledLineHeight * 2)}px`;
 
             context.drawImage(
                 this.image,
