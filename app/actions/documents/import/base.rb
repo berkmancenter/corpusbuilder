@@ -21,22 +21,12 @@ module Documents
       raise NotImplementedError
     end
 
-    def metadata_glob
+    def metadata
       raise NotImplementedError
-    end
-
-    def raw_metadata
-      memoized do
-        YAML.load(File.read(metadata_path))
-      end
     end
 
     def metadata_path
       Dir.glob(metedata_glob).first
-    end
-
-    def metadata
-      raw_metadata
     end
 
     def remove_temp_directory
@@ -61,8 +51,11 @@ module Documents
       memoized do
         image_paths.map do |path|
           File.open(path) do |image_file|
-            Images::Create.run! file: image_file,
+            image = Images::Create.run! file: image_file,
               name: path.basename
+            image.processed_image = File.open(image.image_scan.file.file)
+            image.save!
+            image
           end
         end
       end

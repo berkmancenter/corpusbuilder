@@ -34,6 +34,10 @@ class Area
       lry >= other.lry
   end
 
+  def slice(ix, count_all)
+    raise NotImplementedError
+  end
+
   def width
     @lrx - @ulx
   end
