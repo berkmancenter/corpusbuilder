@@ -6,7 +6,7 @@ module Documents
 
     def metadata
       memoized do
-        path = Dir.glob("metadata*.yaml*").first
+        path = Dir.glob(File.join(working_path, "metadata*.yaml*")).first
 
         YAML.load(File.read(path))
       end
@@ -44,13 +44,17 @@ module Documents
 
           entry.text.split(/ /).map(&:each_char).each_with_index do |characters, word_ix|
             characters.each_with_index do |character, character_ix|
-              result << Parser::Element.new(
-                name: "grapheme",
-                area: grapheme_area(image, entry, word_ix, character_ix, characters.count),
-                certainty: 0,
-                value: character,
-                grouping: ''
-              )
+              area = grapheme_area(image, entry, word_ix, character_ix, characters.count)
+
+              if area.present?
+                result << Parser::Element.new(
+                  name: "grapheme",
+                  area: grapheme_area(image, entry, word_ix, character_ix, characters.count),
+                  certainty: 0,
+                  value: character,
+                  grouping: ''
+                )
+              end
             end
           end
         end
@@ -58,7 +62,9 @@ module Documents
     end
 
     def grapheme_area(image, parsed_entry, word_ix, character_ix, character_count)
-      word_area(image, parsed_entry, word_ix).slice(character_ix, character_count)
+      area = word_area(image, parsed_entry, word_ix)
+
+      area.try(:slice, character_ix, character_count)
     end
 
     def word_area(image, parsed_entry, word_ix)
@@ -88,9 +94,7 @@ module Documents
     end
 
     def segmentation_xml_path(image)
-      base = Pathname.new(image.processed_image.file.file).basename.to_s
-
-      File.join working_path, base.gsub(/.png/, "_segment_tesseract.xml")
+      File.join working_path, image.name.gsub(/\.png/, "_segment_tesseract.xml")
     end
 
     def parsed_csv_entries(image)
@@ -116,7 +120,7 @@ module Documents
 
           area = Area.new ulx: ulx, lrx: lrx, uly: uly, lry: lry
           image_path = Pathname.new(line[ image_path_ix ])
-          text = line[ text_ix ].strip
+          text = (line[ text_ix ] || "").strip
 
           entries << ParsedCsvEntry.new(area, text, image_path)
         end

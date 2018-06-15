@@ -6,7 +6,7 @@ module Documents
 
     def execute
       pages.each do |page|
-        Documents::Create.run! image_ocr_result: page.elements,
+        Documents::Compile.run! image_ocr_result: OpenStruct.new(elements: page.elements.to_a),
           document: document, image_id: page.image.id
       end
 
@@ -51,8 +51,10 @@ module Documents
       memoized do
         image_paths.map do |path|
           File.open(path) do |image_file|
-            image = Images::Create.run! file: image_file,
-              name: path.basename
+            image = Images::Create.run!(
+              file: image_file,
+              name: Pathname.new(path).basename.to_s
+            ).result.first
             image.processed_image = File.open(image.image_scan.file.file)
             image.save!
             image
@@ -80,11 +82,13 @@ module Documents
 
     def document
       memoized do
-        Documents::Create.run! images: images,
-          metadata: metadata,
+        Documents::Create.run!(
+          images: images,
+          metadata: metadata.inject({}) { |memo,(k,v)| memo[k.to_sym] = v; memo },
           app: app,
           editor_email: editor_email,
           backend: :import
+        ).result
       end
     end
 

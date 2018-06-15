@@ -35,7 +35,12 @@ class Area
   end
 
   def slice(ix, count_all)
-    raise NotImplementedError
+    new_width = (width / count_all).round
+
+    Area.new ulx: (ulx + ix * new_width),
+      uly: uly,
+      lrx: (ulx + (ix + 1) * new_width),
+      lry: lry
   end
 
   def width

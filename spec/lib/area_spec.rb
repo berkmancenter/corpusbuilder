@@ -98,6 +98,36 @@ describe Area do
     end
   end
 
+  describe "#slice" do
+    let(:box) { Area.new ulx: 10, lrx: 110, uly: 10, lry: 110 }
+
+    it "returns properly sliced sub-area" do
+      sliced = box.slice(1, 10)
+
+      expect(sliced.ulx).to eq(10 + 10)
+      expect(sliced.width).to eq(100 / 10)
+      expect(sliced.uly).to eq(10)
+      expect(sliced.height).to eq(100)
+    end
+
+    it "divides area so that their span equals the original area" do
+      slices = (0..9).to_a.map { |ix| box.slice(ix, 10) }
+      span = Area.span_boxes(slices)
+
+      expect(span).to eq(box)
+    end
+
+    it "divides area so that consequtive slices don't have any padding in between" do
+      slices = (0..9).to_a.map { |ix| box.slice(ix, 10) }
+
+      slices.inject do |last, current|
+        expect(last.lrx).to eq(current.ulx)
+
+        current
+      end
+    end
+  end
+
   describe Area::Serializer do
     let(:database_box) do
       "((4,3),(1,2))"
