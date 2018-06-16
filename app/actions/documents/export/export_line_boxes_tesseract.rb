@@ -18,7 +18,7 @@ module Documents::Export
             uly: state.last_word_box.uly,
             lry: state.last_word_box.lry
           )
-          state.lines << " #{box_to_text(separator_box)} 0"
+          state.lines << "  #{box_to_text(separator_box)} 0"
         end
 
         graphemes.each_with_index do |grapheme, index|

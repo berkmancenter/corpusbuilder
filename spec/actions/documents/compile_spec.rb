@@ -17,7 +17,10 @@ describe Documents::Compile do
       Parser::Element.new(name: "grapheme", certainty: 0.6, area: Area.new(lrx: 10, lry: 20, ulx: 0, uly: 10), value: 'ܥ'),
       Parser::Element.new(name: "grapheme", certainty: 0.8, area: Area.new(lrx: 30, lry: 20, ulx: 20, uly: 10), value: 'ܒ'),
       Parser::Element.new(name: "grapheme", certainty: 0.9, area: Area.new(lrx: 40, lry: 20, ulx: 30, uly: 10), value: 'ܕ'),
-      Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: '.')
+      Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 50, lry: 20, ulx: 40, uly: 10), value: '.'),
+      # now the ones that are invalid because are not within the line bounding box:
+      Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 70, lry: 20, ulx: 61, uly: 10), value: '!'),
+      Parser::Element.new(name: "grapheme", certainty: 0.99, area: Area.new(lrx: 50, lry: 30, ulx: 40, uly: 20), value: '!')
     ].lazy
   end
 

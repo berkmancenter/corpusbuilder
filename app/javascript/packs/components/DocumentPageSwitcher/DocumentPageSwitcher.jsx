@@ -77,6 +77,7 @@ export default class DocumentPageSwitcher extends React.Component {
                     </Button>
                 ),
                 align: 'left',
+                delay: 0,
                 menuAlign: 'center'
             });
             let className = ix < 5 ? "corpusbuilder-nestedmenu-downwards" : "";

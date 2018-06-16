@@ -67,11 +67,17 @@ module Documents
         last_zone.direction = Zone.directions[dir] if last_zone.present?
 
         OpenStruct.new({
-          graphemes: graphemes.to_a,
+          graphemes: filter_out_outliers(graphemes),
           surfaces: surfaces.to_a,
           zones: zones.to_a
         })
       }.call
+    end
+
+    def filter_out_outliers(graphemes)
+      graphemes.select do |grapheme|
+        grapheme.zone.area.include? grapheme.area
+      end
     end
 
     def copy_data_into_surfaces

@@ -65,6 +65,69 @@ describe Area do
     expect(span.lry).to eq(906)
   end
 
+  describe "#include?" do
+    let(:box) { Area.new ulx: 10, lrx: 20, uly: 10, lry: 20 }
+    let(:within_box) { Area.new ulx: 11, lrx: 19, uly: 11, lry: 19 }
+    let(:cross_left_box) { Area.new ulx: 9, lrx: 20, uly: 10, lry: 20 }
+    let(:cross_top_box) { Area.new ulx: 10, lrx: 20, uly: 9, lry: 20 }
+    let(:cross_bottom_box) { Area.new ulx: 10, lrx: 20, uly: 10, lry: 21 }
+    let(:cross_right_box) { Area.new ulx: 10, lrx: 21, uly: 10, lry: 20 }
+
+    it "returns true when tested on itself" do
+      expect(box.include?(box)).to be_truthy
+    end
+
+    it "returns true when a box lays wholly within the one firing the method" do
+      expect(box.include?(within_box)).to be_truthy
+    end
+
+    it "returns false when a box crosses the left boundary" do
+      expect(box.include?(cross_left_box)).to be_falsey
+    end
+
+    it "returns false when a box crosses the top boundary" do
+      expect(box.include?(cross_top_box)).to be_falsey
+    end
+
+    it "returns false when a box crosses the bottom boundary" do
+      expect(box.include?(cross_bottom_box)).to be_falsey
+    end
+
+    it "returns false when a box crosses the right boundary" do
+      expect(box.include?(cross_right_box)).to be_falsey
+    end
+  end
+
+  describe "#slice" do
+    let(:box) { Area.new ulx: 10, lrx: 110, uly: 10, lry: 110 }
+
+    it "returns properly sliced sub-area" do
+      sliced = box.slice(1, 10)
+
+      expect(sliced.ulx).to eq(10 + 10)
+      expect(sliced.width).to eq(100 / 10)
+      expect(sliced.uly).to eq(10)
+      expect(sliced.height).to eq(100)
+    end
+
+    it "divides area so that their span equals the original area" do
+      slices = (0..9).to_a.map { |ix| box.slice(ix, 10) }
+      span = Area.span_boxes(slices)
+
+      expect(span).to eq(box)
+    end
+
+    it "divides area so that consequtive slices don't have any padding in between" do
+      slices = (0..9).to_a.map { |ix| box.slice(ix, 10) }
+
+      slices.inject do |last, current|
+        expect(last.lrx).to eq(current.ulx)
+
+        current
+      end
+    end
+  end
+
   describe Area::Serializer do
     let(:database_box) do
       "((4,3),(1,2))"
