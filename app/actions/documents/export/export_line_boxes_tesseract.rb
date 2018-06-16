@@ -45,7 +45,7 @@ module Documents::Export
     def visually_sorted_words
       memoized do
         words.map do |graphemes|
-          graphemes.sort_by { |g| g.area.ulx }
+          graphemes.sort_by { |g| g.position_weight }
         end.sort_by { |w| w.first.area.ulx }
       end
     end
