@@ -7,11 +7,21 @@ module Documents::Export
 
     def execute
       extract_zones
+      `cd #{extract_path} && tar cjf #{archive_file_name} ./* && mv #{archive_file_name} ..`
+
+      if $?.exitstatus == 0
+        `rm -fr #{extract_path}`
+        puts "Archive ready: #{File.join(Rails.root, "public", "export", archive_file_name)}"
+      end
+    end
+
+    def archive_file_name
+      "#{document.title.gsub(/\s/, '-').downcase.dasherize}-#{image_format}-#{boxes_format}.bz2"
     end
 
     def extract_path
       memoized do
-        dir_name = "#{DateTime.now.to_i}-#{document.id}-#{image_format}-#{boxes_format}"
+        dir_name = "#{document.title.gsub(/\s/, '-').downcase.dasherize}-#{image_format}-#{boxes_format}"
         File.join(Rails.root, "public", "export", dir_name).tap do |path|
           Dir.mkdir path
         end
