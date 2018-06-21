@@ -28,7 +28,7 @@ module Images
 
     def model
       # todo: implement switching between models
-      "syr"
+      "Arabic"
     end
   end
 end
