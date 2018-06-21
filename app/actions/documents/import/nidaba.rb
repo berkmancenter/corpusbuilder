@@ -42,14 +42,16 @@ module Documents
             area: entry.area
           )
 
-          entry.text.split(/ /).map(&:each_char).each_with_index do |characters, word_ix|
+          text_words = entry.text.gsub(/\s+/, ' ').split(/ /)
+
+          text_words.map(&:each_char).each_with_index do |characters, word_ix|
             characters.each_with_index do |character, character_ix|
-              area = grapheme_area(image, entry, word_ix, character_ix, characters.count)
+              area = grapheme_area(image, entry, word_ix, text_words.count, character_ix, characters.count)
 
               if area.present?
                 result << Parser::Element.new(
                   name: "grapheme",
-                  area: grapheme_area(image, entry, word_ix, character_ix, characters.count),
+                  area: area,
                   certainty: 0,
                   value: character,
                   grouping: ''
@@ -61,14 +63,54 @@ module Documents
       end
     end
 
-    def grapheme_area(image, parsed_entry, word_ix, character_ix, character_count)
-      area = word_area(image, parsed_entry, word_ix)
+    def grapheme_area(image, parsed_entry, word_ix, word_count, character_ix, character_count)
+      area = word_area(image, parsed_entry, word_ix, word_count)
 
       area.try(:slice, character_ix, character_count)
     end
 
-    def word_area(image, parsed_entry, word_ix)
-      word_areas_for(image, parsed_entry)[word_ix]
+    def word_area(image, parsed_entry, word_ix, word_count)
+      areas = word_areas_for(image, parsed_entry)
+
+      if areas.count == word_count
+        areas[ word_ix ]
+      else
+        # we need to split the area arbitrarily and let the users
+        # draw better boxes:
+
+        text = parsed_entry.text.gsub(/\s+/, ' ')
+
+        normed_width = (parsed_entry.area.width / text.codepoints.count).round
+        seen_spaces = 0
+        start_ix = 0
+        end_ix = 0
+
+        text.chars.each_with_index do |char, ix|
+          if seen_spaces == word_ix
+            if !char[/\s/].nil?
+              break
+            end
+          elsif seen_spaces == word_ix - 1
+            if !char[/\s/].nil?
+              start_ix = ix + 1
+            end
+          end
+
+          if !char[/\s/].nil?
+            seen_spaces += 1
+          end
+          end_ix = ix
+        end
+
+        base = parsed_entry.area
+
+        Area.new(
+          ulx: (base.ulx + normed_width * start_ix),
+          lrx: (base.ulx + normed_width * end_ix),
+          uly: base.uly,
+          lry: base.lry
+        )
+      end
     end
 
     def word_areas_for(image, parsed_entry)
