@@ -42,21 +42,24 @@ module Documents
             area: entry.area
           )
 
-          text_words = entry.text.gsub(/\s+/, ' ').split(/ /)
+          direction = Bidi.infer_direction entry.text
+          text_words = entry.visual_text.split(/ /)
 
-          text_words.map(&:each_char).each_with_index do |characters, word_ix|
-            characters.each_with_index do |character, character_ix|
-              area = grapheme_area(image, entry, word_ix, text_words.count, character_ix, characters.count)
+          text_words.each_with_index.each do |visual_word, word_ix|
+            logical_word = Bidi.to_logical visual_word, direction
+            visual_indices = Bidi.to_visual_indices(logical_word, direction)
 
-              if area.present?
-                result << Parser::Element.new(
-                  name: "grapheme",
-                  area: area,
-                  certainty: 0,
-                  value: character,
-                  grouping: ''
-                )
-              end
+            visual_indices.each_with_index.each do |visual_index, logical_index|
+              area = grapheme_area(image, entry, word_ix, text_words.count, visual_index, logical_word.length)
+              character = logical_word[ logical_index ]
+
+              result << Parser::Element.new(
+                name: "grapheme",
+                area: area,
+                certainty: 0,
+                value: character,
+                grouping: ''
+              )
             end
           end
         end
@@ -66,7 +69,7 @@ module Documents
     def grapheme_area(image, parsed_entry, word_ix, word_count, character_ix, character_count)
       area = word_area(image, parsed_entry, word_ix, word_count)
 
-      area.try(:slice, character_ix, character_count)
+      area.slice(character_ix, character_count)
     end
 
     def word_area(image, parsed_entry, word_ix, word_count)
@@ -78,14 +81,12 @@ module Documents
         # we need to split the area arbitrarily and let the users
         # draw better boxes:
 
-        text = parsed_entry.text.gsub(/\s+/, ' ')
-
-        normed_width = (parsed_entry.area.width / text.codepoints.count).round
+        normed_width = (parsed_entry.area.width / parsed_entry.text.codepoints.count).floor
         seen_spaces = 0
         start_ix = 0
         end_ix = 0
 
-        text.chars.each_with_index do |char, ix|
+        parsed_entry.visual_text.chars.each_with_index do |char, ix|
           if seen_spaces == word_ix
             if !char[/\s/].nil?
               break
@@ -106,7 +107,7 @@ module Documents
 
         Area.new(
           ulx: (base.ulx + normed_width * start_ix),
-          lrx: (base.ulx + normed_width * end_ix),
+          lrx: (base.ulx + normed_width * (end_ix + 1)),
           uly: base.uly,
           lry: base.lry
         )
@@ -176,8 +177,20 @@ module Documents
 
       def initialize(area, text, image_path)
         @area = area
-        @text = text
+        @text = text.gsub(/\s+/, ' ')
         @image_path = image_path
+      end
+
+      def direction
+        @_direction ||= -> {
+          Bidi.infer_direction @text
+        }.call
+      end
+
+      def visual_text
+        @_visual_text ||= -> {
+          Bidi.to_visual @text, direction
+        }.call
       end
     end
   end
