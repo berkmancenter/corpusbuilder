@@ -82,6 +82,8 @@ module Documents
         grapheme.area.lry = [ grapheme.area.lry, grapheme.zone.area.lry ].min
 
         grapheme
+      end.select do |grapheme|
+        grapheme.area.valid?
       end
     end
 

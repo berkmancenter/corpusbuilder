@@ -112,6 +112,10 @@ class Area
       @uly == other.uly
   end
 
+  def valid?
+    lry > uly && lrx > ulx
+  end
+
   def to_s
     Serializer.dump(self)
   end
@@ -136,11 +140,11 @@ class Area
       return nil if value.nil?
 
       if value.lry < value.uly
-        raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards"
+        raise ArgumentError, "Lower right corner should point at **higher** y value since Y axis points downwards (lry = #{value.lry} and uly = #{value.uly})"
       end
 
       if value.lrx < value.ulx
-        raise ArgumentError, "Lower right corner should point at **higher** x value since X axis points to the right"
+        raise ArgumentError, "Lower right corner should point at **higher** x value since X axis points to the right (lrx = #{value.lrx} and ulx = #{value.ulx})"
       end
 
       "((#{value.lrx},#{value.lry}),(#{value.ulx},#{value.uly}))"
