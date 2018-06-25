@@ -67,16 +67,21 @@ module Documents
         last_zone.direction = Zone.directions[dir] if last_zone.present?
 
         OpenStruct.new({
-          graphemes: filter_out_outliers(graphemes),
+          graphemes: normalize_bounds(graphemes),
           surfaces: surfaces.to_a,
           zones: zones.to_a
         })
       }.call
     end
 
-    def filter_out_outliers(graphemes)
-      graphemes.select do |grapheme|
-        grapheme.zone.area.include? grapheme.area
+    def normalize_bounds(graphemes)
+      graphemes.map do |grapheme|
+        grapheme.area.ulx = [ grapheme.area.ulx, grapheme.zone.area.ulx ].max
+        grapheme.area.lrx = [ grapheme.area.lrx, grapheme.zone.area.lrx ].min
+        grapheme.area.uly = [ grapheme.area.uly, grapheme.zone.area.uly ].max
+        grapheme.area.lry = [ grapheme.area.lry, grapheme.zone.area.lry ].min
+
+        grapheme
       end
     end
 
