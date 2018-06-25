@@ -231,8 +231,6 @@ export default class DocumentPage extends React.Component {
         };
 
         if(this.props.showImage) {
-            page1Style.backgroundImage = `url(${ this.surface.image_url })`;
-            page2Style.backgroundImage = `url(${ this.surface.image_url })`;
             pageStyle.backgroundImage = `url(${ this.surface.image_url })`;
         }
 
