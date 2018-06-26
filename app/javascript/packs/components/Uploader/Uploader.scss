@@ -17,6 +17,12 @@
   &-images-ready {
     padding: 2px;
 
+    &-backend {
+      margin-top: 15px;
+
+      span { margin-right: 10px; }
+    }
+
     .corpusbuilder-uploader-images-upload-files {
       margin-top: 15px;
     }
