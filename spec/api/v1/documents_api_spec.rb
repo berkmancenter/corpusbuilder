@@ -93,7 +93,8 @@ describe V1::DocumentsAPI, type: :request do
       {
         images: [ { id: image2.id }, { id: image1.id } ],
         metadata: { title: "Fancy Book", languages: [ "ara" ] },
-        editor_email: editor.email
+        editor_email: editor.email,
+        backend: "tesseract"
       }
     end
 

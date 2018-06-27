@@ -29,6 +29,7 @@ describe Documents::Create do
         languages: [ "ara" ]
       },
       app: client_app,
+      backend: "tesseract",
       editor_email: editor.email
     }
   end

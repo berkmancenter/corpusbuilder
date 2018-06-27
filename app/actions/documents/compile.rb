@@ -41,6 +41,7 @@ module Documents
           when "zone"
             dir = Bidi.infer_direction(zone_graphemes.map(&:value).join(''))
             last_zone.direction = Zone.directions[dir] if last_zone.present?
+            graphemes.concat(normalize_bounds(zone_graphemes))
             zone_graphemes = []
             last_zone = last_surface.zones.new area: element.area,
               id: SecureRandom.uuid,
@@ -53,9 +54,9 @@ module Documents
                 area: (element.grouping == "pop" ? graphemes.last.area : element.area),
                 value: element.value,
                 certainty: element.certainty,
-                position_weight: graphemes.count + 1
+                position_weight: graphemes.count + zone_graphemes.count + 1
               )
-              graphemes << g
+              g.instance_variable_set(:@__grouping, element.grouping)
               zone_graphemes << g
             end
           else
@@ -63,11 +64,12 @@ module Documents
           end
         end
 
+        graphemes.concat(normalize_bounds(zone_graphemes))
         dir = Bidi.infer_direction(zone_graphemes.map(&:value).join(''))
         last_zone.direction = Zone.directions[dir] if last_zone.present?
 
         OpenStruct.new({
-          graphemes: normalize_bounds(graphemes),
+          graphemes: graphemes,
           surfaces: surfaces.to_a,
           zones: zones.to_a
         })
@@ -75,7 +77,7 @@ module Documents
     end
 
     def normalize_bounds(graphemes)
-      graphemes.map do |grapheme|
+      words = graphemes.map do |grapheme|
         grapheme.area.ulx = [ grapheme.area.ulx, grapheme.zone.area.ulx ].max
         grapheme.area.lrx = [ grapheme.area.lrx, grapheme.zone.area.lrx ].min
         grapheme.area.uly = [ grapheme.area.uly, grapheme.zone.area.uly ].max
@@ -84,7 +86,23 @@ module Documents
         grapheme
       end.select do |grapheme|
         grapheme.area.valid?
+      end.group_by { |g| g.instance_variable_get(:@__grouping) }.inject({}) do |state, kv|
+        title, gs = kv
+
+        state[ title ] = [ Area.span_boxes(gs.map(&:area)), gs ]
+
+        state
       end
+
+      areas = words.values.map(&:first)
+
+      words.select do |_, kv|
+        area, _ = kv
+        areas.none? do |other_area|
+          area != other_area &&
+            area.include?(other_area)
+        end
+      end.values.map(&:last).flatten.sort_by(&:position_weight)
     end
 
     def copy_data_into_surfaces
