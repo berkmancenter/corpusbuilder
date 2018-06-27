@@ -284,6 +284,10 @@ export default class InlineEditor extends React.Component {
     onWholeLinePaste(str) {
         let words = str.split(/\s+/);
 
+        if(this.dir === "rtl") {
+            words.reverse();
+        }
+
         if(words.length > 1) {
             for(var ix = 0; ix < this.editedTextWords.length; ix++) {
                 this.editedTextWords[ ix ] = words[ ix ] || "";
