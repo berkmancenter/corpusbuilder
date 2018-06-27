@@ -296,7 +296,7 @@ export default class Viewer extends React.Component {
             return this.width;
         }
 
-        return this.ratio * this.document.global.tallest_surface.height;
+        return this.ratio * this.document.surfaces[0].area.lry;
     }
 
     constructor(props) {
