@@ -12,16 +12,16 @@ class V1::DocumentsAPI < Grape::API
       end
       requires :metadata, type: Hash do
         requires :title, type: String
+        requires :languages, type: Array[String]
         optional :authority, type: String
         optional :date, type: String
         optional :editor, type: String
         optional :license, type: String
         optional :notes, type: String
         optional :publisher, type: String
-        optional :languages, type: Array[String]
       end
+      requires :backend, type: String
       requires :editor_email, type: String
-      optional :backend, type: String
     end
     post do
       authorize!

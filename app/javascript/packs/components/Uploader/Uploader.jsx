@@ -9,6 +9,7 @@ import { LanguagesInput } from '../LanguagesInput';
 import { ProgressIndicator } from '../ProgressIndicator';
 import { Line } from 'rc-progress';
 import { SortableContainer, SortableElement, arrayMove } from 'react-sortable-hoc';
+import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 
 import State from '../../stores/State'
 import FetchSimilarDocuments from '../../actions/FetchSimilarDocuments';
@@ -16,6 +17,7 @@ import UploadDocumentImages from '../../actions/UploadDocumentImages';
 import Dropzone from 'react-dropzone'
 import Request from '../../lib/Request';
 import styles from './Uploader.scss';
+import dropdownMenuStyles from '../../external/react-dd-menu/react-dd-menu.scss';
 
 @observer
 class BaseFile extends React.Component {
@@ -176,6 +178,32 @@ export default class Uploader extends React.Component {
     @observable
     pickedDocument = null;
 
+    @observable
+    backendMenuOpen = false;
+
+    @observable
+    backend = "tesseract";
+
+    @computed
+    get chosenBackendName() {
+        return this.backend === "tesseract" ? "Tesseract" : "Kraken";
+    }
+
+    @computed
+    get backendMenu()  {
+        return {
+            isOpen: this.backendMenuOpen,
+            close: (() => { this.backendMenuOpen = false }).bind(this),
+            toggle: (
+              <Button toggles={ true }
+                      onToggle={ (() => { this.backendMenuOpen = !this.backendMenuOpen }).bind(this) }>
+                  { this.chosenBackendName }
+              </Button>
+            ),
+            align: 'left'
+        };
+    };
+
     @computed
     get similarDocuments() {
         if(this.isMetadataReady) {
@@ -232,6 +260,7 @@ export default class Uploader extends React.Component {
 
         this.appState = new State(this.props.baseUrl);
         Request.setBaseUrl(props.baseUrl);
+        this.onBackendChosen("tesseract");
     }
 
     componentWillUpdate(props) {
@@ -322,6 +351,14 @@ export default class Uploader extends React.Component {
                 this.props.onImagesUploaded(images);
             }
         });
+    }
+
+    onBackendChosen(backend) {
+        this.backend = backend;
+
+        if(typeof this.props.onBackendChosen === 'function') {
+            this.props.onBackendChosen(backend);
+        }
     }
 
     onLanguagesPicked(languages) {
@@ -501,7 +538,28 @@ export default class Uploader extends React.Component {
                     Your uploads are ready. Please provide the list of languages being used
                     in the uploaded scans:
 
-                    <LanguagesInput languages={ this.languages } onChange={ this.onLanguagesPicked.bind(this) } />
+                    <div className="corpusbuilder-uploader-images-ready-backend">
+                        <span>OCR backend:</span>
+                        <DropdownMenu {...this.backendMenu}>
+                            <li>
+                                <button type="button"
+                                        onClick={ this.onBackendChosen.bind(this, "tesseract") }
+                                        >
+                                        Tesseract
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                        onClick={ this.onBackendChosen.bind(this, "kraken") }
+                                        >
+                                        Kraken
+                                </button>
+                            </li>
+                        </DropdownMenu>
+                    </div>
+                    <div>
+                        <LanguagesInput languages={ this.languages } onChange={ this.onLanguagesPicked.bind(this) } />
+                    </div>
                 </div>
             );
         }

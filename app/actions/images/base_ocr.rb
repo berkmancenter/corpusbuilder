@@ -8,6 +8,12 @@ module Images
       raise StandardError, "BaseOCR should be extended by inheritamnce - not used directly"
     end
 
+    def languages
+      memoized do
+        image.document.languages
+      end
+    end
+
     def file_path
       @_file_path ||= TempfileUtils.next_path('hocr_output')
     end

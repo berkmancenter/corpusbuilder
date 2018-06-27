@@ -263,6 +263,38 @@ export default class InlineEditor extends React.Component {
         }
     }
 
+    onPaste(box, ix, e) {
+        let isClear = this.editedTextWords.every(str => str.trim().length === 0);
+
+        for(var ix = 0; ix < e.clipboardData.items.length; ix++) {
+            if(e.clipboardData.types[ ix ] === 'text/plain') {
+                e.clipboardData.items[ ix ].getAsString(str => {
+                    if(isClear) {
+                        this.onWholeLinePaste(str);
+                    }
+                });
+            }
+        }
+
+        if(isClear) {
+            e.stopPropagation();
+        }
+    }
+
+    onWholeLinePaste(str) {
+        let words = str.split(/\s+/);
+
+        if(this.dir === "rtl") {
+            words.reverse();
+        }
+
+        if(words.length > 1) {
+            for(var ix = 0; ix < this.editedTextWords.length; ix++) {
+                this.editedTextWords[ ix ] = words[ ix ] || "";
+            }
+        }
+    }
+
     onKeyDown(box, ix, e) {
         if(e.metaKey || e.ctrlKey) {
             if(e.keyCode === 37) {
@@ -599,6 +631,7 @@ export default class InlineEditor extends React.Component {
                       value={ text }
                       onKeyUp={ this.onKeyUp.bind(this, box, ix) }
                       onKeyDown={ this.onKeyDown.bind(this, box, ix) }
+                      onPaste={ this.onPaste.bind(this, box, ix) }
                       style={ styles }
                       dir={ this.dir }
                       key={ ix }

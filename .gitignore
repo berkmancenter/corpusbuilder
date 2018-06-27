@@ -17,6 +17,7 @@
 **.swp
 **.swo
 **.swn
+**.swm
 
 /node_modules/
 /postgres/

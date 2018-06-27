@@ -6,13 +6,15 @@ module Documents
     validates :images, presence: true
     validates :metadata, presence: true
     validates :editor_email, presence: true
+    validates :backend, presence: true, inclusion: [ "tesseract", "kraken" ]
 
     validate :editor_exists
-    #validate :proper_languages_provided
+    validate :proper_languages_provided
 
     def execute
       document = Document.create! title: @metadata[:title],
         author: @metadata[:author],
+        languages: language_codes,
         authority: @metadata[:authority],
         date: @metadata[:date],
         editor: @metadata[:editor],
@@ -20,7 +22,7 @@ module Documents
         notes: @metadata[:notes],
         publisher: @metadata[:publisher],
         status: Document.statuses[:initial],
-        backend: (backend || 'tesseract'),
+        backend: backend,
         app_id: @app.id
 
       document.images << image_records
@@ -72,6 +74,12 @@ module Documents
 
     def languages
       metadata[:languages]
+    end
+
+    def language_codes
+      languages.map do |lang|
+        LanguageList::LanguageInfo.find(lang).iso_639_3
+      end
     end
 
     def proper_languages_provided

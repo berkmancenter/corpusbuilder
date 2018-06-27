@@ -15,6 +15,8 @@ export default class LanguagesInput extends React.Component {
       return [
           { name: "Arabic", code: "ara", type: "living" },
           { name: "English", code: "eng", type: "living" },
+          { name: "Hebrew", code: "heb", type: "living" },
+          { name: "Persian", code: "fas", type: "living" },
           { name: "Syriac", code: "syr", type: "living" }
       ];
   }
@@ -43,8 +45,12 @@ export default class LanguagesInput extends React.Component {
   }
 
   handleAddition(tag) {
-      this.languages.push(this.suggestedLanguages.find(sug => sug.name === tag));
-      this.broadcastLanguages();
+      let addingLanguage = this.suggestedLanguages.find(sug => sug.name === tag);
+
+      if(addingLanguage !== undefined && addingLanguage !== null) {
+          this.languages.push(addingLanguage);
+          this.broadcastLanguages();
+      }
   }
 
   broadcastLanguages() {

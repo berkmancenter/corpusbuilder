@@ -84,9 +84,15 @@ class CorpusBuilderUploader {
         }
     }
 
-    onLanguagesPicked(languageCodes) {
+    onLanguagesPicked(languages) {
         if(typeof this.options.onLanguagesPicked === 'function') {
-            this.options.onLanguagesPicked(languageCodes);
+            this.options.onLanguagesPicked(languages.map(l => l.code));
+        }
+    }
+
+    onBackendChosen(backend) {
+        if(typeof this.options.onBackendChosen === 'function') {
+            this.options.onBackendChosen(backend);
         }
     }
 
@@ -112,6 +118,7 @@ class CorpusBuilderUploader {
                       onDocumentPicked={ this.onDocumentPicked.bind(this) }
                       onDocumentUnpicked={ this.onDocumentUnpicked.bind(this) }
                       onLanguagesPicked={ this.onLanguagesPicked.bind(this) }
+                      onBackendChosen={ this.onBackendChosen.bind(this) }
                       onImagesUploaded={ this.onImagesUploaded.bind(this) }
                       />,
             this.element

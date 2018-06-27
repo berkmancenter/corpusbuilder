@@ -27,8 +27,7 @@ module Images
     end
 
     def model
-      # todo: implement switching between models
-      "syr"
+      languages.join("+")
     end
   end
 end
