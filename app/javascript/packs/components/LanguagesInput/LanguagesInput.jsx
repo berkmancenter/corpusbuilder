@@ -4,21 +4,15 @@ import { inject, observer } from 'mobx-react'
 
 import { WithContext as ReactTags } from 'react-tag-input';
 
-import styles from './LanguagesInput.scss'
+import styles from './LanguagesInput.scss';
+import languages from './langs.json';
 
 @inject('appState')
 @observer
 export default class LanguagesInput extends React.Component {
 
-  @computed
   get suggestedLanguages() {
-      return [
-          { name: "Arabic", code: "ara", type: "living" },
-          { name: "English", code: "eng", type: "living" },
-          { name: "Hebrew", code: "heb", type: "living" },
-          { name: "Persian", code: "fas", type: "living" },
-          { name: "Syriac", code: "syr", type: "living" }
-      ];
+      return languages;
   }
 
   @computed

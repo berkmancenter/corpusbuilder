@@ -11,6 +11,7 @@ import GraphemeUtils from '../../lib/GraphemesUtils';
 import styles from './DiffLayer.scss'
 
 @inject('measureText')
+@inject('inferFont')
 @observer
 export default class DiffLayer extends React.Component {
 
@@ -91,6 +92,22 @@ export default class DiffLayer extends React.Component {
         this.otherBoxes = boxes;
     }
 
+    @computed
+    get beforeFont() {
+      if(this.hasPreviewOpened && this.openedDiff !== null && this.openedDiff !== undefined) {
+          return this.props.inferFont(this.openedDiff.beforeGraphemes);
+      }
+      return "";
+    }
+
+    @computed
+    get afterFont() {
+      if(this.hasPreviewOpened && this.openedDiff !== null && this.openedDiff !== undefined) {
+          return this.props.inferFont(this.openedDiff.afterGraphemes);
+      }
+      return "";
+    }
+
     renderPreview(mode) {
         if(this.hasPreviewOpened) {
             let hasDiff = mode === "after" ? this.openedDiff.hasAfterDiff : this.openedDiff.hasBeforeDiff;
@@ -108,7 +125,8 @@ export default class DiffLayer extends React.Component {
                 if(box !== undefined) {
                     let fontSize = (box.lry - box.uly) * this.ratio;
                     let boxWidth = (box.lrx - box.ulx) * this.ratio;
-                    let textWidth = this.props.measureText(text, fontSize);
+                    let font = mode === "after" ? this.afterFont : this.beforeFont
+                    let textWidth = this.props.measureText(text, fontSize, font);
                     let scale = textWidth > 0 ? boxWidth / textWidth : 1;
 
                     scale = scale > 2 ? 1 : scale;
@@ -117,7 +135,8 @@ export default class DiffLayer extends React.Component {
                         left: box.ulx,
                         width: textWidth,
                         transform: `scaleX(${ scale })`,
-                        fontSize: fontSize
+                        fontSize: fontSize,
+                        fontFamily: font
                     };
                 }
 
@@ -133,8 +152,8 @@ export default class DiffLayer extends React.Component {
                                   editable={ false }
                                   onBoxesReported={ onReported }
                                   />,
-                    <div className="corpusbuilder-diff-input-wrapper">
-                        <input style={ inputStyles } key={ mode + "input" } disabled="disabled" dir={ dir } value={ text } />
+                    <div className="corpusbuilder-diff-input-wrapper" key={ mode + "input" }>
+                        <input style={ inputStyles } disabled="disabled" dir={ dir } value={ text } />
                     </div>
                 ];
             }
