@@ -15,20 +15,15 @@ def stdout_ar!
   puts "Logging ActiveRecord to STDOUT"
 end
 
-begin
-  require 'wirble'
-  Wirble.init
-  Wirble.colorize
-rescue
-  put "Wirble not available"
-end
+require 'rails/console/app'
+extend Rails::ConsoleMethods
 
 begin
-  require 'hirb/import_object'
-  Hirb.enable
-  extend Hirb::Console
-rescue
-  put "Hirb gem not available"
+  require "pry"
+  Pry.start
+  exit
+rescue LoadError
+  warn "=> Unable to load pry"
 end
 
 stdout_ar!

@@ -87,7 +87,7 @@ module Documents
           metadata: metadata.inject({}) { |memo,(k,v)| memo[k.to_sym] = v; memo },
           app: app,
           editor_email: editor_email,
-          backend: :import
+          backend: "import"
         ).result
       end
     end

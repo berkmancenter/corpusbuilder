@@ -47,8 +47,7 @@ group :development, :test do
   gem 'airborne'
   gem 'factory_girl_rails', '~> 4.0'
   gem 'webmock'
-  gem 'hirb'
-  gem 'wirble'
+  gem 'pry'
 end
 
 group :development do
