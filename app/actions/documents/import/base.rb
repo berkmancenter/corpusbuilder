@@ -84,10 +84,10 @@ module Documents
       memoized do
         Documents::Create.run!(
           images: images,
-          metadata: metadata.inject({}) { |memo,(k,v)| memo[k.to_sym] = v; memo },
+          metadata: metadata.inject({}) { |memo,(k,v)| memo[k.to_sym] = v; memo }.merge(languages: ["eng"]),
           app: app,
           editor_email: editor_email,
-          backend: :import
+          backend: "tesseract"
         ).result
       end
     end

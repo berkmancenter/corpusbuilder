@@ -34,32 +34,56 @@ module Documents
           )
         )
 
-        parsed_csv_entries(image).each do |entry|
-          # each line here is a new line / zone
+        entries = parsed_csv_entries(image)
 
-          result << Parser::Element.new(
-            name: "zone",
-            area: entry.area
-          )
+        if entries.count == 0
+          all_word_areas(image).each do |area|
+            height = area.height
+            num_chars_approx = (area.width / height).floor
 
-          direction = Bidi.infer_direction entry.text
-          text_words = entry.visual_text.split(/ /)
+            result << Parser::Element.new(
+              name: "zone",
+              area: area
+            )
 
-          text_words.each_with_index.each do |visual_word, word_ix|
-            logical_word = Bidi.to_logical visual_word, direction
-            visual_indices = Bidi.to_visual_indices(logical_word, direction)
-
-            visual_indices.each_with_index.each do |visual_index, logical_index|
-              area = grapheme_area(image, entry, word_ix, text_words.count, visual_index, logical_word.length)
-              character = logical_word[ logical_index ]
-
+            num_chars_approx.times.each do |ix|
               result << Parser::Element.new(
                 name: "grapheme",
-                area: area,
+                area: area.slice(ix, num_chars_approx),
                 certainty: 0,
-                value: character,
-                grouping: ''
+                value: '█',
+                grouping: ix.to_s
               )
+            end
+          end
+        else
+          entries.each do |entry|
+            # each line here is a new line / zone
+
+            result << Parser::Element.new(
+              name: "zone",
+              area: entry.area
+            )
+
+            direction = Bidi.infer_direction entry.text
+            text_words = entry.visual_text.split(/ /)
+
+            text_words.each_with_index.each do |visual_word, word_ix|
+              logical_word = Bidi.to_logical visual_word, direction
+              visual_indices = Bidi.to_visual_indices(logical_word, direction)
+
+              visual_indices.each_with_index.each do |visual_index, logical_index|
+                area = grapheme_area(image, entry, word_ix, text_words.count, visual_index, logical_word.length)
+                character = logical_word[ logical_index ]
+
+                result << Parser::Element.new(
+                  name: "grapheme",
+                  area: area,
+                  certainty: 0,
+                  value: character,
+                  grouping: visual_word
+                )
+              end
             end
           end
         end
@@ -67,12 +91,12 @@ module Documents
     end
 
     def grapheme_area(image, parsed_entry, word_ix, word_count, character_ix, character_count)
-      area = word_area(image, parsed_entry, word_ix, word_count)
+      area = word_area(image, parsed_entry, word_ix, word_count, character_count)
 
       area.slice(character_ix, character_count)
     end
 
-    def word_area(image, parsed_entry, word_ix, word_count)
+    def word_area(image, parsed_entry, word_ix, word_count, character_count)
       areas = word_areas_for(image, parsed_entry)
 
       if areas.count == word_count
@@ -81,36 +105,28 @@ module Documents
         # we need to split the area arbitrarily and let the users
         # draw better boxes:
 
-        normed_width = (parsed_entry.area.width / parsed_entry.text.codepoints.count).floor
+        normed_width = parsed_entry.area.width * 1.0 / parsed_entry.text.codepoints.count
         seen_spaces = 0
-        start_ix = 0
-        end_ix = 0
+        chars_before = 0
 
         parsed_entry.visual_text.chars.each_with_index do |char, ix|
           if seen_spaces == word_ix
-            if !char[/\s/].nil?
-              break
-            end
-          elsif seen_spaces == word_ix - 1
-            if !char[/\s/].nil?
-              start_ix = ix + 1
-            end
+            break
           end
-
           if !char[/\s/].nil?
             seen_spaces += 1
           end
-          end_ix = ix
+          chars_before += 1
         end
 
-        base = parsed_entry.area
+        base = Area.span_boxes(areas)
 
         Area.new(
-          ulx: (base.ulx + normed_width * start_ix),
-          lrx: (base.ulx + normed_width * (end_ix + 1)),
+          ulx: (base.ulx + normed_width * chars_before),
+          lrx: (base.ulx + normed_width * (chars_before + character_count)),
           uly: base.uly,
           lry: base.lry
-        )
+        ).normalize!
       end
     end
 
