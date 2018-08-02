@@ -47,8 +47,8 @@ Rails.application.configure do
   # Suppress logger output for asset requests.
   config.assets.quiet = true
 
-  Rails.application.routes.default_url_options[:host] = ENV.fetch('CORPUSBUILDER_HOST')
-  Rails.application.routes.default_url_options[:port] = ENV.fetch('CORPUSBUILDER_PORT')
+  Rails.application.routes.default_url_options[:host] = ENV.fetch('CORPUS_BUILDER_HOST')
+  Rails.application.routes.default_url_options[:port] = ENV.fetch('CORPUS_BUILDER_PORT')
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true

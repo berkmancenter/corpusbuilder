@@ -6,10 +6,10 @@ module Documents
     validates :images, presence: true
     validates :metadata, presence: true
     validates :editor_email, presence: true
-    validates :backend, presence: true, inclusion: [ "tesseract", "kraken" ]
+    validates :backend, presence: true, inclusion: [ "tesseract", "kraken", "import" ]
 
     validate :editor_exists
-    validate :proper_languages_provided
+    validate :proper_languages_provided, if: -> (create) { create.backend != "import" }
 
     def execute
       document = Document.create! title: @metadata[:title],

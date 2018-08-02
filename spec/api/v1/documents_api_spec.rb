@@ -1088,7 +1088,7 @@ describe V1::DocumentsAPI, type: :request do
 
     it "lists all branches with their name, revision_id and editor id who is an owner" do
       expect(with_data_response).to have_key("branches")
-      expect(with_data_response["branches"].map { |b| b["name"] }).to eq([master_branch.name, development_branch.name, topic1_branch.name])
+      expect(with_data_response["branches"].map { |b| b["name"] }.sort).to eq([master_branch.name, development_branch.name, topic1_branch.name].sort)
       expect(with_data_response["branches"].map { |b| b["editor"]["email"] }).to eq([editor1.email, editor2.email, editor3.email])
       expect(with_data_response["branches"].first["revision_id"]).to be_present
       expect(with_data_response["branches"].map { |b| b["revision_id"] }.sort).to eq(Revision.all.map(&:id).sort)

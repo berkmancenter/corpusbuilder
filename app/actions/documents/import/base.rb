@@ -87,7 +87,7 @@ module Documents
           metadata: metadata.inject({}) { |memo,(k,v)| memo[k.to_sym] = v; memo }.merge(languages: ["eng"]),
           app: app,
           editor_email: editor_email,
-          backend: "tesseract"
+          backend: "import"
         ).result
       end
     end

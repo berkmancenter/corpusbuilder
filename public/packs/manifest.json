@@ -255,6 +255,8 @@
   "components/LanguagesInput/index.css.map": "/packs/components/LanguagesInput/index.css.map",
   "components/LanguagesInput/index.js": "/packs/components/LanguagesInput/index.js",
   "components/LanguagesInput/index.js.map": "/packs/components/LanguagesInput/index.js.map",
+  "components/LanguagesInput/langs.js": "/packs/components/LanguagesInput/langs.js",
+  "components/LanguagesInput/langs.js.map": "/packs/components/LanguagesInput/langs.js.map",
   "components/MergeBranchesWindow/MergeBranchesWindow.css": "/packs/components/MergeBranchesWindow/MergeBranchesWindow.css",
   "components/MergeBranchesWindow/MergeBranchesWindow.css.map": "/packs/components/MergeBranchesWindow/MergeBranchesWindow.css.map",
   "components/MergeBranchesWindow/MergeBranchesWindow.js": "/packs/components/MergeBranchesWindow/MergeBranchesWindow.js",
