@@ -1,33 +1,49 @@
 module Images
   class Create < Action::Base
-    attr_accessor :file, :name
+    attr_accessor :file_id, :name
 
     def execute
-      if tiff?
-        tiff_page_files.map do |page_file|
-          Image.create! image_scan: page_file,
-            name: name
-        end
-      else
-        [
-          Image.create!(
-            image_scan: file,
-            name: name
-          )
-        ]
-      end
+      images = page_files.map do |page_file|
+        Image.create! image_scan: page_file,
+          name: File.basename(page_file.path)
+      end.to_a
+
+      Image::Short.represent images
     end
 
     def tiff?
-      false # todo: implement me
+      attachment.content_type == "image/tiff"
     end
 
-    def tiff_page_files
+    def pdf?
+      attachment.content_type == "application/pdf"
+    end
+
+    def attachment
+      file.attachment.file
+    end
+
+    def file
       memoized do
-        Images::ExtractTiffPages.run!(
-          file: file,
-          name: name
-        )
+        StashedFile.find file_id
+      end
+    end
+
+    def page_files
+      memoized do
+        if tiff?
+          Images::ExtractTiffPages.run!(
+            file: attachment,
+            name: name
+          ).result
+        elsif pdf?
+          Images::ExtractPdfPages.run!(
+            file: attachment,
+            name: name
+          ).result
+        else
+          [ attachment ]
+        end
       end
     end
   end

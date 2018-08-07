@@ -10,7 +10,9 @@ class V1::ImagesAPI < Grape::API
     post do
       authorize!
 
-      present action!(Images::Create), with: Image::Short
+      async! Images::Create,
+        file_id: Files::Stash.run!(file: params[:file]).result.id,
+        name: params[:name]
     end
   end
 

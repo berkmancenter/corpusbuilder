@@ -8,6 +8,7 @@ import { Button } from '../Button';
 import { LanguagesInput } from '../LanguagesInput';
 import { ProgressIndicator } from '../ProgressIndicator';
 import { Line } from 'rc-progress';
+import Spinner from 'react-spinkit';
 import { SortableContainer, SortableElement, arrayMove } from 'react-sortable-hoc';
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 
@@ -54,7 +55,13 @@ class BaseFile extends React.Component {
     }
 
     fileProgress(file) {
-        if(file.progress !== null) {
+        if(file.progress === null) {
+            return undefined;
+        }
+        else if(file.progress === 1.0) {
+            return <Spinner name="wave" color="#777" fadeIn="none" />;
+        }
+        else {
             return <Line percent={ Math.round(file.progress * 100) } strokeWidth="4" />;
         }
     }
@@ -233,7 +240,7 @@ export default class Uploader extends React.Component {
     @computed
     get currentLevel() {
         if(this.preloaded || (this.uploadedImages.length > 0 &&
-                this.uploadedImages.length === this.files.length)) {
+                this.uploadedImages.length >= this.files.length)) {
             return 'images-ready';
         }
         else if(!this.isMetadataReady) {

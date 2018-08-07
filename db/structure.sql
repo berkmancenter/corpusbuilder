@@ -16,10 +16,6 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
-CREATE FUNCTION public.abs(interval) RETURNS interval
-    LANGUAGE sql IMMUTABLE
-    AS $_$ select case when ($1<interval '0') then -$1 else $1 end; $_$;
-
 CREATE FUNCTION public.graphemes_revisions_drop_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -281,6 +277,13 @@ CREATE TABLE public.schema_migrations (
     version character varying NOT NULL
 );
 
+CREATE TABLE public.stashed_files (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    attachment character varying,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
 CREATE TABLE public.surfaces (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     document_id uuid NOT NULL,
@@ -356,6 +359,9 @@ ALTER TABLE ONLY public.revisions
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
 
+ALTER TABLE ONLY public.stashed_files
+    ADD CONSTRAINT stashed_files_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY public.surfaces
     ADD CONSTRAINT surfaces_pkey PRIMARY KEY (id);
 
@@ -426,5 +432,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180313171908'),
 ('20180403155425'),
 ('20180411115247'),
-('20180626133220');
+('20180626133220'),
+('20180803154451');
 
