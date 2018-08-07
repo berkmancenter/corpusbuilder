@@ -28,6 +28,8 @@ export default class UploadDocumentImages extends Action {
                             }
                         });
                     }).then((images) => {
+                        file.progress = 2.0;
+                        console.log(file);
                         resolve(images);
                     }).catch((err) => {
                         notifier.done();
@@ -52,7 +54,10 @@ export default class UploadDocumentImages extends Action {
                 }).bind(this);
             });
 
+            uploads = uploads.reverse();
+
             let current = null;
+            let resolved = 0;
 
             let schedule = () => {
                 if(uploads.length > 0) {
@@ -62,13 +67,11 @@ export default class UploadDocumentImages extends Action {
                         current().onDoneSending(() => {
                             current = null;
                         }).then((images) => {
+                            console.log("Got processed images:", images);
                             for(let image of images) {
                                 result.push(image);
                             }
-
-                            if(uploads.length === 0) {
-                                resolve(result);
-                            }
+                            resolved += 1;
                         })
                         .catch((err) => {
                             reject(err);
@@ -77,48 +80,17 @@ export default class UploadDocumentImages extends Action {
                     setTimeout(schedule, 100);
                 }
                 else {
-                    resolve(result);
+                    if(current !== null || resolved < params.files.length) {
+                        setTimeout(schedule, 100);
+                    }
+                    else {
+                        console.log("Resolving images:", result);
+                        resolve(result);
+                    }
                 }
             };
 
             setTimeout(schedule, 100);
-
-           //uploads.reduce((state, upload) => {
-           //    if(state !== 0) {
-           //        if(state === null) {
-           //            return upload();
-           //        }
-           //        else {
-           //            return state.then((images) => {
-           //                for(let image of images) {
-           //                    result.push(image);
-           //                }
-           //            })
-           //            .onUploaded(() => {
-           //                return upload();
-           //            })
-           //            .catch((err) => {
-           //                caughtError = err;
-
-           //                return 0;
-           //            });
-           //        }
-           //    }
-           //}, null)
-           //.then((images) => {
-           //    for(let image of images) {
-           //        result.push(image);
-           //    }
-           //    return images;
-           //})
-           //.finally(() => {
-           //    if(caughtError !== null) {
-           //        reject(caughtError);
-           //    }
-           //    else {
-           //        resolve(result);
-           //    }
-           //});
         });
     }
 }

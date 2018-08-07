@@ -55,15 +55,21 @@ class BaseFile extends React.Component {
     }
 
     fileProgress(file) {
-        if(file.progress === null) {
-            return undefined;
-        }
-        else if(file.progress === 1.0) {
-            return <Spinner name="wave" color="#777" fadeIn="none" />;
-        }
-        else {
-            return <Line percent={ Math.round(file.progress * 100) } strokeWidth="4" />;
-        }
+      if(file.progress === null) {
+          return undefined;
+      }
+
+      if(file.progress !== 2.0) {
+          if(file.progress === 1.0) {
+              return <Spinner name="ball-beat" color="#777" fadeIn="none" />;
+          }
+          else {
+              return <Line percent={ Math.round(file.progress * 100) } strokeWidth="4" />;
+          }
+      }
+      else {
+          return <i className="fa fa-thumbs-up"></i>;
+      }
     }
 
     onFileUnpickClicked() {
@@ -90,8 +96,14 @@ class BaseFile extends React.Component {
         }
 
         if(this.props.progress !== false) {
+            let _class = "corpusbuilder-uploader-images-upload-files-item-progress";
+
+            if(this.file.progress >= 1.0) {
+                _class += " corpusbuilder-uploader-images-upload-files-item-progress-done"
+            }
+
             progress = (
-                <div className="corpusbuilder-uploader-images-upload-files-item-progress">
+                <div className={ _class }>
                     { this.fileProgress(this.file) }
                 </div>
             );
@@ -239,8 +251,7 @@ export default class Uploader extends React.Component {
 
     @computed
     get currentLevel() {
-        if(this.preloaded || (this.uploadedImages.length > 0 &&
-                this.uploadedImages.length >= this.files.length)) {
+        if(this.preloaded || (this.uploadedImages.length > 0 && this.files.every(file => file.progress === 2.0))) {
             return 'images-ready';
         }
         else if(!this.isMetadataReady) {
