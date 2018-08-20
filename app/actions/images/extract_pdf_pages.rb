@@ -8,7 +8,7 @@ module Images
       pdf.each_with_index.map do |page, ix|
         filename = Rails.root.join "tmp", "#{File.basename(name, ".*")}-#{ix + 1}.png"
 
-        page.save filename
+        page.save filename.to_s
 
         File.new filename
       end

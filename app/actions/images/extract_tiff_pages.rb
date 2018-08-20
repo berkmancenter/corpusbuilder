@@ -18,16 +18,17 @@ module Images
             end
           end
 
+          temp_file = File.new(Rails.root.join("tmp", name), "w", :encoding => 'ascii-8bit')
+
           time "writing PNG" do
-            file = File.new(Rails.root.join("tmp", name), "w", :encoding => 'ascii-8bit')
-            png.write file, {
+            png.write temp_file, {
               color_mode: ChunkyPNG::COLOR_GRAYSCALE,
               interlace: false,
               compression: 9
             }
           end
 
-          results << file
+          results << temp_file
         end
       end
 
