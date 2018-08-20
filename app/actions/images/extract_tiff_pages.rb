@@ -19,7 +19,7 @@ module Images
           end
 
           time "writing PNG" do
-            file = Tempfile.new(name, :encoding => 'ascii-8bit')
+            file = File.new(Rails.root.join("tmp", name), "w", :encoding => 'ascii-8bit')
             png.write file, {
               color_mode: ChunkyPNG::COLOR_GRAYSCALE,
               interlace: false,

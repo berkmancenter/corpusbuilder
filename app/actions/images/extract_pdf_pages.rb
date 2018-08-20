@@ -6,7 +6,7 @@ module Images
 
     def execute
       pdf.each_with_index.map do |page, ix|
-        filename = "#{File.basename(name, ".*")}-#{ix + 1}.png"
+        filename = Rails.root.join "tmp", "#{File.basename(name, ".*")}-#{ix + 1}.png"
 
         page.save filename
 
