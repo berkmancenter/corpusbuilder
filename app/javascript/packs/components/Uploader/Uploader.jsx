@@ -122,7 +122,7 @@ class BaseFile extends React.Component {
             <div className="corpusbuilder-uploader-images-upload-files-item">
                 <div className="corpusbuilder-uploader-images-upload-files-item-number">
                     { handle }
-                    Page { this.index + 1 }
+                    { this.index + 1 }
                 </div>
                 <div className="corpusbuilder-uploader-images-upload-files-item-name">
                     { this.file.name }

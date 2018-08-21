@@ -86,6 +86,9 @@ Rails.application.configure do
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end
 
+  Rails.application.routes.default_url_options[:host] = ENV.fetch('CORPUS_BUILDER_HOST')
+  Rails.application.routes.default_url_options[:port] = ENV.fetch('CORPUS_BUILDER_PORT')
+
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 end

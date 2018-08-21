@@ -63,6 +63,10 @@ export default class DocumentPageSwitcher extends React.Component {
         from = from === null ? 1 : from;
         to   = to   === null ? this.props.document.global.surfaces_count : to;
 
+        if(to < from) {
+            return undefined;
+        }
+
         return this.periods(from, to).map((period, ix) => {
             let periodFrom = period[0];
             let periodTo   = period[1];
@@ -82,7 +86,7 @@ export default class DocumentPageSwitcher extends React.Component {
             });
             let className = ix < 5 ? "corpusbuilder-nestedmenu-downwards" : "";
 
-            if(periodTo - periodFrom < 10) {
+            if(periodTo > periodFrom && periodTo - periodFrom < 10) {
                 let subItems = (new Array(periodTo - periodFrom + 1)).fill(0).map((_, i) => {
                     let currentNumber = periodFrom + i;
 

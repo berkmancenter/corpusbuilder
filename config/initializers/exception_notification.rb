@@ -8,7 +8,7 @@ ExceptionNotification.configure do |config|
   config.add_notifier :email, {
     :email_prefix         => "[ERROR] ",
     :sender_address       => %{"CorpusBuilder Instance" <instance@corpusbuild.er>},
-    :exception_recipients => (ENV["CORPUSBUILDER_EXCEPTION_RECIPIENTS"].try(:split) || []),
+    :exception_recipients => (ENV["CORPUS_BUILDER_EXCEPTION_RECIPIENTS"].try(:split) || []),
     :delivery_method      => :sendmail
   }
 end

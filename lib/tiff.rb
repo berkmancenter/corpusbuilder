@@ -55,6 +55,10 @@ module Tiff
     end
 
     def pages
+      @_pages ||= self.lazy_pages.to_a
+    end
+
+    def lazy_pages
       Enumerator::Lazy.new([ 0 ]) do |yielder|
         loop do
           width = self.width
