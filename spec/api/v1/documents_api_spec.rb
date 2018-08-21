@@ -142,7 +142,7 @@ describe V1::DocumentsAPI, type: :request do
 
       expect(document.images.count).to eq(2)
       expect(document.images.map(&:order).sort).to eq([1, 2])
-      expect(document.images.map(&:id)).to eq([image2.id, image1.id])
+      expect(document.images.map(&:id).sort).to eq([image2.id, image1.id].sort)
     end
 
     it "fails when a given image id doesn't exist" do

@@ -4,11 +4,14 @@ require 'airborne'
 describe V1::DocumentsAPI, type: :request do
   include AuthenticationSpecHelper
 
+  let(:editor) { create :editor }
+
   let(:headers) do
     {
       "Accept" => "application/vnd.corpus-builder-v1+json",
       "X-App-Id" => client_app.id,
-      "X-Token" => client_app.encrypted_secret
+      "X-Token" => client_app.encrypted_secret,
+      "X-Editor-Id" => editor.id
     }
   end
 
@@ -55,26 +58,13 @@ describe V1::DocumentsAPI, type: :request do
     end
 
     it "creates a new image in the database" do
-      valid_request
+      perform_enqueued_jobs do
+        valid_request
+      end
 
       expect(images.count).to eq(1)
       expect(images.first.name).to eq("file_1.png")
       expect(images.first.image_scan.current_path).to include("file_1.png")
-    end
-
-    it "returns the id and name of the image in JSON" do
-      expect(valid_response_body.first.keys.sort).to eq(["id", "name"])
-      expect(valid_response_body.first["name"]).to eq("file_1.png")
-      expect(valid_response_body.first["id"]).to eq(images.first.id)
-    end
-
-    it "returns 500 when something goes wrong" do
-      allow_any_instance_of(Images::Create).to receive(:execute).and_raise(StandardError, "Error message")
-
-      valid_request
-
-      expect(response.status).to eq(500)
-      expect(JSON.parse(response.body)).to eq({ "error" => "Oops! Something went wrong" })
     end
   end
 end
