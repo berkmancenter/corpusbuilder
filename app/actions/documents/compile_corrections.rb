@@ -5,7 +5,7 @@ module Documents
     validate :revision_given
 
     def execute
-      line_diff.specs
+      line_diff.specs.reject(&:nil?)
     end
 
     def revision
@@ -609,7 +609,7 @@ module Documents
             surface_number: word_diff.line_diff.surface_number
           }
         else
-          raise StandardError, "No change spec for diff pointing at equal graphemes"
+          nil
         end
       end
 
@@ -626,7 +626,7 @@ module Documents
       end
 
       def noop?
-        source.present? && entered.present? &&
+        !merge_resolution? && source.present? && entered.present? &&
           !( source.value != entered.value || source.area != entered.area )
       end
 
