@@ -1,6 +1,3 @@
-require 'term/ansicolor'
-include Term::ANSIColor
-
 module V1Base
   extend ActiveSupport::Concern
 

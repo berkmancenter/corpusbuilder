@@ -1,6 +1,3 @@
-require 'term/ansicolor'
-include Term::ANSIColor
-
 module Action
 
   # A thin service object abstraction
@@ -68,7 +65,7 @@ module Action
         Rails.logger.error "Backtrace:"
         e.backtrace.each do |trace|
           inner = !trace[/#{Rails.root}/].nil?
-          Rails.logger.error "    | #{ inner ? magenta(trace) : trace }"
+          Rails.logger.error "    | #{ inner ? trace.colorize(:magenta) : trace }"
         end
         instance.add_error(e)
       end

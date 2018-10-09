@@ -14,10 +14,10 @@
 !/tmp/.keep
 
 .byebug_history
-**.swp
-**.swo
-**.swn
-**.swm
+*.swp
+*.swo
+*.swn
+*.swm
 
 /node_modules/
 /postgres/

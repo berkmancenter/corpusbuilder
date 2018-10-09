@@ -1,6 +1,4 @@
 require "benchmark"
-require 'term/ansicolor'
-include Term::ANSIColor
 
 module Benchmarkable
   extend ActiveSupport::Concern
@@ -9,11 +7,11 @@ module Benchmarkable
     def time(name, print_start = false, &block)
       ret = nil
 
-      Rails.logger.info red("Starting #{name}") if print_start
+      Rails.logger.info "Starting #{name}".colorize(:red) if print_start
 
       stats = Benchmark.measure { ret = block.call }
 
-      Rails.logger.info magenta("(#{stats.total * 1000}ms)") + red(" #{name}")
+      Rails.logger.info "(#{stats.total * 1000}ms)".colorize(:magenta) + " #{name}".colorize(:red)
 
       ret
     end

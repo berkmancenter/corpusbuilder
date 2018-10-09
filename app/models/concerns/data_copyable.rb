@@ -1,7 +1,5 @@
 require "csv"
 require "benchmark"
-require 'term/ansicolor'
-include Term::ANSIColor
 
 module DataCopyable
   extend ActiveSupport::Concern
@@ -24,8 +22,8 @@ module DataCopyable
         end
       end
 
-      Rails.logger.info magenta("(#{stats.total * 1000}ms)") + "  " + cyan(sql)
-      Rails.logger.info cyan("#{copier.count} rows copied")
+      Rails.logger.info "(#{stats.total * 1000}ms)".colorize(:magenta) + "  " + sql.colorize(:cyan)
+      Rails.logger.info "#{copier.count} rows copied".colorize(:cyan)
 
       true
     end
