@@ -3,21 +3,38 @@ Trestle.resource(:ocr_models) do
     item :ocr_models, icon: "fa fa-star"
   end
 
-  save_instance do |instance|
-    if instance.persisted?
-    else
-      action = OcrModels::Create.run(
-        model: instance
-      )
+  build_instance do |attrs, params|
+    file = attrs.delete(:model_file)
 
-      if !action.result
-        for error in action.errors.full_messages
-          instance.errors.add(:base, error)
-        end
+    instance = model.new(attrs)
+
+    instance.file = file
+
+    instance
+  end
+
+  update_instance do |instance, attrs, params|
+    file = attrs.delete(:model_file)
+
+    instance.assign_attributes(attrs)
+
+    instance.file = file
+
+    instance
+  end
+
+  save_instance do |instance, attrs, params|
+    action = OcrModels::Persist.run(
+      model: instance
+    )
+
+    if !action.result
+      for error in action.errors.full_messages
+        instance.errors.add(:base, error)
       end
-
-      action.result
     end
+
+    action.result
   end
 
   # Customize the table columns shown on the index view.
@@ -37,6 +54,7 @@ Trestle.resource(:ocr_models) do
     select :languages, LanguageList::COMMON_LANGUAGES.map { |l| [l.name, l.iso_639_3] }, {}, { multiple: true }
     select :scripts, ScriptList::ALL.map { |s| [s.name, s.code] }, {}, { multiple: true }
     text_field :version_code
+    file_field :model_file
 
     #row do
     #  col(xs: 6) { datetime_field :updated_at }
