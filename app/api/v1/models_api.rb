@@ -10,10 +10,10 @@ class V1::ModelsAPI < Grape::API
     end
     get '' do
       present OcrModels::QueryAll.run!(
-        backend: @backend,
-        scripts: @scripts,
-        languages: @languages
-      ), with: OcrModel::Simple
+        backend: params[:backend],
+        scripts: params[:scripts],
+        languages: params[:languages]
+      ).result, with: OcrModel::Simple
     end
   end
 end

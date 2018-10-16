@@ -9,11 +9,20 @@ module OcrModels
         scope = scope.where(backend: backend)
       end
 
+      if languages.present?
+        scope = scope.where("languages @> array[?] :: varchar[]", languages)
+      end
+
+      if scripts.present?
+        scope = scope.where("scripts @> array[?] :: varchar[]", scripts)
+      end
+
       scope
     end
 
     def base_scope
       OcrModel.where({})
     end
+
   end
 end

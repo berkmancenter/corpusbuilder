@@ -14,6 +14,7 @@ import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
 
 import State from '../../stores/State'
 import FetchSimilarDocuments from '../../actions/FetchSimilarDocuments';
+import FetchModels from '../../actions/FetchModels';
 import UploadDocumentImages from '../../actions/UploadDocumentImages';
 import Dropzone from 'react-dropzone'
 import Request from '../../lib/Request';
@@ -170,6 +171,12 @@ export default class Uploader extends React.Component {
             title: <div>
               Searching for documents for given metadata...
             </div>
+        },
+        {
+            name: 'FetchModels',
+            title: <div>
+              Searching for OCR models...
+            </div>
         }
     ];
 
@@ -233,6 +240,25 @@ export default class Uploader extends React.Component {
                     metadata: this.metadata
                   },
                   metadata: this.metadata
+                }
+            )
+        }
+
+        return null;
+    }
+
+    @computed
+    get models() {
+        if(this.languages !== null && this.languages !== undefined && this.languages.length > 0) {
+            return FetchModels.run(
+                this.appState,
+                {
+                  select: {
+                    backend: this.backend,
+                    languages: this.languages.map(lang => lang.code)
+                  },
+                  backend: this.backend,
+                  languages: this.languages.map(lang => lang.code)
                 }
             )
         }
@@ -557,7 +583,6 @@ export default class Uploader extends React.Component {
                     in the uploaded scans:
 
                     <div className="corpusbuilder-uploader-images-ready-backend">
-                        <span>OCR backend:</span>
                         <DropdownMenu {...this.backendMenu}>
                             <li>
                                 <button type="button"
@@ -582,13 +607,25 @@ export default class Uploader extends React.Component {
         }
     }
 
+    renderModel(model) {
+        return (
+            <div className="corpusbuilder-uploader-model-selection-item">
+                <div className="corpusbuilder-uploader-model-selection-item-name">{ model.name }</div>
+                <div className="corpusbuilder-uploader-model-selection-item-description">{ model.description }</div>
+                <div className="corpusbuilder-uploader-model-selection-item-languages">{ model.languages }</div>
+                <div className="corpusbuilder-uploader-model-selection-item-scripts">{ model.scripts }</div>
+                <div className="corpusbuilder-uploader-model-selection-item-version-code">{ model.version_code }</div>
+            </div>
+        );
+    }
+
     renderModelSelection() {
-        if(this.languages.length > 0) {
+        if(this.models !== null && this.models !== undefined) {
+            let modelItems = this.models.map(this.renderModel.bind(this));
+
             return (
-                <div>
-                  <div>Model 1</div>
-                  <div>Model 2</div>
-                  <div>Model 3</div>
+                <div className="corpusbuilder-uploader-model-selection">
+                    { modelItems }
                 </div>
             );
         }

@@ -25,6 +25,8 @@
   "actions/FetchDocumentPage.js.map": "/packs/actions/FetchDocumentPage.js.map",
   "actions/FetchDocumentStatus.js": "/packs/actions/FetchDocumentStatus.js",
   "actions/FetchDocumentStatus.js.map": "/packs/actions/FetchDocumentStatus.js.map",
+  "actions/FetchModels.js": "/packs/actions/FetchModels.js",
+  "actions/FetchModels.js.map": "/packs/actions/FetchModels.js.map",
   "actions/FetchSimilarDocuments.js": "/packs/actions/FetchSimilarDocuments.js",
   "actions/FetchSimilarDocuments.js.map": "/packs/actions/FetchSimilarDocuments.js.map",
   "actions/GetMousePosition.js": "/packs/actions/GetMousePosition.js",
