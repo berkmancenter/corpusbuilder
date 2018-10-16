@@ -574,12 +574,26 @@ export default class Uploader extends React.Component {
                                 </button>
                             </li>
                         </DropdownMenu>
-                    </div>
-                    <div>
                         <LanguagesInput languages={ this.languages } onChange={ this.onLanguagesPicked.bind(this) } />
                     </div>
+                    { this.renderModelSelection() }
                 </div>
             );
+        }
+    }
+
+    renderModelSelection() {
+        if(this.languages.length > 0) {
+            return (
+                <div>
+                  <div>Model 1</div>
+                  <div>Model 2</div>
+                  <div>Model 3</div>
+                </div>
+            );
+        }
+        else {
+            return null;
         }
     }
 

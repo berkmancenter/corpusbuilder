@@ -67,7 +67,7 @@ export default class LanguagesInput extends React.Component {
               <input type="hidden" value={ this.value } name="languages" />
               <ReactTags tags={ this.languageTags }
                               autofocus={ true }
-                              placeholder="Add language used in the scans"
+                              placeholder="Add language"
                               suggestions={ this.suggestions }
                               handleDelete={ this.handleDelete.bind(this) }
                               handleAddition={ this.handleAddition.bind(this) }

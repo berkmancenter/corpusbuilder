@@ -8,6 +8,11 @@
   font-size: 14px;
   margin-bottom: 20px;
 
+  .corpusbuilder-languages-input {
+    display: inline-block;
+    margin-left: 10px;
+  }
+
   &-title {
     font-size: 1.25em;
     font-weight: bold;
@@ -16,6 +21,7 @@
 
   &-images-ready {
     padding: 2px;
+    min-height: 300px;
 
     &-backend {
       margin-top: 15px;
