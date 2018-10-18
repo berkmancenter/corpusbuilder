@@ -607,14 +607,44 @@ export default class Uploader extends React.Component {
         }
     }
 
+    renderList(name, items) {
+        let domItems = items.map(item => {
+            return (
+                <div className="corpusbuilder-uploader-model-selection-item-list-item-item">
+                    { item.name }
+                </div>
+            );
+        });
+
+        return (
+            <div className="corpusbuilder-uploader-model-selection-item-list-item">
+                <span className="corpusbuilder-uploader-model-selection-item-list-item-label">{ name }:</span>
+                { domItems }
+            </div>
+        );
+    }
+
     renderModel(model) {
         return (
             <div className="corpusbuilder-uploader-model-selection-item">
-                <div className="corpusbuilder-uploader-model-selection-item-name">{ model.name }</div>
-                <div className="corpusbuilder-uploader-model-selection-item-description">{ model.description }</div>
-                <div className="corpusbuilder-uploader-model-selection-item-languages">{ model.languages }</div>
-                <div className="corpusbuilder-uploader-model-selection-item-scripts">{ model.scripts }</div>
-                <div className="corpusbuilder-uploader-model-selection-item-version-code">{ model.version_code }</div>
+                <div className="corpusbuilder-uploader-model-selection-item-actions">
+                    <input type='checkbox' />
+                </div>
+                <div className="corpusbuilder-uploader-model-selection-item-info">
+                    <div className="corpusbuilder-uploader-model-selection-item-name">
+                        { model.name }
+                        <div className="corpusbuilder-uploader-model-selection-item-version-code">
+                            (ver. { model.version_code })
+                        </div>
+                    </div>
+                    <div className="corpusbuilder-uploader-model-selection-item-description">{ model.description }</div>
+                    <div className="corpusbuilder-uploader-model-selection-item-items">
+                        { this.renderList('Languages', model.languages) }
+                    </div>
+                    <div className="corpusbuilder-uploader-model-selection-item-items">
+                        { this.renderList('Scripts', model.scripts) }
+                    </div>
+                </div>
             </div>
         );
     }
