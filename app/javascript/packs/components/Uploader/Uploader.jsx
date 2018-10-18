@@ -625,6 +625,7 @@ export default class Uploader extends React.Component {
 
             return (
                 <div className="corpusbuilder-uploader-model-selection">
+                    <div className="corpusbuilder-uploader-model-selection-title">OCR Models found:</div>
                     { modelItems }
                 </div>
             );

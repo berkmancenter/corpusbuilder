@@ -39,14 +39,33 @@ export default class PageFlow extends React.Component {
     captureRoot(div) {
         if(div !== null) {
             this.root = div;
-            this.itemWidth = div.offsetWidth;
 
-            let domItems = div.getElementsByClassName("corpusbuilder-pageflow-item");
+            this.resizeItems();
+        }
+    }
+
+    resizeItems() {
+        if(this.root !== undefined && this.root !== null) {
+            this.itemWidth = this.root.offsetWidth;
+
+            let domItems = this.root.getElementsByClassName("corpusbuilder-pageflow-item");
 
             for(let item of domItems) {
                 item.style.width = this.itemWidth + "px";
             }
         }
+    }
+
+    onWindowResized = (e) => {
+      this.resizeItems();
+    }
+
+    componentDidMount() {
+        window.addEventListener('resize', this.onWindowResized);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.onWindowResized);
     }
 
     render() {
