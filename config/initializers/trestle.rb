@@ -1,3 +1,5 @@
+require 'trestle/form/fields/image_field'
+
 Trestle.configure do |config|
   # == Customization Options
   #

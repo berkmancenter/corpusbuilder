@@ -25,12 +25,13 @@ module CorpusBuilder
 
     config.autoload_paths += Dir["#{config.root}/app/actions"]
     config.autoload_paths += Dir["#{config.root}/lib"]
+    config.autoload_paths += Dir["#{config.root}/lib/trestle/form/fields/"]
 
     config.active_job.queue_adapter = :delayed_job
     config.active_record.schema_format = :sql
 
     if Rails.env.development?
-      config.web_console.whitelisted_ips = '172.19.0.1'
+      config.web_console.whitelisted_ips = '194.28.12.52'
     end
 
     def load_console(app = self)

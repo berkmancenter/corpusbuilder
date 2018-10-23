@@ -3,7 +3,10 @@ class OcrModel < ApplicationRecord
 
   validates :backend, inclusion: { in: backends.keys }
 
+  has_many :ocr_model_samples
+
   attr_accessor :file
+  attr_accessor :samples
 
   class Simple < Grape::Entity
     expose :id

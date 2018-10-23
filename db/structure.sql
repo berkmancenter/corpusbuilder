@@ -231,6 +231,14 @@ CREATE TABLE public.images (
     processed_image character varying
 );
 
+CREATE TABLE public.ocr_model_samples (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    ocr_model_id uuid,
+    sample_image character varying,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
 CREATE TABLE public.ocr_models (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     backend integer NOT NULL,
@@ -360,6 +368,9 @@ ALTER TABLE ONLY public.graphemes
 ALTER TABLE ONLY public.images
     ADD CONSTRAINT images_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.ocr_model_samples
+    ADD CONSTRAINT ocr_model_samples_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY public.ocr_models
     ADD CONSTRAINT ocr_models_pkey PRIMARY KEY (id);
 
@@ -450,5 +461,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180411115247'),
 ('20180626133220'),
 ('20180803154451'),
-('20181009101443');
+('20181009101443'),
+('20181023114004');
 
