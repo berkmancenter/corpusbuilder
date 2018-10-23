@@ -30,6 +30,11 @@ class OcrModel < ApplicationRecord
         }
       end
     end
+    expose :samples do |model|
+      model.ocr_model_samples.map do |sample|
+        sample.sample_image_url
+      end
+    end
     expose :version_code
   end
 end

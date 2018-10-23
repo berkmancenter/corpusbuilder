@@ -624,6 +624,21 @@ export default class Uploader extends React.Component {
         );
     }
 
+    renderModelSamples(model) {
+        if(model.samples.length > 0) {
+            return model.samples.map((sample) => {
+                return (
+                    <div className="corpusbuilder-uploader-model-selection-item-images-item">
+                        <img src={ sample } />
+                    </div>
+                );
+            });
+        }
+        else {
+            return null;
+        }
+    }
+
     renderModel(model) {
         return (
             <div className="corpusbuilder-uploader-model-selection-item">
@@ -645,6 +660,12 @@ export default class Uploader extends React.Component {
                         { this.renderList('Scripts', model.scripts) }
                     </div>
                 </div>
+                 <div className="corpusbuilder-uploader-model-selection-item-images">
+                     <div className="corpusbuilder-uploader-model-selection-item-images-label">
+                         Samples of lines the model was trained on:
+                     </div>
+                     { this.renderModelSamples(model) }
+                 </div>
             </div>
         );
     }
