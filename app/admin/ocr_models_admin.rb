@@ -41,6 +41,7 @@ Trestle.resource(:ocr_models) do
     select :backend, OcrModel.backends.keys.map { |k| [ k.to_s.titleize, k ] }
     text_field :filename
     text_field :name
+    text_area :description
     select :languages, LanguageList::COMMON_LANGUAGES.map { |l| [l.name, l.iso_639_3] }, {}, { multiple: true }
     select :scripts, ScriptList::ALL.map { |s| [s.name, s.code] }, {}, { multiple: true }
     text_field :version_code

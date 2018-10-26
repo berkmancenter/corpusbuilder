@@ -33,9 +33,12 @@
       display: flex;
 
       &-images {
-        padding: 1rem;
-        height: 100%;
+        width: 100%;
         overflow: hidden;
+
+        &-label {
+          margin-bottom: 1rem;
+        }
       }
 
       &-info {
@@ -57,29 +60,29 @@
       }
 
       &-description {
+        margin-bottom: 1rem;
+        color: #aaa;
       }
 
       &-list {
+        &-label {
+          margin-left: 1rem;
+          margin-right: 0.5rem;
+          display: inline-block;
+        }
+
         &-item {
-          padding-bottom: 0.25rem;
-
-          &-item {
-            background: rgba(0, 0, 0, 0.05);
-            padding: 0.25rem;
-            border-radius: 4px;
-            margin-right: 0.25rem;
-            display: inline-block;
-          }
-
-          &-label {
-            width: 60px;
-            margin-right: 1rem;
-            display: inline-block;
-          }
+          background: rgba(0, 0, 0, 0.05);
+          padding: 0.25rem;
+          border-radius: 4px;
+          margin-right: 0.25rem;
+          display: inline-block;
         }
       }
 
-      &-scripts {
+      &-scripts, &-languages {
+        font-weight: normal;
+        display: inline-block;
       }
 
       &-version-code {

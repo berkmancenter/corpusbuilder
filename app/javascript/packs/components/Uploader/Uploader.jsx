@@ -610,15 +610,15 @@ export default class Uploader extends React.Component {
     renderList(name, items) {
         let domItems = items.map(item => {
             return (
-                <div className="corpusbuilder-uploader-model-selection-item-list-item-item">
+                <div className="corpusbuilder-uploader-model-selection-item-list-item">
                     { item.name }
                 </div>
             );
         });
 
         return (
-            <div className="corpusbuilder-uploader-model-selection-item-list-item">
-                <span className="corpusbuilder-uploader-model-selection-item-list-item-label">{ name }:</span>
+            <div className="corpusbuilder-uploader-model-selection-item-list">
+                <span className="corpusbuilder-uploader-model-selection-item-list-label">{ name }:</span>
                 { domItems }
             </div>
         );
@@ -640,6 +640,11 @@ export default class Uploader extends React.Component {
     }
 
     renderModel(model) {
+        let samplesLabel = (
+            <div className="corpusbuilder-uploader-model-selection-item-images-label">
+                Samples of lines the model was trained on:
+            </div>
+        );
         return (
             <div className="corpusbuilder-uploader-model-selection-item">
                 <div className="corpusbuilder-uploader-model-selection-item-actions">
@@ -651,21 +656,21 @@ export default class Uploader extends React.Component {
                         <div className="corpusbuilder-uploader-model-selection-item-version-code">
                             (ver. { model.version_code })
                         </div>
+                        <div className="corpusbuilder-uploader-model-selection-item-languages">
+                            { this.renderList('Languages', model.languages) }
+                        </div>
+                        <div className="corpusbuilder-uploader-model-selection-item-scripts">
+                            { this.renderList('Scripts', model.scripts) }
+                        </div>
                     </div>
-                    <div className="corpusbuilder-uploader-model-selection-item-description">{ model.description }</div>
-                    <div className="corpusbuilder-uploader-model-selection-item-items">
-                        { this.renderList('Languages', model.languages) }
+                    <div className="corpusbuilder-uploader-model-selection-item-description">
+                      { model.description }
                     </div>
-                    <div className="corpusbuilder-uploader-model-selection-item-items">
-                        { this.renderList('Scripts', model.scripts) }
+                    <div className="corpusbuilder-uploader-model-selection-item-images">
+                        { model.samples.length > 0 ? samplesLabel : null }
+                        { this.renderModelSamples(model) }
                     </div>
                 </div>
-                 <div className="corpusbuilder-uploader-model-selection-item-images">
-                     <div className="corpusbuilder-uploader-model-selection-item-images-label">
-                         Samples of lines the model was trained on:
-                     </div>
-                     { this.renderModelSamples(model) }
-                 </div>
             </div>
         );
     }
