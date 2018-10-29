@@ -12,7 +12,7 @@ class V1::DocumentsAPI < Grape::API
       end
       requires :metadata, type: Hash do
         requires :title, type: String
-        requires :languages, type: Array[String]
+        optional :languages, type: Array[String]
         optional :authority, type: String
         optional :date, type: String
         optional :editor, type: String
@@ -20,7 +20,7 @@ class V1::DocumentsAPI < Grape::API
         optional :notes, type: String
         optional :publisher, type: String
       end
-      requires :backend, type: String
+      requires :ocr_model_ids, type: Array[String]
       requires :editor_email, type: String
     end
     post do

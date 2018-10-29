@@ -205,6 +205,9 @@ export default class Uploader extends React.Component {
     pickedDocument = null;
 
     @observable
+    pickedModels = [];
+
+    @observable
     backendMenuOpen = false;
 
     @observable
@@ -407,10 +410,26 @@ export default class Uploader extends React.Component {
 
     onLanguagesPicked(languages) {
         this.languages = languages;
+        this.pickedModels.clear();
 
         if(typeof this.props.onLanguagesPicked === 'function') {
             this.props.onLanguagesPicked(languages);
         }
+    }
+
+    onModelChanged(model) {
+        return (function(event) {
+            if(event.target.checked) {
+                this.pickedModels.push(model);
+            }
+            else {
+                this.pickedModels = this.pickedModels.filter(_model => _model.id !== model.id);
+            }
+
+            if(typeof this.props.onModelsPicked === 'function') {
+                this.props.onModelsPicked(this.pickedModels);
+            }
+        }).bind(this);
     }
 
     onSortEnd({oldIndex, newIndex}) {
@@ -648,7 +667,10 @@ export default class Uploader extends React.Component {
         return (
             <div className="corpusbuilder-uploader-model-selection-item">
                 <div className="corpusbuilder-uploader-model-selection-item-actions">
-                    <input type='checkbox' />
+                    <input type='checkbox'
+                           onChange={ this.onModelChanged.bind(this, model)() }
+                           defaultChecked={ this.pickedModels.includes(model) }
+                           />
                 </div>
                 <div className="corpusbuilder-uploader-model-selection-item-info">
                     <div className="corpusbuilder-uploader-model-selection-item-name">

@@ -90,6 +90,12 @@ class CorpusBuilderUploader {
         }
     }
 
+    onModelsPicked(models) {
+        if(typeof this.options.onModelsPicked === 'function') {
+            this.options.onModelsPicked(models);
+        }
+    }
+
     onBackendChosen(backend) {
         if(typeof this.options.onBackendChosen === 'function') {
             this.options.onBackendChosen(backend);
@@ -118,6 +124,7 @@ class CorpusBuilderUploader {
                       onDocumentPicked={ this.onDocumentPicked.bind(this) }
                       onDocumentUnpicked={ this.onDocumentUnpicked.bind(this) }
                       onLanguagesPicked={ this.onLanguagesPicked.bind(this) }
+                      onModelsPicked={ this.onModelsPicked.bind(this) }
                       onBackendChosen={ this.onBackendChosen.bind(this) }
                       onImagesUploaded={ this.onImagesUploaded.bind(this) }
                       />,

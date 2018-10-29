@@ -1,15 +1,14 @@
 module Documents
   class Create < Action::Base
-    attr_accessor :images, :metadata, :app, :editor_email, :backend
+    attr_accessor :images, :metadata, :app, :editor_email, :ocr_model_ids
 
     validates :app, presence: true
     validates :images, presence: true
     validates :metadata, presence: true
     validates :editor_email, presence: true
-    validates :backend, presence: true, inclusion: [ "tesseract", "kraken", "import" ]
+    validates :ocr_model_ids, presence: true
 
     validate :editor_exists
-    validate :proper_languages_provided, if: -> (create) { create.backend != "import" }
 
     def execute
       document = Document.create! title: @metadata[:title],
@@ -22,7 +21,7 @@ module Documents
         notes: @metadata[:notes],
         publisher: @metadata[:publisher],
         status: Document.statuses[:initial],
-        backend: backend,
+        ocr_model_ids: ocr_model_ids,
         app_id: @app.id
 
       document.images << image_records

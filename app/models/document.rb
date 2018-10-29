@@ -14,6 +14,10 @@ class Document < ApplicationRecord
     branches.where(name: 'master').first
   end
 
+  def ocr_models
+    OcrModel.where(id: ocr_model_ids)
+  end
+
   class Status < Grape::Entity
     expose :status
   end

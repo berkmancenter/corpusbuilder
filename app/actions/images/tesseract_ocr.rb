@@ -27,7 +27,7 @@ module Images
     end
 
     def model
-      languages.join("+")
+      ocr_models.map(&:filename).join("+")
     end
   end
 end

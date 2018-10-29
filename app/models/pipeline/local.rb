@@ -77,7 +77,7 @@ class Pipeline::Local < Pipeline
 
       Images::OCR.run!(
         image: next_image,
-        backend: document.backend
+        ocr_models: document.ocr_models
       )
       return one_after.present? ? :more : :done
     else

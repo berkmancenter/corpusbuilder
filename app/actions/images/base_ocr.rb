@@ -1,8 +1,9 @@
 module Images
   class BaseOCR < Action::Base
-    attr_accessor :image
+    attr_accessor :image, :ocr_models
 
     validates :image, presence: true
+    validates :ocr_models, presence: true
 
     def execute
       raise StandardError, "BaseOCR should be extended by inheritamnce - not used directly"

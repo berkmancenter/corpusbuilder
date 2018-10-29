@@ -19,7 +19,11 @@ module Images
     end
 
     def command
-      "kraken -i #{image_file_path} #{file_path} binarize segment ocr -h -m arabic-hayawan.clstm"
+      "kraken -i #{image_file_path} #{file_path} binarize segment ocr -h #{models}"
+    end
+
+    def models
+      ocr_models.map(&:filename).map { |n| "-m #{n}.clstm" }.join " "
     end
   end
 end

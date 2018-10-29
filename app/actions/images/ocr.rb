@@ -1,10 +1,8 @@
 module Images
   class OCR < Action::Base
-    attr_accessor :image, :backend
+    attr_accessor :image, :ocr_models
 
     validates :image, presence: true
-
-    # todo: specify the language to use
 
     def execute
       file_path = backend_action.run!(image: image).result
@@ -17,6 +15,10 @@ module Images
       image.save!
       file.close
       image
+    end
+
+    def backend
+      ocr_models.first.backend
     end
 
     def backend_action

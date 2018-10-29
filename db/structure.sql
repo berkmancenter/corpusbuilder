@@ -193,8 +193,8 @@ CREATE TABLE public.documents (
     updated_at timestamp without time zone NOT NULL,
     status integer NOT NULL,
     app_id uuid NOT NULL,
-    backend character varying DEFAULT 'tesseract'::character varying,
-    languages character varying[]
+    languages character varying[],
+    ocr_model_ids uuid[]
 );
 
 CREATE TABLE public.editors (
@@ -462,5 +462,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180626133220'),
 ('20180803154451'),
 ('20181009101443'),
-('20181023114004');
+('20181023114004'),
+('20181029151147');
 
