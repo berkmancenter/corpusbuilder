@@ -6,8 +6,13 @@ describe Pipeline::Local, type: :model do
     create :app
   end
 
+  let(:ocr_models) { [ create(:ocr_model) ] }
+
   let(:document) do
-    create :document, status: Document.statuses[:processing], app_id: client_app.id
+    create :document,
+      status: Document.statuses[:processing],
+      app_id: client_app.id,
+      ocr_model_ids: ocr_models.map(&:id)
   end
 
   context "the result method" do
@@ -167,7 +172,7 @@ describe Pipeline::Local, type: :model do
 
       it "calls Images::OCR for the first image not ocred yet" do
         expect_any_instance_of(Document).to receive(:images).and_return(images)
-        expect(Images::OCR).to receive(:run!).with(image: image2, backend: "tesseract")
+        expect(Images::OCR).to receive(:run!).with(image: image2, ocr_models: ocr_models)
 
         pipeline.forward!
       end

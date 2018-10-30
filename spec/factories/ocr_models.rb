@@ -1,6 +1,6 @@
 FactoryGirl.define do
   factory :ocr_model do
-    backend 1
+    backend 0
     filename "MyString"
     name "MyString"
     description "MyText"

@@ -11,6 +11,10 @@ describe Documents::Create do
     create :editor
   end
 
+  let(:ocr_model) do
+    create :ocr_model
+  end
+
   let(:image1) do
     create :image, image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
       name: "file_1.png"
@@ -29,7 +33,7 @@ describe Documents::Create do
         languages: [ "ara" ]
       },
       app: client_app,
-      backend: "tesseract",
+      ocr_model_ids: [ ocr_model.id ],
       editor_email: editor.email
     }
   end
