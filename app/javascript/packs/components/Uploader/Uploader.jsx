@@ -637,7 +637,7 @@ export default class Uploader extends React.Component {
 
         return (
             <div className="corpusbuilder-uploader-model-selection-item-list">
-                <span className="corpusbuilder-uploader-model-selection-item-list-label">{ name }:</span>
+                <span className="corpusbuilder-uploader-model-selection-item-list-label">{ domItems.length > 0 ? name : '' }:</span>
                 { domItems }
             </div>
         );

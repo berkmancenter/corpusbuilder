@@ -10,11 +10,11 @@ module OcrModels
       end
 
       if languages.present?
-        scope = scope.where("languages @> array[?] :: varchar[]", languages)
+        scope = scope.where("languages && array[?] :: varchar[]", languages)
       end
 
       if scripts.present?
-        scope = scope.where("scripts @> array[?] :: varchar[]", scripts)
+        scope = scope.where("scripts && array[?] :: varchar[]", scripts)
       end
 
       scope
