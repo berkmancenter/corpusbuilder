@@ -11,7 +11,7 @@ module Documents
     def when_initial
       Pipelines::Create.run! document: document
       document.processing!
-      reschedule(0.1.second)
+      reschedule
     end
 
     def when_processing
@@ -27,7 +27,7 @@ module Documents
         document.pipeline.cleanup!
         Rails.logger.info "Processing document #{document.id} done successfully"
       else
-        reschedule(0.1.second)
+        reschedule
       end
     rescue
       Rails.logger.error $!.message
@@ -45,9 +45,8 @@ module Documents
 
     private
 
-    def reschedule(wait = 1.minute)
+    def reschedule
       ProcessDocumentJob.
-        set(wait: wait).
         perform_later(@document)
     end
   end

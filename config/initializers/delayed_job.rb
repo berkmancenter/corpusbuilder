@@ -1,4 +1,4 @@
-Delayed::Worker.sleep_delay = 2
+Delayed::Worker.sleep_delay = 0.1
 Delayed::Worker.max_attempts = 3
 Delayed::Worker.max_run_time = 115.minutes
 Delayed::Worker.default_queue_name = 'default'
