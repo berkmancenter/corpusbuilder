@@ -45,3 +45,19 @@ This means that to use it, one needs to integrate it with some other, existing a
 
 For the Ruby-world, a helper integration gem has been provided:
 https://github.com/berkmancenter/corpusbuilder-ruby-client
+
+A more complete platform integration has been made with the SHARIAsource plaftorm. The
+SHARIAsource platform is open-source software and can be found on github:
+https://github.com/berkmancenter/SHARIAsource
+
+## Contributors
+
+CorpusBuilder was built with the collaborations of SHARIAsource and OpenITI.
+
+## License
+
+CorpusBuilder is licensed under the GNU AGPL 3.0 License.
+
+## Copyright
+
+2019 President and Fellows of Harvard College.
