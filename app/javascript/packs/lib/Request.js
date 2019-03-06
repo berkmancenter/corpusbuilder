@@ -80,7 +80,7 @@ export default class Request {
                 payload.append('file', data);
                 payload.append('name', data.name);
 
-                options = null;
+                options = { timeout: 1000*3*60*60 };
             }
 
             qwest.post(url, payload, options, before)
