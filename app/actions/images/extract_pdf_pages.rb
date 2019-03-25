@@ -1,3 +1,5 @@
+require 'securerandom'
+
 module Images
 
   # Extracts individual pages into single PNG files
@@ -5,12 +7,12 @@ module Images
     attr_accessor :file, :name
 
     def execute
-      pdf.each_with_index.map do |page, ix|
-        filename = Rails.root.join "tmp", "#{File.basename(name, ".*")}-#{ix + 1}.png"
+      basedir = Rails.root.join "tmp", name, SecureRandom.uuid
 
-        page.save filename.to_s
+      `pdfimages -png #{file.path} #{basedir}`
 
-        File.new filename
+      Dir[basedir.to_s + "*"].map do |path|
+        File.new path
       end
     end
 
