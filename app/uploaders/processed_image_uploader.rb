@@ -9,13 +9,13 @@ class ProcessedImageUploader < CarrierWave::Uploader::Base
 
   def format_web
     manipulate! do | img |
-      img.format( 'jpg' ) do | c |
+      img.format( 'png' ) do | c |
         c.strip
-        c.colorspace 'sRGB'
-        c.quality '75'
+        c.colorspace 'Gray'
+        c.quality '100'
         c.density '72'
         c.resample '72'
-        c.resize '800'
+        c.resize '1600'
       end
 
       img

@@ -7,19 +7,19 @@ module Images
     attr_accessor :file, :name
 
     def execute
-      basedir = Rails.root.join "tmp", name, SecureRandom.uuid
+      basedir = Rails.root.join "tmp", (sanitized_name + SecureRandom.uuid)
 
-      `pdfimages -png #{file.path} #{basedir}`
+      `pdfimages -png '#{file.path}' '#{basedir}'`
 
       Dir[basedir.to_s + "*"].map do |path|
         File.new path
       end
     end
 
-    def pdf
-      memoized do
-        Grim.reap file.path
-      end
+    def sanitized_name
+      name.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "�").
+        strip.
+        tr("\u{202E}%$|:;/\t\r\n\\", "-")
     end
   end
 end
