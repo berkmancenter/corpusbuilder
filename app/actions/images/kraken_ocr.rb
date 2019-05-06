@@ -23,7 +23,7 @@ module Images
     end
 
     def models
-      ocr_models.map(&:filename).map { |n| "-m #{n}.clstm" }.join " "
+      ocr_models.map(&:filename).map { |n| "-m #{n}.mlmodel" }.join " "
     end
   end
 end
