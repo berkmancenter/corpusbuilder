@@ -2,7 +2,7 @@ module OcrModels
   class DetectSystemModels < Action::Base
     def execute
       insert_existing "TESSDATA_PREFIX", "*.traineddata", "tesseract"
-      insert_existing "KRAKEN_DATA_PREFIX", "*.clstm", "kraken"
+      insert_existing "KRAKEN_DATA_PREFIX", "*.mlmodel", "kraken"
     end
 
     def insert_existing(prefix, ext, backend)
