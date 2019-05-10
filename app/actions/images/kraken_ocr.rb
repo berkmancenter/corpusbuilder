@@ -23,7 +23,9 @@ module Images
     end
 
     def models
-      ocr_models.map(&:filename).map { |n| "-m #{n}.mlmodel" }.join " "
+      ocr_models.map(&:filename).map do |n|
+        "-m #{n.gsub(".mlmodel", "") + ".mlmodel"}"
+      end.join " "
     end
   end
 end
