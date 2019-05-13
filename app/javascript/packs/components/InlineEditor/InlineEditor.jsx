@@ -716,17 +716,18 @@ export default class InlineEditor extends React.Component {
                             this.renderInputs()
                         }
                         <div className="corpusbuilder-inline-editor-dir">
+                            <span>Text Direction:</span>
                             <Button onToggle={ this.onToggleDir.bind(this, "ltr") }
                               toggles={ true }
                               toggled={ this.dir === "ltr" }
                               >
-                              LTR
+                              ⇢
                             </Button>
                             <Button onToggle={ this.onToggleDir.bind(this, "rtl") }
                               toggles={ true }
                               toggled={ this.dir === "rtl" }
                               >
-                              RTL
+                              ⇠
                             </Button>
                         </div>
                         <div className="corpusbuilder-inline-editor-buttons">
