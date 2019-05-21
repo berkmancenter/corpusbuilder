@@ -283,15 +283,19 @@ export default class WindowManager extends React.Component {
     /* Computes the correct font-size to apply to graphemes
      * given the font and ratio - to make them visually fill
      * their union bounding box */
-    measureFontSize(graphemes, font, ratio) {
+    measureFontSize(graphemes, font, ratio, wordBoxes = null) {
+        if(wordBoxes === null || wordBoxes === undefined) {
+          wordBoxes = GraphemesUtils.wordBoxes(graphemes);
+        }
+
         let ids = graphemes.map(g => g.id).join('');
-        let key = `${ids}-${font.fontName}-${ratio}`;
+        let boxesKey = wordBoxes.map((i) => `${i.lrx}-${i.lry}-${i.ulx}-${i.uly}`).join('|');
+        let key = `${ids}-${font.fontName}-${ratio}-${boxesKey}`;
 
         if(font.ready && this.measureCache.has(key)) {
             return this.measureCache.get(key);
         }
 
-        let wordBoxes = GraphemesUtils.wordBoxes(graphemes);
         let lineBox = BoxesUtils.union(wordBoxes);
         let lineHeight = (lineBox.lry - lineBox.uly) * ratio;
 

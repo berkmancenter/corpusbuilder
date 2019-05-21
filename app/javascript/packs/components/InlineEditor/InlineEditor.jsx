@@ -160,7 +160,7 @@ export default class InlineEditor extends React.Component {
             return 'auto';
         }
         else {
-            let size = this.props.measureFontSize(this.props.line, this.font, this.ratio);
+            let size = this.props.measureFontSize(this.props.line, this.font, this.ratio, this.boxes);
 
             return size === 0 ? 12 : size;
         }
