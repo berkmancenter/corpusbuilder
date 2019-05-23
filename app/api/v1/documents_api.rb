@@ -40,7 +40,7 @@ class V1::DocumentsAPI < Grape::API
     end
 
     params do
-      requires :metadata, type: Hash do
+      requires :metadata, type: JSON do
         requires :title, type: String
         optional :authority, type: String
         optional :date, type: String
@@ -84,7 +84,7 @@ class V1::DocumentsAPI < Grape::API
       params do
         optional :surface_number, type: Integer
         given :surface_number do
-          optional :area, type: Hash do
+          optional :area, type: JSON do
             requires :ulx, type: Integer
             requires :uly, type: Integer
             requires :lrx, type: Integer
@@ -95,6 +95,8 @@ class V1::DocumentsAPI < Grape::API
       get ':revision/tree' do
         infer_revision!
         infer_editor!
+
+        error!("Oops! Something went wrong", 500) if rand > 0.3
 
         data_options = {}.merge @revision_options
 
@@ -196,7 +198,7 @@ class V1::DocumentsAPI < Grape::API
         requires :words, type: Array do
           requires :grapheme_ids, type: Array
           requires :text, type: String
-          optional :area, type: Hash do
+          optional :area, type: JSON do
             requires :ulx, type: String
             requires :uly, type: String
             requires :lrx, type: String

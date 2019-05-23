@@ -19,14 +19,12 @@ export default class UploadDocumentImages extends Action {
                   let notifier = {};
 
                   let promise = new Promise((resolve, reject) => {
-                    return this.post(`${state.baseUrl}/api/images`, file.file, (xhr) => {
-                        xhr.upload.onprogress = action((e) => {
-                            file.progress = e.loaded / e.total;
+                    return this.upload(`${state.baseUrl}/api/images`, file.file, (e) => {
+                        file.progress = e.loaded / e.total;
 
-                            if(file.progress === 1.0) {
-                                notifier.done();
-                            }
-                        });
+                        if(file.progress === 1.0) {
+                            notifier.done();
+                        }
                     }).then((images) => {
                         file.progress = 2.0;
                         console.log(file);

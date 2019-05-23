@@ -58,6 +58,23 @@ export default class Action {
         });
     }
 
+    upload(url, params, before) {
+        this.state.broadcastEvent(this.selector, null, 'start');
+
+        return Request.upload(url, params, before)
+            .then((data, response) => {
+                this.state.broadcastEvent(this.selector, data);
+                return data;
+            })
+            .catch((error) => {
+                this.state.broadcastEvent(this.selector, error, 'error');
+                throw error
+            })
+            .finally(() => {
+                this.state.broadcastEvent(this.selector, null, 'end');
+            });
+    }
+
     post(url, params, before) {
         this.state.broadcastEvent(this.selector, null, 'start');
 
