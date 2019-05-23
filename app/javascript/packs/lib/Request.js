@@ -23,7 +23,8 @@ export default class Request {
 
     static setBaseUrl(baseUrl) {
         Request.backend = axios.create({
-          baseURL: baseUrl
+          baseURL: baseUrl,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' }
         });
     }
 
