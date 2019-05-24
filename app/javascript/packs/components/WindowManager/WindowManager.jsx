@@ -99,12 +99,20 @@ export default class WindowManager extends React.Component {
         return this.props.host;
     }
 
+    get zoomLevel() {
+        return Math.round(window.outerWidth * 100 / window.innerWidth) / 100;
+    }
+
     get paneWidth() {
         if(this.dockMode) {
-            return Math.floor(document.body.offsetWidth / this.numberOfViewers) - 40 - 20;
+            return this.zoomLevel * (
+              Math.floor(document.body.offsetWidth / this.numberOfViewers) - 40 - 20
+            );
         }
         else {
-            return Math.floor(this.host.offsetWidth / this.numberOfViewers) - 40;
+            return this.zoomLevel * (
+              Math.floor(this.host.offsetWidth / this.numberOfViewers) - 40
+            );
         }
     }
 
@@ -344,8 +352,12 @@ export default class WindowManager extends React.Component {
     }
 
     renderNavigation() {
+        let optionsStyles = {
+            width: `${ this.zoomLevel * 100 }%`
+        };
+
         return (
-            <div className="corpusbuilder-global-options">
+            <div className="corpusbuilder-global-options" style={ optionsStyles }>
                 <div className="corpusbuilder-global-options-viewers">
                     <Button toggles={ true } toggled={ this.hasOneViewer } onClick={ this.setViewers.bind(this, 1) }>
                         <i className="fa fa-align-justify"></i>
