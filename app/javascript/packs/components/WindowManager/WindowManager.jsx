@@ -44,6 +44,9 @@ export default class WindowManager extends React.Component {
     dockMode = false;
 
     @observable
+    lastScrollTop = 0;
+
+    @observable
     _numberOfViewers = 2;
 
     get numberOfViewers() { return this._numberOfViewers; }
@@ -229,7 +232,19 @@ export default class WindowManager extends React.Component {
     }
 
     onToggleDockMode(isOn) {
+        let self = this;
+
+        if(isOn) {
+            self.lastScrollTop = document.documentElement.scrollTop;
+        }
+
         this.dockMode = isOn;
+
+        setTimeout(function() {
+            if(!isOn) {
+                document.documentElement.scrollTop = self.lastScrollTop;
+            }
+        }, 100);
     }
 
     renderDocumentPanes() {
