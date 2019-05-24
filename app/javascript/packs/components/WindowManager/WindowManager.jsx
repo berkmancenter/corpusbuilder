@@ -405,7 +405,7 @@ export default class WindowManager extends React.Component {
                     }
                     <span className="corpusbuilder-global-options-separator"></span>
                     <Button toggles={ true } toggled={ this.dockMode } onToggle={ this.onToggleDockMode.bind(this) }>
-                        <i className="fa fa-expand"></i>
+                        <i className={"fa " + (this.dockMode ? "fa-compress" : "fa-expand")}></i>
                     </Button>
                 </div>
             </div>
