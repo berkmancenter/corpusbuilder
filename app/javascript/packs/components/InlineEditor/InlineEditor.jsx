@@ -104,16 +104,29 @@ export default class InlineEditor extends React.Component {
     }
 
     @computed
-    get boxesOverlap() {
+    get overlappingBoxes() {
+        let overlaps = [];
+
         for(let b1 of this.boxes) {
             for(let b2 of this.boxes) {
-                if(b1 !== b2 && BoxesUtils.boxesOverlap(b1, b2)) {
-                    return true;
-                }
+                    if(b1 !== b2 && BoxesUtils.boxesOverlap(b1, b2)) {
+                        overlaps.push(b2);
+                    }
             }
         }
 
-        return false;
+        return overlaps.sort(function(b1, b2) {
+            let area1 = BoxesUtils.area(b1);
+            let area2 = BoxesUtils.area(b2);
+
+            return area1 < area2 ? 1 : (area1 > area2 ? -1 : 0);
+        });
+    }
+
+    @computed
+    get boxesOverlap() {
+        console.log(this.overlappingBoxes.map(function(b) { return BoxesUtils.area(b) }));
+        return this.overlappingBoxes.length > 0;
     }
 
     @computed
@@ -507,6 +520,11 @@ export default class InlineEditor extends React.Component {
         }
     }
 
+    onResolveOverlap() {
+        this.selectedBox = this.overlappingBoxes[0];
+        this.removeBox();
+    }
+
     initText(props) {
         this.dir = this.lineDir(props);
         this.graphemeWords = GraphemeUtils.lineWords(props.line);
@@ -682,12 +700,23 @@ export default class InlineEditor extends React.Component {
             }
             let messageBox = null;
             if(this.messages.length > 0) {
+                let overlapButton = null;
+
+                if(this.boxesOverlap) {
+                    overlapButton = (
+                        <Button onClick={ this.onResolveOverlap.bind(this) }
+                          >
+                          Remove biggest
+                        </Button>
+                    );
+                }
+
                 messageBox = (
                             <div className="corpusbuilder-inline-editor-messages"
                                 >
                                 {
                                     this.messages.map((msg) => {
-                                        return <div key={ msg }>{ msg }</div>;
+                                        return <div key={ msg }><span>{ msg }</span>{ overlapButton }</div>;
                                     })
                                 }
                             </div>
@@ -754,11 +783,11 @@ export default class InlineEditor extends React.Component {
                               { this.deleteButtonTitle }
                             </Button>
                             <Button onClick={ this.clearLine.bind(this) }>
-                              Clear Line Text
+                              Clear Line
                             </Button>
                             <div className="corpusbuilder-inline-editor-buttons-aside">
                                 <Button onClick={ this.resetText.bind(this) }>
-                                  Reset
+                                  Undo
                                 </Button>
                                 <Button onClick={ this.requestSave.bind(this) } disabled={ !this.dataValid }>
                                   Save
