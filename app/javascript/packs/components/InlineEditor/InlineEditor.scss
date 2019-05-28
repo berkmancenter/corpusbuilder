@@ -103,7 +103,9 @@
     }
 
     &-help {
-      font-size: 12px;
+      font-size: 10px;
+      text-shadow: 1px 1px rgba(0, 0, 0, 0.15);
+      box-shadow: inset 1px 1px rgba(0, 0, 0, 0.08);
       display: inline-block;
       position: absolute;
       right: 0px;
