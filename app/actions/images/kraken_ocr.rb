@@ -13,12 +13,13 @@ module Images
         raise StandardError, "Kraken returned abnormally. Status: #{kraken_status}. Output: #{kraken_output}"
       end
 
-      Rails.logger.debug "Kraken resulting file should be found at #{file_path}.hocr"
+      Rails.logger.debug "Kraken resulting file should be found at #{file_path}.#{format}"
 
       file_path
     end
 
     def command
+      # todo: take teh format into account
       "kraken -i #{image_file_path} #{file_path} binarize segment ocr -h #{models}"
     end
 

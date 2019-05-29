@@ -15,5 +15,17 @@ class V1::ModelsAPI < Grape::API
         languages: params[:languages]
       ).result, with: OcrModel::Simple
     end
+
+    desc 'OCRs a single line for a document and returns the text'
+    params do
+      required :zone_id, Integer
+    end
+    get ':id/zone-text-transcription' do
+      authorize!
+
+      async! OcrModels,
+        model_id: params[:id],
+        zone_id: params[:zone_id]
+    end
   end
 end

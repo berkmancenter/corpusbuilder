@@ -16,14 +16,14 @@ module Images
           raise StandardError, "Tesseract returned abnormally. Status: #{tesseract_status}. Output: #{tesseract_output}"
         end
 
-        Rails.logger.debug "Tesseract resulting file should be found at #{file_path}.hocr"
+        Rails.logger.debug "Tesseract resulting file should be found at #{file_path}.#{format}"
 
-        "#{file_path}.hocr"
+        "#{file_path}.#{format}"
       end
     end
 
     def command
-      "tesseract #{image_file_path} #{file_path} --oem 1 -l #{model} hocr"
+      "tesseract #{image_file_path} #{file_path} --oem 1 -l #{model} #{format}"
     end
 
     def model
