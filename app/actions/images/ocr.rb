@@ -29,7 +29,7 @@ module Images
 
     def file_path
       memoized do
-        TempfileUtils.next_path('hocr_output')
+        TempfileUtils.next_path('hocr_output') + ".hocr"
       end
     end
 
