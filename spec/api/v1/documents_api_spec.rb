@@ -369,13 +369,15 @@ describe V1::DocumentsAPI, type: :request do
 
       let(:minimal_params) do
         {
-          words: [
-            {
-              grapheme_ids: graphemes.map(&:id),
-              text: ''
-            }
-          ],
-          surface_number: 1
+          correction: {
+            words: [
+              {
+                grapheme_ids: graphemes.map(&:id),
+                text: ''
+              }
+            ],
+            surface_number: 1
+          }
         }
       end
 
