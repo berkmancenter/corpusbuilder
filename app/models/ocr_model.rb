@@ -8,6 +8,12 @@ class OcrModel < ApplicationRecord
   attr_accessor :file
   attr_accessor :samples
 
+  def ocr_backend
+    "OcrBackend::#{backend.classify}".
+      constantize.
+      instance
+  end
+
   class Simple < Grape::Entity
     expose :id
     expose :backend
