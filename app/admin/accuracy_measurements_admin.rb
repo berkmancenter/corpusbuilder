@@ -4,7 +4,7 @@ Trestle.resource(:accuracy_measurements) do
   end
 
   build_instance do |attrs, params|
-    #file = attrs.delete(:model_file)
+    document_ids = attrs.delete(:document_ids)
 
     instance = model.new(attrs)
 
@@ -12,9 +12,25 @@ Trestle.resource(:accuracy_measurements) do
     instance.bootstrap_number ||= 100
     instance.seed ||= rand(1..10000)
 
-    #instance.file = file
+    if document_ids.present?
+      instance.assigned_document_ids = document_ids.reject(&:empty?)
+    end
 
     instance
+  end
+
+  save_instance do |instance, attrs, params|
+    action = AccuracyMeasurements::Persist.run(
+      model: instance
+    )
+
+    if !action.result
+      for error in action.errors.full_messages
+        instance.errors.add(:base, error)
+      end
+    end
+
+    action.result
   end
 
   form do |measurement|
