@@ -42,6 +42,10 @@ gem 'unicode-categories'
 gem 'grim'
 gem 'coffee-rails'
 gem 'colorize', require: 'colorize'
+gem 'daru'
+gem 'daru-io'
+gem 'daru-view'
+gem 'jsonpath'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

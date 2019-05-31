@@ -1,35 +1,34 @@
 module Images
   class OCR < Action::Base
-    attr_accessor :image, :ocr_models
+    attr_accessor :images, :ocr_models
 
-    validates :image, presence: true
+    validates :images, presence: true
 
     def execute
-      result = ocr_backend.ocr \
-        image_file_path: image.processed_image.path,
+      results = ocr_backend.ocr \
+        image_file_paths: image_file_paths,
         ocr_models: ocr_models,
-        out_path: file_path
+        format: 'hocr'
 
-      Rails.logger.debug "The OCR results file returned: #{file_path}"
+      images.zip(results).map do |image, hocr_string|
+        path = TempfileUtils.next_path('hocr_output')
+        File.write path, hocr_string
 
-      if !File.exist?(file_path)
-        raise StandardError,
-          "Output file has not been found. Output file path: #{file_path}"
+        file = File.new(path)
+
+        image.hocr = file
+        image.save!
+
+        file.close
       end
 
-      file = File.new(file_path)
-
-      image.hocr = file
-      image.save!
-
-      file.close
-
-      image
+      images
     end
 
-    def file_path
+    def image_file_paths
       memoized do
-        TempfileUtils.next_path('hocr_output') + ".hocr"
+        images.map(&:processed_image).
+          map(&:path)
       end
     end
 

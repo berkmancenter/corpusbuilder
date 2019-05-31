@@ -6,7 +6,7 @@ class OcrBackend::Kraken < OcrBackend::Base
 
     format_switch = format == 'hocr' ? '-h' : '-t'
 
-    command = "kraken -i #{image_file_path} #{out_path} segment ocr #{format_switch} #{model}"
+    command = "nice -19 kraken -i #{image_file_path} #{out_path} segment ocr #{format_switch} #{model}"
 
     run_command(command).tap do |result|
       if !result.status.success?

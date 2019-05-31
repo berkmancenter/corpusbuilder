@@ -1,9 +1,17 @@
 class OcrBackend::Tesseract < OcrBackend::Base
-  def ocr(image_file_path:, ocr_models:, out_path:, format: 'hocr')
+  def ocr_list(image_file_paths:, ocr_models:, format: 'hocr')
     model = ocr_models.map(&:filename).join("+")
-    out = out_path.to_s.split('.').reverse.drop(1).reverse.join('.')
+    out_path = TempfileUtils.next_path 'tesseract_out'
 
-    command = "tesseract #{image_file_path} #{out} --oem 1 -l #{model} #{format}"
+    images_list = Tempfile.new 'images_list'
+
+    image_file_paths.each do |path|
+      images_list << "#{path}\n"
+    end
+
+    images_list.close
+
+    command = "nice -19 tesseract #{images_list.path} #{out_path} --oem 1 -l #{model} #{format}"
 
     run_command(command).tap do |result|
       if !result.status.success?
@@ -11,6 +19,8 @@ class OcrBackend::Tesseract < OcrBackend::Base
           "Tesseract returned abnormally. Status: #{result.status}. Output: #{result.output}"
       end
     end
+
+    File.read("#{out_path}.#{format}")
   end
 end
 
