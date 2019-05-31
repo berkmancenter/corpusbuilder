@@ -46,6 +46,7 @@ gem 'daru'
 gem 'daru-io'
 gem 'daru-view'
 gem 'jsonpath'
+gem 'find_with_order'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
