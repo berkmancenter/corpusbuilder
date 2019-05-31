@@ -70,6 +70,40 @@ SET default_tablespace = '';
 
 SET default_with_oids = false;
 
+CREATE TABLE public.accuracy_document_measurements (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    accuracy_measurement_id uuid,
+    document_id uuid,
+    status integer DEFAULT 0,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+CREATE TABLE public.accuracy_document_measurements_line_measurements (
+    accuracy_line_measurement_id bigint NOT NULL,
+    accuracy_document_measurement_id bigint NOT NULL
+);
+
+CREATE TABLE public.accuracy_line_measurements (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    zone_id uuid,
+    status integer DEFAULT 0,
+    confusion_matrix json DEFAULT '{}'::json,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+CREATE TABLE public.accuracy_measurements (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    ocr_model_id uuid NOT NULL,
+    bootstrap_sample_size integer NOT NULL,
+    bootstrap_number integer NOT NULL,
+    seed integer,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    status integer DEFAULT 0
+);
+
 CREATE TABLE public.administrators (
     id bigint NOT NULL,
     email character varying,
@@ -262,6 +296,28 @@ CREATE TABLE public.pipelines (
     data jsonb DEFAULT '{}'::jsonb
 );
 
+CREATE TABLE public.que_jobs (
+    priority smallint DEFAULT 100 NOT NULL,
+    run_at timestamp with time zone DEFAULT now() NOT NULL,
+    job_id bigint NOT NULL,
+    job_class text NOT NULL,
+    args json DEFAULT '[]'::json NOT NULL,
+    error_count integer DEFAULT 0 NOT NULL,
+    last_error text,
+    queue text DEFAULT ''::text NOT NULL
+);
+
+COMMENT ON TABLE public.que_jobs IS '3';
+
+CREATE SEQUENCE public.que_jobs_job_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.que_jobs_job_id_seq OWNED BY public.que_jobs.job_id;
+
 CREATE TABLE public.revisions (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     document_id uuid NOT NULL,
@@ -295,10 +351,11 @@ CREATE TABLE public.surfaces (
 
 CREATE TABLE public.zones (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    surface_id uuid NOT NULL,
-    area box NOT NULL,
+    document_id uuid,
+    area box,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
+    surface_id uuid NOT NULL,
     position_weight numeric(12,6) DEFAULT 0,
     direction integer DEFAULT 0
 );
@@ -306,6 +363,17 @@ CREATE TABLE public.zones (
 ALTER TABLE ONLY public.administrators ALTER COLUMN id SET DEFAULT nextval('public.administrators_id_seq'::regclass);
 
 ALTER TABLE ONLY public.delayed_jobs ALTER COLUMN id SET DEFAULT nextval('public.delayed_jobs_id_seq'::regclass);
+
+ALTER TABLE ONLY public.que_jobs ALTER COLUMN job_id SET DEFAULT nextval('public.que_jobs_job_id_seq'::regclass);
+
+ALTER TABLE ONLY public.accuracy_document_measurements
+    ADD CONSTRAINT accuracy_document_measurements_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.accuracy_line_measurements
+    ADD CONSTRAINT accuracy_line_measurements_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.accuracy_measurements
+    ADD CONSTRAINT accuracy_measurements_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.administrators
     ADD CONSTRAINT administrators_pkey PRIMARY KEY (id);
@@ -352,6 +420,9 @@ ALTER TABLE ONLY public.ocr_models
 ALTER TABLE ONLY public.pipelines
     ADD CONSTRAINT pipelines_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.que_jobs
+    ADD CONSTRAINT que_jobs_pkey PRIMARY KEY (queue, priority, run_at, job_id);
+
 ALTER TABLE ONLY public.revisions
     ADD CONSTRAINT revisions_pkey PRIMARY KEY (id);
 
@@ -374,6 +445,10 @@ CREATE INDEX index_surfaces_on_area ON public.surfaces USING gist (area);
 CREATE INDEX index_zones_on_area ON public.zones USING gist (area);
 
 CREATE INDEX index_zones_on_surface_id ON public.zones USING btree (surface_id);
+
+CREATE INDEX line_document_document_ix ON public.accuracy_document_measurements_line_measurements USING btree (accuracy_document_measurement_id);
+
+CREATE INDEX line_document_line_ix ON public.accuracy_document_measurements_line_measurements USING btree (accuracy_line_measurement_id);
 
 CREATE TRIGGER graphemes_revisions_drop BEFORE DELETE ON public.revisions FOR EACH ROW EXECUTE PROCEDURE public.graphemes_revisions_drop_trigger();
 
@@ -398,6 +473,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20170824121723'),
 ('20170824124437'),
 ('20170828070141'),
+('20170828084422'),
 ('20170828113253'),
 ('20170901132912'),
 ('20170905080141'),
@@ -434,5 +510,10 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180803154451'),
 ('20181009101443'),
 ('20181023114004'),
-('20181029151147');
+('20181029151147'),
+('20190531120036'),
+('20190531133312'),
+('20190531155841'),
+('20190531160526'),
+('20190531160946');
 

@@ -1,0 +1,2 @@
+class AccuracyLineMeasurement < ApplicationRecord
+end

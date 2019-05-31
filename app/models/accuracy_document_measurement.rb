@@ -1,0 +1,2 @@
+class AccuracyDocumentMeasurement < ApplicationRecord
+end
