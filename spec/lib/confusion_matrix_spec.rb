@@ -91,4 +91,12 @@ describe ConfusionMatrix do
       expect(ConfusionMatrix.dump(matrix)).to eq(json)
     end
   end
+
+  describe 'sum_errors_for' do
+    it 'works for single observation' do
+      expect(
+        ConfusionMatrix.new({"b"=>{"a"=>1}}).sum_errors_for("a")
+      ).to eq(1)
+    end
+  end
 end

@@ -2,13 +2,10 @@ class ConfusionMatrix
   attr_accessor :data
 
   def initialize(hash_data = {})
-    @data = hash_data
+    @data = hash_data || {}
   end
 
   def observe(truth, pred)
-    #data[truth.to_s] ||= []
-    #data[truth.to_s] << prediction
-
     bucket = @data.fetch(truth.to_s, {})
     value = bucket.fetch(pred.to_s, 0)
     bucket[pred.to_s] = value + 1
@@ -49,6 +46,7 @@ class ConfusionMatrix
     @data.reject { |k, v| k == truth }.
       values.
       map { |h| h[truth] || 0  }.
+      concat([0]).
       sum
   end
 
