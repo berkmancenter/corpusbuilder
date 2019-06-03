@@ -90,7 +90,8 @@ CREATE TABLE public.accuracy_line_measurements (
     status integer DEFAULT 0,
     confusion_matrix json DEFAULT '{}'::json,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    accuracy_document_measurement_id uuid
 );
 
 CREATE TABLE public.accuracy_measurements (
@@ -486,5 +487,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20190531133312'),
 ('20190531155841'),
 ('20190531160526'),
-('20190531160946');
+('20190531160946'),
+('20190603155526');
 

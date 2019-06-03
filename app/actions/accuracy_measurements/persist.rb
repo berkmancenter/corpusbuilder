@@ -3,6 +3,50 @@ module AccuracyMeasurements
     attr_accessor :model
 
     def execute
+      model.save!
+
+      model.assigned_document_ids.each do |document_id|
+        create_document_measurement! \
+          document_id: document_id
+      end
+
+      model.reload
+    end
+
+    def create_document_measurement!(document_id:)
+      AccuracyDocumentMeasurement.create!(
+        document_id: document_id,
+        accuracy_measurement: model
+      ).tap do |document_measurement|
+        create_line_measurements! \
+          accuracy_document_measurement: document_measurement
+      end
+    end
+
+    def create_line_measurements!(accuracy_document_measurement:)
+      generate_bootstraps(
+        document: accuracy_document_measurement.document
+      ).map do |zone_ids|
+        zone_ids.each do |zone_id|
+          AccuracyLineMeasurement.create! \
+            accuracy_document_measurement: accuracy_document_measurement,
+            zone_id: zone_id
+        end
+      end
+    end
+
+    def generate_bootstraps(document:)
+      all_zone_ids = Zone.joins(:surface).
+        where(surfaces: { document_id: document.id }).
+        select('zones.id').
+        pluck(:id).
+        uniq
+
+      (1..model.bootstrap_number).to_a.map do |_|
+        (1..model.bootstrap_sample_size).to_a.map do |_|
+          all_zone_ids.sample
+        end
+      end
     end
   end
 end
