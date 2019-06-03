@@ -5,25 +5,32 @@ class ConfusionMatrix
     @data = hash_data
   end
 
-  def observe(truth, prediction)
-    data[truth.to_s] ||= []
-    data[truth.to_s] << prediction
+  def observe(truth, pred)
+    #data[truth.to_s] ||= []
+    #data[truth.to_s] << prediction
+
+    bucket = @data.fetch(truth.to_s, {})
+    value = bucket.fetch(pred.to_s, 0)
+    bucket[pred.to_s] = value + 1
+    @data[truth.to_s] = bucket
+
+    self
   end
 
   def ==(other)
     @data == other.data
   end
 
-  def score(truth, prediction)
-    (@data[truth.to_s] || []).select { |c| c == prediction.to_s }.count
+  def score(truth, pred)
+    @data.fetch(truth.to_s, {}).fetch(pred.to_s, 0)
   end
 
   def predicted_values
-    @data.values.flatten.uniq.sort.reject(&:empty?)
+    @data.values.map(&:keys).flatten.uniq.sort.reject(&:empty?)
   end
 
   def true_values
-    @data.keys.flatten.uniq.sort.reject(&:empty?)
+    @data.keys.uniq.sort.reject(&:empty?)
   end
 
   def all_values
@@ -31,7 +38,7 @@ class ConfusionMatrix
   end
 
   def sum_true
-    @data.keys.inject(0) { |sum, truth| sum + @data[truth].count }
+    @data.keys.inject(0) { |sum, truth| sum + @data.fetch(truth, {}).values.sum }
   end
 
   def sum_all_errors
@@ -39,9 +46,10 @@ class ConfusionMatrix
   end
 
   def sum_errors_for(truth)
-    (@data[truth] || []).inject(0) do |sum, pred|
-      sum + (truth == pred ? 0 : 1)
-    end
+    @data.reject { |k, v| k == truth }.
+      values.
+      map { |h| h[truth] || 0  }.
+      sum
   end
 
   def p_correct_given_true_for(truth)
@@ -87,6 +95,10 @@ class ConfusionMatrix
 normalized edit distance: #{normalized_edit_distance}
       STR
     end
+  rescue
+    puts $!.message
+    puts $!.backtrace.take(10).join("\n")
+    return "..."
   end
 
   class << self
@@ -104,8 +116,11 @@ normalized edit distance: #{normalized_edit_distance}
 
       data = matrices.inject({}) do |sum, matrix|
         matrix.data.each do |truth, predictions|
-          sum[truth] ||= []
-          sum[truth].concat(predictions)
+          sum[truth] ||= {}
+          predictions.each do |pred, count|
+            sum[truth][pred] ||= 0
+            sum[truth][pred] += count
+          end
         end
 
         sum
