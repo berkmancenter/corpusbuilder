@@ -116,5 +116,18 @@ describe AccuracyMeasurements::Process do
       expect(measurement.reload).to \
         be_ready
     end
+
+    it "summarizes each document to contain the sum of confusion matrices of each line" do
+      AccuracyMeasurements::Process.run! \
+        measurement: measurement
+
+      expect(measurement.reload.confusion_matrix).not_to \
+        be_empty
+
+      measurement.accuracy_document_measurements.each do |dm|
+        expect(dm.confusion_matrix).not_to \
+          be_empty
+      end
+    end
   end
 end

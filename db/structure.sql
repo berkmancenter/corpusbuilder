@@ -104,7 +104,8 @@ CREATE TABLE public.accuracy_measurements (
     seed integer,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
-    status integer DEFAULT 0
+    status integer DEFAULT 0,
+    confusion_matrix jsonb DEFAULT '{}'::jsonb
 );
 
 CREATE TABLE public.administrators (
@@ -299,6 +300,28 @@ CREATE TABLE public.pipelines (
     data jsonb DEFAULT '{}'::jsonb
 );
 
+CREATE TABLE public.que_jobs (
+    priority smallint DEFAULT 100 NOT NULL,
+    run_at timestamp with time zone DEFAULT now() NOT NULL,
+    job_id bigint NOT NULL,
+    job_class text NOT NULL,
+    args json DEFAULT '[]'::json NOT NULL,
+    error_count integer DEFAULT 0 NOT NULL,
+    last_error text,
+    queue text DEFAULT ''::text NOT NULL
+);
+
+COMMENT ON TABLE public.que_jobs IS '3';
+
+CREATE SEQUENCE public.que_jobs_job_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.que_jobs_job_id_seq OWNED BY public.que_jobs.job_id;
+
 CREATE TABLE public.revisions (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     document_id uuid NOT NULL,
@@ -332,10 +355,11 @@ CREATE TABLE public.surfaces (
 
 CREATE TABLE public.zones (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    surface_id uuid NOT NULL,
-    area box NOT NULL,
+    document_id uuid,
+    area box,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
+    surface_id uuid NOT NULL,
     position_weight numeric(12,6) DEFAULT 0,
     direction integer DEFAULT 0
 );
@@ -343,6 +367,8 @@ CREATE TABLE public.zones (
 ALTER TABLE ONLY public.administrators ALTER COLUMN id SET DEFAULT nextval('public.administrators_id_seq'::regclass);
 
 ALTER TABLE ONLY public.delayed_jobs ALTER COLUMN id SET DEFAULT nextval('public.delayed_jobs_id_seq'::regclass);
+
+ALTER TABLE ONLY public.que_jobs ALTER COLUMN job_id SET DEFAULT nextval('public.que_jobs_job_id_seq'::regclass);
 
 ALTER TABLE ONLY public.accuracy_document_measurements
     ADD CONSTRAINT accuracy_document_measurements_pkey PRIMARY KEY (id);
@@ -398,6 +424,9 @@ ALTER TABLE ONLY public.ocr_models
 ALTER TABLE ONLY public.pipelines
     ADD CONSTRAINT pipelines_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.que_jobs
+    ADD CONSTRAINT que_jobs_pkey PRIMARY KEY (queue, priority, run_at, job_id);
+
 ALTER TABLE ONLY public.revisions
     ADD CONSTRAINT revisions_pkey PRIMARY KEY (id);
 
@@ -448,6 +477,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20170824121723'),
 ('20170824124437'),
 ('20170828070141'),
+('20170828084422'),
 ('20170828113253'),
 ('20170901132912'),
 ('20170905080141'),
@@ -492,5 +522,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20190531160946'),
 ('20190603155526'),
 ('20190605092634'),
-('20190605134433');
+('20190605134433'),
+('20190605161958');
 

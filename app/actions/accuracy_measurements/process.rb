@@ -30,7 +30,7 @@ module AccuracyMeasurements
     end
 
     def execute_summarize
-      AccuracyLineMeasurement.
+      lms = AccuracyLineMeasurement.
         joins(accuracy_document_measurement: :accuracy_measurement).
         where(
           accuracy_document_measurements: {
@@ -41,11 +41,24 @@ module AccuracyMeasurements
         ).
         uniq.
         each do |line_measurement|
-          AccuracyLineMeasurements::Summarize.run! \
+          AccuracyLineMeasurements::Summarize.run!(
             line_measurement: line_measurement
+          ).result
         end
 
+      sum_up_confusion_matrices(lms)
+
       measurement.ready!
+    end
+
+    def sum_up_confusion_matrices(lms)
+      matrices = lms.map { |lm| [lm.zone_id, lm.confusion_matrix] }.to_h
+
+      doc_matrices = measurement.accuracy_document_measurements.map do |dm|
+        dm.bootstraps.map do |zone_ids|
+          # todo
+        end
+      end
     end
 
     def model_id

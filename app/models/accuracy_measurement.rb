@@ -10,6 +10,8 @@ class AccuracyMeasurement < ApplicationRecord
 
   attr_accessor :assigned_document_ids
 
+  serialize :confusion_matrix, ConfusionMatrix
+
   def document_ids
     assigned_document_ids || accuracy_document_measurements.pluck(:document_id)
   end

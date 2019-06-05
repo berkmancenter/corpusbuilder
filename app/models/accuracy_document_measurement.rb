@@ -5,6 +5,8 @@ class AccuracyDocumentMeasurement < ApplicationRecord
   belongs_to :document
   has_many :accuracy_line_measurements
 
+  serialize :confusion_matrix, ConfusionMatrix
+
   workflow status: [
     :initial,
     :sampling,
