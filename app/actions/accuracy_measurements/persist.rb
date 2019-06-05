@@ -10,6 +10,7 @@ module AccuracyMeasurements
           document_id: document_id
       end
 
+      model.sampled!
       model.reload
     end
 

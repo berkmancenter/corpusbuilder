@@ -9,8 +9,7 @@ class AccuracyLineMeasurement < ApplicationRecord
 
   workflow status: [
     :initial,
-    :ocring,
-    :summarizing,
+    :ocred,
     :ready,
     :error
   ]

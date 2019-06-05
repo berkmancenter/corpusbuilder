@@ -11,14 +11,14 @@ class AccuracyMeasurement < ApplicationRecord
   attr_accessor :assigned_document_ids
 
   def document_ids
-   assigned_document_ids || accuracy_document_measurements.pluck(:document_id)
+    assigned_document_ids || accuracy_document_measurements.pluck(:document_id)
   end
 
   workflow status: [
     :initial,
-    :sampling,
-    :ocring,
-    :summarizing,
+    :sampled,
+    :scheduled,
+    :ocred,
     :ready,
     :error
   ]

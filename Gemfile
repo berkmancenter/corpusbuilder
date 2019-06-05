@@ -44,6 +44,7 @@ gem 'coffee-rails'
 gem 'colorize', require: 'colorize'
 gem 'find_with_order'
 gem 'tabulo'
+gem 'activerecord-import'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

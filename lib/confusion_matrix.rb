@@ -14,6 +14,10 @@ class ConfusionMatrix
     self
   end
 
+  def empty?
+    @data.keys.empty?
+  end
+
   def ==(other)
     @data == other.data
   end

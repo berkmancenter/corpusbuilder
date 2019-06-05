@@ -3,6 +3,25 @@ Trestle.resource(:accuracy_measurements) do
     item :accuracy_measurements, icon: "fa fa-stethoscope"
   end
 
+  controller do
+    def start
+      measurement = admin.find_instance(params)
+
+      ProcessAccuracyMeasurementJob.perform_later \
+        measurement: measurement
+
+      measurement.scheduled!
+
+      flash[:message] = "The model's has been scheduled to be measured"
+
+      redirect_to admin.path(:show, id: measurement)
+    end
+  end
+
+  routes do
+    post :start, on: :member
+  end
+
   build_instance do |attrs, params|
     document_ids = attrs.delete(:document_ids)
 
@@ -48,9 +67,9 @@ Trestle.resource(:accuracy_measurements) do
 
     if measurement.persisted?
       sidebar do
-        if measurement.initial?
+        if measurement.sampled?
           concat tag.div "The process isn't started. After clicking on the below button, you won't be able to edit or delete this measurement until it succeeds or fails.", class: 'alert alert-info'
-          concat link_to 'Start Measuring', '#', class: 'btn btn-primary'
+          concat link_to 'Start Measuring', admin.path(:start, id: measurement.id), class: 'btn btn-primary', method: :post
         end
       end
     end
