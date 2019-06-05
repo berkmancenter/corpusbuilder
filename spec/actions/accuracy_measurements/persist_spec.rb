@@ -51,15 +51,31 @@ describe AccuracyMeasurements::Persist do
   end
 
   it "creates line measurements" do
-    expect(
-      AccuracyMeasurements::Persist.run!(model: measurement).
-        result.
-        accuracy_document_measurements.
-        uniq.
-        map(&:accuracy_line_measurements).
-        flatten.
-        uniq.
-        count
-    ).not_to eq(0)
+    count_lines = AccuracyMeasurements::Persist.run!(model: measurement).
+      result.
+      accuracy_document_measurements.
+      uniq.
+      map(&:accuracy_line_measurements).
+      flatten.
+      uniq.
+      count
+
+    expect(count_lines).to be > 0
+    expect(count_lines).to be <= zones.count
+  end
+
+  it "saves correct numbers of bootstraps for the document measurement" do
+    doc_measurements = AccuracyMeasurements::Persist.run!(model: measurement).
+      result.
+      accuracy_document_measurements
+
+    doc_measurements.each do |doc_measurement|
+      expect(doc_measurement.bootstraps.count).to \
+        eq(measurement.bootstrap_number)
+
+      doc_measurement.bootstraps.each do |zone_ids|
+        expect(zone_ids.count).to eq(measurement.bootstrap_sample_size)
+      end
+    end
   end
 end

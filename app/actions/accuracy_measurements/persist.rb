@@ -24,15 +24,19 @@ module AccuracyMeasurements
     end
 
     def create_line_measurements!(accuracy_document_measurement:)
-      generate_bootstraps(
+      bootstraps = generate_bootstraps(
         document: accuracy_document_measurement.document
-      ).map do |zone_ids|
-        zone_ids.each do |zone_id|
-          AccuracyLineMeasurement.create! \
-            accuracy_document_measurement: accuracy_document_measurement,
-            zone_id: zone_id
-        end
-      end
+      )
+
+      line_measurements = bootstraps.flatten.uniq.map do |zone_id|
+        measurement = AccuracyLineMeasurement.create! \
+          accuracy_document_measurement: accuracy_document_measurement,
+          zone_id: zone_id
+        [ zone_id, measurement ]
+      end.to_h
+
+      accuracy_document_measurement.update_attributes! \
+        bootstraps: bootstraps
     end
 
     def generate_bootstraps(document:)
@@ -42,9 +46,13 @@ module AccuracyMeasurements
         pluck(:id).
         uniq
 
+      zone_count = all_zone_ids.count
+
+      rnd = Random.new(model.seed)
+
       (1..model.bootstrap_number).to_a.map do |_|
         (1..model.bootstrap_sample_size).to_a.map do |_|
-          all_zone_ids.sample
+          all_zone_ids[ rnd.rand(zone_count) ]
         end
       end
     end
