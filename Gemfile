@@ -45,6 +45,7 @@ gem 'colorize', require: 'colorize'
 gem 'find_with_order'
 gem 'tabulo'
 gem 'activerecord-import'
+gem 'turbolinks', '~> 5.2.0'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

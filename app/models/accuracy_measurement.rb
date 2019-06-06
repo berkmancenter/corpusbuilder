@@ -20,7 +20,9 @@ class AccuracyMeasurement < ApplicationRecord
     :initial,
     :sampled,
     :scheduled,
+    :ocring,
     :ocred,
+    :summarizing,
     :ready,
     :error
   ]

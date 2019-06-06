@@ -3,9 +3,9 @@ module AccuracyMeasurements
     attr_accessor :measurement
 
     def execute
-      if measurement.scheduled?
+      if measurement.ocring?
         execute_ocr
-      elsif measurement.ocred?
+      elsif measurement.summarizing?
         execute_summarize
       else
         return errors.add(:measurement, "Should be in the state :scheduled or :ocred")

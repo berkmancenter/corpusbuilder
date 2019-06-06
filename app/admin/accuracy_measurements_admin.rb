@@ -67,30 +67,76 @@ Trestle.resource(:accuracy_measurements) do
 
     if measurement.persisted?
       sidebar do
+        concat tag.div measurement.status, class: "badge measurement-status", data: { status: measurement.status }
+        concat tag.div "&nbsp;".html_safe
+
         if measurement.sampled?
           concat tag.div "The process isn't started. After clicking on the below button, you won't be able to edit or delete this measurement until it succeeds or fails.", class: 'alert alert-info'
           concat link_to 'Start Measuring', admin.path(:start, id: measurement.id), class: 'btn btn-primary', method: :post
+        end
+
+        if measurement.scheduled?
+          concat tag.div "This measurement has been scheduled to be processed. Waiting now for all the sampled lines to be OCRed", class: 'alert alert-info'
+        end
+
+        if measurement.ocring?
+          concat tag.div "OCRing the line samples now", class: 'alert alert-info'
+        end
+
+        if measurement.ocred?
+          concat tag.div "The sampled lines have been OCR'ed. Waiting now to match them against ground truth and compute the metrics", class: 'alert alert-info'
+        end
+
+        if measurement.summarizing?
+          concat tag.div "Computing metrics now", class: 'alert alert-info'
+        end
+
+        if measurement.ready?
+          concat tag.div "All the metrics have been computed"
+          concat tag.span "Normalized grapheme-level edit distance: "
+          concat tag.div "&nbsp;".html_safe
+          concat tag.b('%.6f' % measurement.confusion_matrix.normalized_edit_distance)
         end
       end
     end
   end
 
   table do
-    column :id do |object|
-      link_to excerpt(object.id, '', radius: 4),
-        trestle.edit_accuracy_measurements_admin_path(id: object.id)
-    end
     column :model do |object|
       if object.ocr_model.present?
-        "#{object.ocr_model.backend.to_s.titleize}: #{object.ocr_model.name} (ver #{object.ocr_model.version_code})"
+        backend = object.ocr_model.backend.to_s.titleize
+        "#{backend}<br /><b>#{object.ocr_model.name}</b><br />version: #{object.ocr_model.version_code}".html_safe
       else
         "---"
       end
     end
-    column :bootstrap do |object|
-      "#{object.bootstrap_number} times with #{object.bootstrap_sample_size} lines in sample"
+    column :status do |object|
+      "<span class='badge'>#{object.status}</span>".html_safe
     end
-    column :status
+    column :normalized_edit_distance do |object|
+      if object.confusion_matrix.empty?
+        '---'
+      else
+        '%.6f' % object.confusion_matrix.normalized_edit_distance
+      end
+    end
+    column :documents do |object|
+      links = object.accuracy_document_measurements.map do |dm|
+        link_to dm.document.title, trestle.edit_documents_admin_path(id: dm.document.id)
+      end
+      html = <<-UL
+      <ul>
+        #{ links.map { |link| "<li>#{link}</li>" }.join('') }
+      </ul>
+      UL
+      html.html_safe
+    end
+    column :bootstrap do |object|
+      "Samples: #{object.bootstrap_number}<br />Sample size: #{object.bootstrap_sample_size}".html_safe
+    end
+    column :updated_at do |object|
+      "#{time_ago_in_words object.updated_at} ago"
+    end
     actions
   end
 end
