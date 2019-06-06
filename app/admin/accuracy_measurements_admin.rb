@@ -16,10 +16,15 @@ Trestle.resource(:accuracy_measurements) do
 
       redirect_to admin.path(:show, id: measurement)
     end
+
+    def stats
+      @measurement = admin.find_instance(params)
+    end
   end
 
   routes do
     post :start, on: :member
+    get :stats, on: :member
   end
 
   build_instance do |attrs, params|
@@ -96,6 +101,8 @@ Trestle.resource(:accuracy_measurements) do
           concat tag.span "Normalized grapheme-level edit distance: "
           concat tag.div "&nbsp;".html_safe
           concat tag.b('%.6f' % measurement.confusion_matrix.normalized_edit_distance)
+          concat tag.hr
+          concat link_to 'View Full Report', admin.path(:stats, id: measurement.id), class: 'btn btn-primary'
         end
       end
     end
@@ -112,6 +119,13 @@ Trestle.resource(:accuracy_measurements) do
     end
     column :status do |object|
       "<span class='badge'>#{object.status}</span>".html_safe
+    end
+    column :accuracy do |object|
+      if object.confusion_matrix.empty?
+        '---'
+      else
+        '%.2f%' % ((1 - object.confusion_matrix.normalized_edit_distance) * 100)
+      end
     end
     column :normalized_edit_distance do |object|
       if object.confusion_matrix.empty?

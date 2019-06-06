@@ -1,0 +1,119 @@
+<% title = "Accuracy Metrics Report" %>
+
+<% content_for(:title, title) %>
+
+<header class="content-header">
+  <div class="content-header-title">
+    <h1>
+      <%= title %>
+    </h1>
+  </div>
+</header>
+
+<div class="main-content-area">
+  <div class="main-content-container"><div class="main-content">
+      <div class="table-container">
+        <h4>Setup</h4>
+        <table class="trestle-table">
+          <tbody>
+            <tr>
+              <td><b>OCR Backend</b></td>
+              <td>
+                <%= @measurement.ocr_model.backend.to_s.titleize %>
+              </td>
+            </tr>
+            <tr>
+              <td><b>OCR Model</b></td>
+              <td>
+                <b><%= @measurement.ocr_model.name %></b>
+                <br />
+                version: <%= @measurement.ocr_model.version_code %>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Boostrapping</b></td>
+              <td>
+                Samples: <%= @measurement.bootstrap_number %>
+                <br />
+                Sample size: <%= @measurement.bootstrap_sample_size %>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Updated at</b></td>
+              <td>
+                <%= time_ago_in_words @measurement.updated_at %> ago
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <br />
+        <hr />
+        <br />
+        <h4>General metrics</h4>
+        <table class="trestle-table">
+          <thead>
+            <tr>
+              <th>Scope</th>
+              <th>Accuracy</th>
+              <th>Normalized grapheme-level edit distance</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>All documents</td>
+              <td><%= '%.2f%' % ((1 - @measurement.confusion_matrix.normalized_edit_distance) * 100) %></td>
+              <td><%= @measurement.confusion_matrix.normalized_edit_distance %></td>
+            </tr>
+            <% @measurement.accuracy_document_measurements.each do |dm| %>
+              <tr>
+                <td><%= link_to dm.document.title, trestle.edit_documents_admin_path(id: dm.document.id) %></td>
+                <td><%= '%.2f%' % ((1 - dm.confusion_matrix.normalized_edit_distance) * 100) %></td>
+                <td><%= dm.confusion_matrix.normalized_edit_distance %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <br />
+        <hr />
+        <br />
+        <h4>Confusion Matrix</h4>
+        <% matrix = @measurement.confusion_matrix %>
+        <table class="trestle-table" style="font-size: 0.6em">
+          <thead>
+            <tr>
+              <th></th>
+              <% matrix.all_values.sort.each do |truth| %>
+                <th><%= truth %></th>
+              <% end %>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% matrix.all_values.sort.each do |pred| %>
+              <tr>
+                <td><b><%= pred %></b></td>
+                <% matrix.all_values.sort.each do |truth| %>
+                  <% score = matrix.score(truth, pred)
+                     score_percent = matrix.score_percent(truth, pred)
+                     tooltip = <<-TT
+True: #{truth} (#{Unicode::Name.of(truth)})
+Pred: #{pred} (#{Unicode::Name.of(pred)})
+Predicted ~ #{score.round}
+Occurred in ground truth ~ #{matrix.sum_true_for(truth).round}
+                     TT
+                  %>
+                  <td title="<%= tooltip %>"
+                      style="background-color: rgba(50, 200, 50, <%= score_percent %>); <%= truth == pred ? "border: 2px solid #777;" : "" %>"
+                      >
+                    <%= '%.1f' % (score_percent * 100) %>%
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -13,5 +13,6 @@ set_reload_if_processing_measurement = ->
         Turbolinks.visit(location.toString())
       setTimeout(do_reload, 3000)
 
-document.addEventListener 'turbolinks:load', set_reload_if_processing_measurement
+document.addEventListener 'turbolinks:load', ->
+  set_reload_if_processing_measurement()
 

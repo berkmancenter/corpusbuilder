@@ -39,6 +39,19 @@ class ConfusionMatrix
     @data.fetch(truth.to_s, {}).fetch(pred.to_s, 0)
   end
 
+  def sum_true_for(c)
+    values = @data.fetch(c.to_s, {}).values
+
+    values.count > 0 ? values.sum : 0
+  end
+
+  def score_percent(truth, pred)
+    value = score(truth, pred)
+    all = sum_true_for(truth) * 1.0
+
+    value / all
+  end
+
   def predicted_values
     @data.values.map(&:keys).flatten.uniq.sort.reject(&:empty?)
   end
@@ -48,7 +61,7 @@ class ConfusionMatrix
   end
 
   def all_values
-    (predicted_values + true_values).uniq.sort
+    (predicted_values + true_values).uniq.sort.reject { |c| c == "\n" }
   end
 
   def sum_true
