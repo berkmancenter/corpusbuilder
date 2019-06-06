@@ -14,6 +14,19 @@ class ConfusionMatrix
     self
   end
 
+  def /(rhs)
+    raise ArgumentError, "Division for confusion matrices is supported only for floats" \
+      if !rhs.is_a?(Float)
+
+    cm = ConfusionMatrix.new(self.data.clone)
+    cm.data.each do |_, preds|
+      preds.keys.each do |key|
+        preds[key] /= rhs
+      end
+    end
+    cm
+  end
+
   def empty?
     @data.keys.empty?
   end
@@ -43,7 +56,11 @@ class ConfusionMatrix
   end
 
   def sum_all_errors
-    true_values.inject(0) { |sum, truth| sum + sum_errors_for(truth) }
+    @data.map do |truth, preds|
+      preds.map do |pred, value|
+        truth != pred ? value : 0
+      end
+    end.flatten.sum
   end
 
   def sum_errors_for(truth)
@@ -112,7 +129,7 @@ normalized edit distance: #{normalized_edit_distance}
       object.data.to_json
     end
 
-    def merge(matrices)
+    def sum(matrices)
       raise ArgumentError if !matrices.is_a?(Array) || \
         matrices.any? { |m| !m.is_a?(ConfusionMatrix) }
 
@@ -129,6 +146,10 @@ normalized edit distance: #{normalized_edit_distance}
       end
 
       ConfusionMatrix.new data
+    end
+
+    def mean(matrices)
+      sum(matrices) / (1.0 * matrices.count)
     end
   end
 end

@@ -55,10 +55,19 @@ module AccuracyMeasurements
       matrices = lms.map { |lm| [lm.zone_id, lm.confusion_matrix] }.to_h
 
       doc_matrices = measurement.accuracy_document_measurements.map do |dm|
-        dm.bootstraps.map do |zone_ids|
-          # todo
+        bt_matrices = dm.bootstraps.map do |zone_ids|
+          lm_matrices = zone_ids.map { |zone_id| matrices[zone_id] }
+
+          ConfusionMatrix.sum(lm_matrices)
+        end
+
+        ConfusionMatrix.mean(bt_matrices).tap do |cm|
+          dm.update_attributes! confusion_matrix: cm
         end
       end
+
+      measurement.update_attributes! \
+        confusion_matrix: ConfusionMatrix.mean(doc_matrices)
     end
 
     def model_id
@@ -83,10 +92,11 @@ module AccuracyMeasurements
 
     def line_measurements_with_transcriptions
       memoized do
-        results = OcrModels::TranscribeZones.run! \
+        results = OcrModels::TranscribeZones.run!(
           model_id: model_id,
           zone_ids: zone_ids,
           base_path: Rails.root.join('tmp', 'measurements', measurement.id)
+        ).result
 
         AccuracyLineMeasurement.
           joins(accuracy_document_measurement: :accuracy_measurement).

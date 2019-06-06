@@ -20,7 +20,11 @@ module Documents::Export
 
     def cropped_image
       memoized do
-        image.crop line_box.x, line_box.y, line_box.width, line_box.height
+        image.crop \
+          line_box.x,
+          line_box.y,
+          (line_box.width == 0 ? 10 : line_box.width ),
+          (line_box.height == 0 ? 10 : line_box.height)
       end
     end
 

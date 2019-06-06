@@ -20,7 +20,7 @@ describe ConfusionMatrix do
     end
   end
 
-  describe "merge" do
+  describe "sum" do
     it "sums matrices correctly" do
       matrix1 = ConfusionMatrix.new
       matrix2 = ConfusionMatrix.new
@@ -33,13 +33,13 @@ describe ConfusionMatrix do
       matrix1.observe 'c', 'b'
       matrix1.observe '', 'b'
 
-      matrix1.observe 'a', 'a'
-      matrix1.observe 'a', 'b'
-      matrix1.observe 'b', 'b'
-      matrix1.observe 'c', 'c'
-      matrix1.observe '', 'c'
+      matrix2.observe 'a', 'a'
+      matrix2.observe 'a', 'b'
+      matrix2.observe 'b', 'b'
+      matrix2.observe 'c', 'c'
+      matrix2.observe '', 'c'
 
-      summed = ConfusionMatrix.merge([matrix1, matrix2])
+      summed = ConfusionMatrix.sum([matrix1, matrix2])
 
       expect(summed.score('a','a')).to eq(3)
       expect(summed.score('a','b')).to eq(1)
@@ -55,6 +55,44 @@ describe ConfusionMatrix do
       expect(summed.score('c','b')).to eq(1)
       expect(summed.score('c','c')).to eq(2)
       expect(summed.score('c','')).to eq(0)
+    end
+  end
+
+  describe "mean" do
+    it "works" do
+      matrix1 = ConfusionMatrix.new
+      matrix2 = ConfusionMatrix.new
+
+      matrix1.observe 'a', 'a'
+      matrix1.observe 'a', 'a'
+      matrix1.observe 'a', ''
+      matrix1.observe 'b', ''
+      matrix1.observe 'c', 'c'
+      matrix1.observe 'c', 'b'
+      matrix1.observe '', 'b'
+
+      matrix2.observe 'a', 'a'
+      matrix2.observe 'a', 'b'
+      matrix2.observe 'b', 'b'
+      matrix2.observe 'c', 'c'
+      matrix2.observe '', 'c'
+
+      mean = ConfusionMatrix.mean([matrix1, matrix2])
+
+      expect(mean.score('a','a')).to eq(1.5)
+      expect(mean.score('a','b')).to eq(0.5)
+      expect(mean.score('a','c')).to eq(0)
+      expect(mean.score('a','')).to eq(0.5)
+
+      expect(mean.score('b','a')).to eq(0)
+      expect(mean.score('b','b')).to eq(0.5)
+      expect(mean.score('b','c')).to eq(0)
+      expect(mean.score('b','')).to eq(0.5)
+
+      expect(mean.score('c','a')).to eq(0)
+      expect(mean.score('c','b')).to eq(0.5)
+      expect(mean.score('c','c')).to eq(1)
+      expect(mean.score('c','')).to eq(0)
     end
   end
 
@@ -89,6 +127,25 @@ describe ConfusionMatrix do
       matrix = ConfusionMatrix.load(json)
 
       expect(ConfusionMatrix.dump(matrix)).to eq(json)
+    end
+  end
+
+  describe "normalized_edit_distance" do
+    it "works" do
+      matrix1 = ConfusionMatrix.new
+
+      matrix1.observe 'a', 'a'
+      matrix1.observe 'a', 'a'
+      matrix1.observe 'a', ''
+      matrix1.observe 'b', ''
+      matrix1.observe 'c', 'c'
+      matrix1.observe 'c', 'b'
+      matrix1.observe '', 'b'
+
+      expect(matrix1.sum_all_errors).to eq(4)
+      expect(matrix1.sum_true).to eq(7)
+      expect(matrix1.normalized_edit_distance).to \
+        eq(4 / 7.0)
     end
   end
 

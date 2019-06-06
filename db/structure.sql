@@ -77,7 +77,8 @@ CREATE TABLE public.accuracy_document_measurements (
     status integer DEFAULT 0,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
-    bootstraps jsonb DEFAULT '[]'::jsonb
+    bootstraps jsonb DEFAULT '[]'::jsonb,
+    confusion_matrix jsonb
 );
 
 CREATE TABLE public.accuracy_document_measurements_line_measurements (
@@ -523,5 +524,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20190603155526'),
 ('20190605092634'),
 ('20190605134433'),
-('20190605161958');
+('20190605161958'),
+('20190606082543');
 
