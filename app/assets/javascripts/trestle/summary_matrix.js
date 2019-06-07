@@ -23,8 +23,9 @@ class SummaryMatrix {
     if(this._tooltip === undefined) {
       this._tooltip = $('<div></div>');
 
-      this._tooltip.css('background-color', 'rgba(0, 0, 0, 0.8)');
-      this._tooltip.css('color', 'white');
+      this._tooltip.css('background-color', 'white');
+      this._tooltip.css('color', '#444');
+      this._tooltip.css('box-shadow', '0px 0px 8px rgba(0, 0, 0, 0.1), 2px 2px 2px rgba(0, 0, 0, 0.25)');
       this._tooltip.css('padding', '10px');
       this._tooltip.css('position', 'absolute');
       this._tooltip.css('left', '0px');
@@ -104,37 +105,43 @@ class SummaryMatrix {
 
         for(let pred of this.allValues) {
           let score = this.getScore(truth, pred);
-          let color = truth == pred ? `rgba(40, 200, 40, ${score})` : `rgba(200, 40, 40, ${score})`;
-          let strokeColor = '#eee';
-          let strokeWidth = truth == pred ? 1 : 0;
 
-          let { rect: box, label: label } = this.drawBox(predIx + 1, truthIx + 1, {
-            value: '',
-            fillColor: color,
-            strokeColor: strokeColor,
-            strokeWidth: strokeWidth
-          });
+          if(score > 0 || truth == pred) {
+            let color = truth == pred ? `rgba(40, 200, 40, ${score})` : `rgba(200, 40, 40, ${score})`;
+            if(score == 0) {
+              color = 'white';
+            }
+            let strokeColor = '#eee';
+            let strokeWidth = truth == pred ? 1 : 0;
 
-          box.data = {
-            truth: truth,
-            pred: pred,
-            score: score,
-            col: truthIx + 1,
-            row: predIx + 1
-          };
+            let { rect: box, label: label } = this.drawBox(predIx + 1, truthIx + 1, {
+              value: '',
+              fillColor: color,
+              strokeColor: strokeColor,
+              strokeWidth: strokeWidth
+            });
 
-          let self = this;
+            box.data = {
+              truth: truth,
+              pred: pred,
+              score: score,
+              col: truthIx + 1,
+              row: predIx + 1
+            };
 
-          box.onMouseEnter = function(event) {
-            let data = event.target.data;
+            let self = this;
 
-            self.select(data);
-          }
+            box.onMouseEnter = function(event) {
+              let data = event.target.data;
 
-          box.onMouseLeave = function(event) {
-            let data = event.target.data;
+              self.select(data);
+            }
 
-            self.deselect(data);
+            box.onMouseLeave = function(event) {
+              let data = event.target.data;
+
+              self.deselect(data);
+            }
           }
 
           predIx++;
@@ -149,12 +156,25 @@ class SummaryMatrix {
     return this._uiValueCells;
   }
 
+  getHex(value) {
+    let cp = value.codePointAt(0);
+
+    if(cp !== undefined && cp !== null) {
+      let hex = value.codePointAt(0).toString(16);
+
+      return "\\u" + "0000".substring(0, 4 - hex.length) + hex;
+    }
+    else {
+      return '---';
+    }
+  }
+
   select(data) {
     this.deselect();
 
     this.tooltip.html(`
-      Ground Truth: <b>${data.truth}</b><br />
-      Predicted: <b>${data.pred}</b><br />
+      Ground Truth: <b>${data.truth}</b> (${this.getHex(data.truth)})<br />
+      Predicted: <b>${data.pred}</b> (${this.getHex(data.pred)})<br />
       % of predictions: <b>${this.getScore(data.truth, data.pred).toFixed(4) * 100}%</b><br />
     `);
     this.tooltip.show();
