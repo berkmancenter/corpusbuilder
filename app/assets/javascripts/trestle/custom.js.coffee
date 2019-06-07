@@ -1,6 +1,10 @@
-#= require turbolinks
+#= require_tree ./
 
-set_reload_if_processing_measurement = ->
+setup_summary_matrices = ->
+  $('.summary_matrix').each (i, el) ->
+    new window.SummaryMatrix(el)
+
+setup_reload_if_processing_measurement = ->
   measurement_status = $('#edit_accuracy_measurement .measurement-status').data('status')
 
   switch measurement_status
@@ -14,5 +18,6 @@ set_reload_if_processing_measurement = ->
       setTimeout(do_reload, 3000)
 
 document.addEventListener 'turbolinks:load', ->
-  set_reload_if_processing_measurement()
-
+  console.log('Turbolinks load')
+  setup_reload_if_processing_measurement()
+  setup_summary_matrices()
