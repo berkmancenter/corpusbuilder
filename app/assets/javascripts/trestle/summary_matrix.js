@@ -6,6 +6,7 @@ class SummaryMatrix {
     this.div = $(this.el);
     this.canvas = $('canvas', this.div);
     this.data = this.div.data('summary');
+    this.mode = 'p_pred_given_correct';
 
     this.div.css('position', 'relative');
     this.canvas.height(this.canvas.width());
@@ -15,8 +16,47 @@ class SummaryMatrix {
 
     paper.setup(this.canvas[0]);
 
+    this.modeSelect.show();
     this.tooltip.hide();
+
     this.draw()
+  }
+
+  modePLabel(truth, pred) {
+    if(this.mode == 'p_pred_given_correct') {
+      return `P( prediction = "${pred}" | correct = "${truth}" )`;
+    }
+    else {
+      return `P( correct = "${truth}" | prediction = "${pred}" )`;
+    }
+  }
+
+  get modeSelect() {
+    if(this._modeSelect === undefined) {
+      let wrapper = $('<div></div>');
+      let label = $('<label>Mode:</label>');
+
+      this._modeSelect = $(`
+        <select>
+          <option value="p_pred_given_correct" selected>P(prediction | correct)</option>
+          <option value="p_correct_given_pred">P(correct | prediction)</option>
+        </select>
+        `
+      );
+
+      this._modeSelect.css('margin-left', '10px');
+      let self = this;
+
+      this._modeSelect.change(function(e) {
+        self.setMode($(e.currentTarget).val());
+      });
+
+      wrapper.append(label);
+      wrapper.append(this._modeSelect);
+      this.div.prepend(wrapper);
+    }
+
+    return this._modeSelect;
   }
 
   get tooltip() {
@@ -89,10 +129,47 @@ class SummaryMatrix {
     return this._sumGroundTruth[truth];
   }
 
-  getScore(truth, pred) {
-    let value = (this.data[truth] || {})[pred] || 0;
+  getSumPredictedFor(pred) {
+    if(this._sumPrecicted === undefined) {
+      this._sumPrecicted = {};
+    }
 
-    return value / this.getSumGroundTruthFor(truth);
+    if(this._sumPrecicted[pred] === undefined) {
+      let sum = 0;
+
+      for(let truth in this.data) {
+        sum = sum + (this.data[truth][pred] || 0);
+      }
+
+      this._sumPrecicted[pred] = sum;
+    }
+
+    return this._sumPrecicted[pred];
+  }
+
+  setMode(mode) {
+    if(mode !== this.mode) {
+      this.mode = mode;
+      this.uiValueCells.remove();
+      this._uiValueCells = undefined;
+      this.uiHeaders.remove();
+      this._uiValueCells = undefined;
+
+      this.draw();
+    }
+  }
+
+  getScore(truth, pred) {
+    if(this.mode == 'p_pred_given_correct') {
+      let value = (this.data[truth] || {})[pred] || 0;
+
+      return value / this.getSumGroundTruthFor(truth);
+    }
+    else {
+      let value = (this.data[truth] || {})[pred] || 0;
+
+      return value / this.getSumPredictedFor(pred);
+    }
   }
 
   get uiValueCells() {
@@ -175,7 +252,7 @@ class SummaryMatrix {
     this.tooltip.html(`
       Ground Truth: <b>${data.truth}</b> (${this.getHex(data.truth)})<br />
       Predicted: <b>${data.pred}</b> (${this.getHex(data.pred)})<br />
-      % of predictions: <b>${this.getScore(data.truth, data.pred).toFixed(4) * 100}%</b><br />
+      <span>${this.modePLabel(data.truth, data.pred)}:</span> <b>${this.getScore(data.truth, data.pred).toFixed(4) * 100}%</b><br />
     `);
     this.tooltip.show();
 
