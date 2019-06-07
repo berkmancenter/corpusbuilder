@@ -7,13 +7,35 @@ class SummaryMatrix {
     this.canvas = $('canvas', this.div);
     this.data = this.div.data('summary');
 
+    this.div.css('position', 'relative');
     this.canvas.height(this.canvas.width());
+    this.canvas.css('cursor', 'pointer');
 
     this.options = options;
 
     paper.setup(this.canvas[0]);
 
+    this.tooltip.hide();
     this.draw()
+  }
+
+  get tooltip() {
+    if(this._tooltip === undefined) {
+      this._tooltip = $('<div></div>');
+
+      this._tooltip.css('background-color', 'rgba(0, 0, 0, 0.8)');
+      this._tooltip.css('color', 'white');
+      this._tooltip.css('padding', '10px');
+      this._tooltip.css('position', 'absolute');
+      this._tooltip.css('left', '0px');
+      this._tooltip.css('top', '0px');
+      this._tooltip.css('border-radius', '2px');
+      this._tooltip.css('font-size', '0.95em');
+
+      this.div.append(this._tooltip);
+    }
+
+    return this._tooltip;
   }
 
   get allValues() {
@@ -30,8 +52,14 @@ class SummaryMatrix {
 
       let ix = 1;
       for(let value of this.allValues) {
-        this.drawBox(0, ix, { value: value });
-        this.drawBox(ix, 0, { value: value });
+        let top = this.drawBox(0, ix, { value: value });
+        let left = this.drawBox(ix, 0, { value: value });
+
+        top['rect'].name = `top-${value}-rect`;
+        left['rect'].name = `left-${value}-rect`
+
+        top['label'].name = `top-${value}-label`;
+        left['label'].name = `left-${value}-label`
 
         ix++;
       }
@@ -80,12 +108,34 @@ class SummaryMatrix {
           let strokeColor = '#eee';
           let strokeWidth = truth == pred ? 1 : 0;
 
-          this.drawBox(predIx + 1, truthIx + 1, {
+          let { rect: box, label: label } = this.drawBox(predIx + 1, truthIx + 1, {
             value: '',
             fillColor: color,
             strokeColor: strokeColor,
             strokeWidth: strokeWidth
           });
+
+          box.data = {
+            truth: truth,
+            pred: pred,
+            score: score,
+            col: truthIx + 1,
+            row: predIx + 1
+          };
+
+          let self = this;
+
+          box.onMouseEnter = function(event) {
+            let data = event.target.data;
+
+            self.select(data);
+          }
+
+          box.onMouseLeave = function(event) {
+            let data = event.target.data;
+
+            self.deselect(data);
+          }
 
           predIx++;
         }
@@ -97,6 +147,59 @@ class SummaryMatrix {
     }
 
     return this._uiValueCells;
+  }
+
+  select(data) {
+    this.deselect();
+
+    this.tooltip.html(`
+      Ground Truth: <b>${data.truth}</b><br />
+      Predicted: <b>${data.pred}</b><br />
+      % of predictions: <b>${this.getScore(data.truth, data.pred).toFixed(4) * 100}%</b><br />
+    `);
+    this.tooltip.show();
+
+    let valuesCount = this.allValues.length;
+
+    let top = data.row * this.cellHeight + 20;
+    let left = data.col * this.cellWidth + 20;
+
+    if(top + this.tooltip.height() > this.viewSize.height) {
+      top = (data.row - 1) * this.cellHeight - this.tooltip.height() - 20;
+    }
+
+    if(left + this.tooltip.width() > this.viewSize.width) {
+      left = (data.col - 1) * this.cellWidth - this.tooltip.width() - 20;
+    }
+
+    this.tooltip.css('top', top);
+    this.tooltip.css('left', left);
+
+    this._selected = data;
+  }
+
+  deselect(data = undefined) {
+    if(data === undefined) {
+      data = this._selected;
+    }
+
+    if(data === undefined) {
+      return;
+    }
+
+    this.tooltip.hide();
+
+    this._selected = undefined;
+  }
+
+  getForData(data) {
+    let topRect = this.uiHeaders.children[`top-${data.truth}-rect`];
+    let leftRect = this.uiHeaders.children[`left-${data.pred}-rect`];
+
+    let topLabel = this.uiHeaders.children[`top-${data.truth}-label`];
+    let leftLabel = this.uiHeaders.children[`left-${data.pred}-label`];
+
+    return { topRect: topRect, topLabel: topLabel, leftRect, leftLabel };
   }
 
   get cellVerticalCount() {
@@ -131,17 +234,17 @@ class SummaryMatrix {
     rect.strokeWidth = options['strokeWidth'];
     rect.fillColor = options['fillColor'];
 
+    let label = undefined;
+
     if(options['value'] !== undefined) {
-      rect.addChild(
-        new paper.PointText({
-          point: [position.x, position.y],
-          content: options['value'],
-          fontSize: `${this.cellHeight}px`
-        })
-      );
+      label = new paper.PointText({
+        point: [position.x, position.y + this.cellHeight],
+        content: options['value'],
+        fontSize: `${this.cellHeight}px`
+      })
     }
 
-    return rect;
+    return { rect: rect, label: label };
   }
 
   drawHeader(where) {
@@ -149,8 +252,8 @@ class SummaryMatrix {
   }
 
   draw() {
-    this.uiHeaders;
     this.uiValueCells;
+    this.uiHeaders.bringToFront();
 
     return paper.view.draw();
   }
