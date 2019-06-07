@@ -153,7 +153,7 @@ class SummaryMatrix {
       this.uiValueCells.remove();
       this._uiValueCells = undefined;
       this.uiHeaders.remove();
-      this._uiValueCells = undefined;
+      this._uiHeaders = undefined;
 
       this.draw();
     }
