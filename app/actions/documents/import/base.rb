@@ -52,9 +52,9 @@ module Documents
         image_paths.map do |path|
           File.open(path) do |image_file|
             image = Images::Create.run!(
-              file: image_file,
+              file_id: Files::Stash.run!(file: image_file).result.id,
               name: Pathname.new(path).basename.to_s
-            ).result.first
+            ).result.first.object
             image.processed_image = File.open(image.image_scan.file.file)
             image.save!
             image
@@ -86,8 +86,7 @@ module Documents
           images: images,
           metadata: metadata.inject({}) { |memo,(k,v)| memo[k.to_sym] = v; memo }.merge(languages: ["eng"]),
           app: app,
-          editor_email: editor_email,
-          backend: "import"
+          editor_email: editor_email
         ).result
       end
     end
