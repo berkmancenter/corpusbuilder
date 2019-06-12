@@ -1,6 +1,6 @@
 class OcrBackend::Tesseract < OcrBackend::Base
   def ocr_list(image_file_paths:, ocr_models:, format: 'hocr')
-    model = ocr_models.map(&:filename).map { |m| m.split('.').reverse.drop(1).reverse.join('.') }.join("+")
+    model = ocr_models.map(&:filename).join("+")
     out_path = TempfileUtils.next_path 'tesseract_out'
 
     images_list = Tempfile.new 'images_list'
