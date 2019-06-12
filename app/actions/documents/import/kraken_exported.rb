@@ -20,15 +20,7 @@ module Documents
     end
 
     def parsed_csv_entries(image)
-      file_image = MiniMagick::Image.open(image.processed_image.file.file)
-      image_width = file_image.width
-      image_height = file_image.height
-
-      area = Area.new \
-        ulx: 0,
-        lrx: image_width,
-        uly: 0,
-        lry: image_height
+      area = all_word_areas(image).first
 
       image_path = Pathname.new(image.processed_image.file.file)
       txt_path = Pathname.new(working_path).
@@ -42,11 +34,11 @@ module Documents
     def all_word_areas(image)
       @_all_word_areas ||= {}
       @_all_word_areas[ image.id ] ||= -> {
-        file_image = MiniMagick::Image.open(image.processed_image.file.file)
-        image_width = file_image.width
-        image_height = file_image.height
+        path = image.processed_image.file.file
 
-        [ Area.new(ulx: 0, lrx: image_width, uly: 0, lry: image_height) ]
+        w, h = `file #{path}`[/\d+ x \d+/].split('x').map(&:strip).map(&:to_i)
+
+        [ Area.new(ulx: 0, lrx: w, uly: 0, lry: h) ]
       }.call
     end
 

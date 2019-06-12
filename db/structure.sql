@@ -94,7 +94,10 @@ CREATE TABLE public.accuracy_line_measurements (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     accuracy_document_measurement_id uuid,
-    transcription text DEFAULT ''::text
+    transcription text DEFAULT ''::text,
+    ground_truth text DEFAULT ''::text,
+    processed_image character varying,
+    alignment jsonb DEFAULT '[]'::jsonb
 );
 
 CREATE TABLE public.accuracy_measurements (
@@ -525,5 +528,8 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20190605092634'),
 ('20190605134433'),
 ('20190605161958'),
-('20190606082543');
+('20190606082543'),
+('20190612070032'),
+('20190612070317'),
+('20190612090852');
 

@@ -19,11 +19,17 @@ module Documents
       # classes: surface, zone, grapheme, all of which are
       # instance of Parser::Element
 
-      file_image = MiniMagick::Image.open(image.processed_image.file.file)
-      image_width = file_image.width
-      image_height = file_image.height
+      path = image.processed_image.file.file
+
+      image_width, image_height = \
+        `file #{path}`[/\d+ x \d+/].split('x').map(&:strip).map(&:to_i)
+
+     #file_image = MiniMagick::Image.open(image.processed_image.file.file)
+     #image_width = file_image.width
+     #image_height = file_image.height
 
       Enumerator::Lazy.new([0]) do |result, _|
+        time "elements_for #{image.id}" do
         result << Parser::Element.new(
           name: "surface",
           area: Area.new(
@@ -87,6 +93,7 @@ module Documents
             end
           end
         end
+      end
       end
     end
 

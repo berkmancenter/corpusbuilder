@@ -1,6 +1,8 @@
 class AccuracyLineMeasurement < ApplicationRecord
   include Workflow
 
+  mount_uploader :processed_image, ProcessedImageUploader
+
   belongs_to :zone
 
   serialize :confusion_matrix, ConfusionMatrix

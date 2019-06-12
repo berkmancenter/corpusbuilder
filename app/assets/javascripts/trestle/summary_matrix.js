@@ -93,7 +93,7 @@ class SummaryMatrix {
 
       let ix = 1;
       for(let value of this.allValues) {
-        let top = this.drawBox(0, ix, { value: value });
+        let top = this.drawBox(-0.5, ix, { value: value });
         let left = this.drawBox(ix, 0, { value: value });
 
         top['rect'].name = `top-${value}-rect`;

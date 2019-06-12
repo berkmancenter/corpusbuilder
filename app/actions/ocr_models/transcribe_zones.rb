@@ -12,8 +12,14 @@ module OcrModels
         ocr_models: [model],
         format: 'txt'
 
+      ix = 0
+
       zone_ids.zip(results).inject({}) do |res, arr|
-        res[arr.first] = arr.last || ''
+        res[arr.first] = {
+          result: arr.last.gsub(/\n/, '') || '',
+          image_path: image_paths[ix]
+        }
+        ix += 1
         res
       end
     end
@@ -46,7 +52,9 @@ module OcrModels
 
     def zones
       memoized do
-        Zone.find_with_order zone_ids
+        records = Zone.find(zone_ids).group_by(&:id)
+
+        zone_ids.map { |id| records[id].first }
       end
     end
 

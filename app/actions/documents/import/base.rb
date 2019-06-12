@@ -5,9 +5,11 @@ module Documents
     finally :remove_temp_directory
 
     def execute
-      pages.each do |page|
+      pages.each_with_index do |page, ix|
         Documents::Compile.run! image_ocr_result: OpenStruct.new(elements: page.elements.to_a),
           document: document, image_id: page.image.id
+
+        Rails.logger.info "Compiled page #{ix+1} / #{pages.count}"
       end
 
       document
@@ -53,7 +55,8 @@ module Documents
           File.open(path) do |image_file|
             image = Images::Create.run!(
               file_id: Files::Stash.run!(file: image_file).result.id,
-              name: Pathname.new(path).basename.to_s
+              name: Pathname.new(path).basename.to_s,
+              transaction: false
             ).result.first.object
             image.processed_image = File.open(image.image_scan.file.file)
             image.save!

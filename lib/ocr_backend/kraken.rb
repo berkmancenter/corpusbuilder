@@ -1,19 +1,31 @@
 class OcrBackend::Kraken < OcrBackend::Base
-  def ocr(image_file_path:, ocr_models:, out_path:, format: 'hocr')
+  def ocr(image_file_paths:, ocr_models:, format: 'hocr')
     model = ocr_models.map(&:filename).map do |n|
       "-m #{n.gsub(".mlmodel", "") + ".mlmodel"}"
     end.join " "
 
-    format_switch = format == 'hocr' ? '-h' : '-t'
+    image_file_paths.each_slice(10).map do |paths|
+      inputs = paths.map do |path|
+        "-i #{path} #{path}.#{format}"
+      end.join(' ')
 
-    command = "nice -19 kraken -i #{image_file_path} #{out_path} segment ocr #{format_switch} #{model}"
+      format_switch = format == 'hocr' ? '-h' : '-t'
 
-    run_command(command).tap do |result|
-      if !result.status.success?
-        raise StandardError,
-          "Kraken returned abnormally. Status: #{result.status}. Output: #{result.output}"
+      command = "nice -19 kraken #{inputs} segment ocr #{format_switch} #{model}"
+
+      run_command(command).tap do |result|
+        if !result.status.success?
+          msg = "Kraken returned abnormally. Status: #{result.status}. Output: #{result.output}"
+
+          Rails.logger.debug msg
+          raise StandardError, msg
+        end
       end
-    end
+
+      paths.map do |path|
+        File.read "#{path}.#{format}"
+      end
+    end.flatten
   end
 end
 

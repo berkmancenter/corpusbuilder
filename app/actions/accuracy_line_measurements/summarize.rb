@@ -5,6 +5,8 @@ module AccuracyLineMeasurements
     def execute
       line_measurement.update_attributes! \
         confusion_matrix: confusion_matrix,
+        alignment: alignments,
+        ground_truth: ground_truth,
         status: :ready
 
       line_measurement.reload
@@ -25,7 +27,7 @@ module AccuracyLineMeasurements
         aligns = Shared::NeedlemanWunsch.run!(
           from: ground_truth.chars,
           to: predicted.chars,
-          gap_penalty: -1 * ground_truth.chars.count,
+          gap_penalty: -1,
           score_fn: -> (left, right) { left == right ? 1 : -1 }
         ).result
 

@@ -19,6 +19,17 @@ Trestle.resource(:accuracy_measurements) do
 
     def stats
       @measurement = admin.find_instance(params)
+      @page = params[:page] || 0
+      @per = params[:per] || 10
+
+      @lines = AccuracyLineMeasurement.joins(:accuracy_document_measurement).
+        where(
+          accuracy_document_measurements: {
+            accuracy_measurement_id: @measurement.id
+          }
+        ).
+        page(@page).
+        per(@per)
     end
   end
 

@@ -82,6 +82,49 @@
           confusion_matrix: @measurement.confusion_matrix,
           mode: :score
         %>
+        <h4>Lines</h4>
+        <table class="trestle-table lines-table">
+          <% @lines.each do |line| %>
+            <tbody>
+              <tr>
+                <td>Image:</td>
+                <td>
+                  <%= image_tag line.processed_image.url %>
+                </td>
+              </tr>
+              <tr>
+                <td>Ground Truth:</td>
+                <td>
+                  <%= line.ground_truth %>
+                </td>
+              </tr>
+              <tr>
+                <td>Prediction:</td>
+                <td>
+                  <%= line.transcription %>
+                </td>
+              </tr>
+              <tr>
+                <td>Needleman-Wunsch Alignments:</td>
+                <td>
+                  <table class="alignments-table">
+                    <tr>
+                      <% line.alignment.map(&:first).each_with_index do |gt, ix| %>
+                        <td class="<%= gt.nil? ? 'empty' : '' %> <%= gt != line.alignment[ix].last ? 'wrong' : '' %>"><%= gt || '∅' %></td>
+                      <% end %>
+                    </tr>
+                    <tr>
+                      <% line.alignment.map(&:last).each_with_index do |p, ix| %>
+                        <td class="<%= p.nil? ? 'empty' : '' %> <%= p != line.alignment[ix].first ? 'wrong' : '' %>"><%= p || '∅' %></td>
+                      <% end %>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          <% end %>
+        </table>
+        <%= paginate @lines %>
       </div>
     </div>
   </div>

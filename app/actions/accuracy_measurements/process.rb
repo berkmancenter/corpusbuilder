@@ -20,12 +20,7 @@ module AccuracyMeasurements
     end
 
     def execute_ocr
-      AccuracyLineMeasurement.import \
-        line_measurements_with_transcriptions,
-        on_duplicate_key_update: {
-          conflict_target: [:id],
-          columns: [:transcription, :status]
-        }
+      line_measurements_with_transcriptions.each(&:save!)
       measurement.ocred!
     end
 
@@ -110,7 +105,9 @@ module AccuracyMeasurements
           uniq.
           map do |line_measurement|
             line_measurement.transcription = \
-              results[line_measurement.zone_id]
+              results[line_measurement.zone_id][:result]
+            line_measurement.processed_image = \
+              File.new(results[line_measurement.zone_id][:image_path])
             line_measurement.status = :ocred
             line_measurement
           end
