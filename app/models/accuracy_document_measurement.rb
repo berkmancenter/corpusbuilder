@@ -3,7 +3,7 @@ class AccuracyDocumentMeasurement < ApplicationRecord
 
   belongs_to :accuracy_measurement
   belongs_to :document
-  has_many :accuracy_line_measurements
+  has_many :accuracy_line_measurements, dependent: :destroy
 
   serialize :confusion_matrix, ConfusionMatrix
 

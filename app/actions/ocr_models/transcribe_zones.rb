@@ -37,6 +37,7 @@ module OcrModels
                 document: zone.surface.document,
                 dir_path: base_path,
                 image: image_data,
+                use_zone_box: true,
                 save: true
             end
           end

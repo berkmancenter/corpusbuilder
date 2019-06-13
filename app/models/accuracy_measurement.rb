@@ -2,7 +2,7 @@ class AccuracyMeasurement < ApplicationRecord
   include Workflow
 
   belongs_to :ocr_model
-  has_many :accuracy_document_measurements
+  has_many :accuracy_document_measurements, dependent: :destroy
 
   validates :ocr_model, presence: true
   validates :bootstrap_sample_size, presence: true

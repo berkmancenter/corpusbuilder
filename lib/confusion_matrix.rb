@@ -104,33 +104,10 @@ class ConfusionMatrix
 
   def inspect
     if @data.values.flatten.empty?
-      "(empty)"
+      "#<ConfusionMatrix:#{object_id} empty>"
     else
-      table = Tabulo::Table.new(predicted_values + ['']) do |t|
-        t.add_column('') do |pred|
-          if pred == ''
-            'Ø'
-          else
-            pred
-          end
-        end
-        all_values.each do |truth|
-          t.add_column(truth) { |pred| score(truth, pred) }
-        end
-        t.add_column('Ø') { |pred| score('', pred) }
-      end
-
-      <<-STR
-
-#{table}
-#{table.horizontal_rule}
-normalized edit distance: #{normalized_edit_distance}
-      STR
+      "#<ConfusionMatrix:#{object_id} sum_all_errors:#{sum_all_errors} normalized_edit_distance:#{normalized_edit_distance}>"
     end
-  rescue
-    puts $!.message
-    puts $!.backtrace.take(10).join("\n")
-    return "..."
   end
 
   class << self

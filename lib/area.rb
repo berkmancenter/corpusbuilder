@@ -43,6 +43,10 @@ class Area
       lry: lry
   end
 
+  def area
+    width * height
+  end
+
   def width
     @lrx - @ulx
   end

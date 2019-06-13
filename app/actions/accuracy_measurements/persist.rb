@@ -44,6 +44,7 @@ module AccuracyMeasurements
       all_zone_ids = Zone.joins(:surface).
         where(surfaces: { document_id: document.id }).
         where("width(zones.area) > 100").
+        where("height(zones.area) > 10").
         select('zones.id').
         pluck(:id).
         uniq
