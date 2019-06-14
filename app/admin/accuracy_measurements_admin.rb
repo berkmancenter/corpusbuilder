@@ -19,17 +19,31 @@ Trestle.resource(:accuracy_measurements) do
 
     def stats
       @measurement = admin.find_instance(params)
+      @current_facet = params[:accuracy_document_measurement_id].present? ? \
+        @measurement.accuracy_document_measurements.find(params[:accuracy_document_measurement_id]) : \
+        @measurement
       @page = params[:page] || 0
       @per = params[:per] || 10
 
-      @lines = AccuracyLineMeasurement.joins(:accuracy_document_measurement).
-        where(
-          accuracy_document_measurements: {
-            accuracy_measurement_id: @measurement.id
-          }
-        ).
-        page(@page).
-        per(@per)
+      @lines = if params[:accuracy_document_measurement_id].nil?
+        AccuracyLineMeasurement.joins(:accuracy_document_measurement).
+          where(
+            accuracy_document_measurements: {
+              accuracy_measurement_id: @measurement.id
+            }
+          ).
+          page(@page).
+          per(@per)
+      else
+        AccuracyLineMeasurement.joins(:accuracy_document_measurement).
+          where(
+            accuracy_document_measurements: {
+              id: params[:accuracy_document_measurement_id]
+            }
+          ).
+          page(@page).
+          per(@per)
+      end
     end
   end
 

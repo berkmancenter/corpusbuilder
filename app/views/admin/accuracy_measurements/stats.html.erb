@@ -61,13 +61,27 @@
 
           <tbody>
             <tr>
-              <td>All documents</td>
+              <td>
+                <% if params[:accuracy_document_measurement_id].nil? %>
+                  All documents
+                <% else %>
+                  <%= link_to "All documents",
+                    admin.path(:stats, id: @measurement.id) %>
+                <% end %>
+              </td>
               <td><%= '%.2f%' % ((1 - @measurement.confusion_matrix.normalized_edit_distance) * 100) %></td>
               <td><%= @measurement.confusion_matrix.normalized_edit_distance %></td>
             </tr>
             <% @measurement.accuracy_document_measurements.each do |dm| %>
               <tr>
-                <td><%= link_to dm.document.title, trestle.edit_documents_admin_path(id: dm.document.id) %></td>
+                <td>
+                  <% if params[:accuracy_document_measurement_id] == dm.id %>
+                    <%= dm.document.title %>
+                  <% else %>
+                    <%= link_to dm.document.title,
+                      admin.path(:stats, id: @measurement.id, accuracy_document_measurement_id: dm.id) %>
+                  <% end %>
+                </td>
                 <td><%= '%.2f%' % ((1 - dm.confusion_matrix.normalized_edit_distance) * 100) %></td>
                 <td><%= dm.confusion_matrix.normalized_edit_distance %></td>
               </tr>
@@ -79,7 +93,7 @@
         <br />
         <h4>Summary Matrix</h4>
         <%= summary_matrix \
-          confusion_matrix: @measurement.confusion_matrix,
+          confusion_matrix: @current_facet.confusion_matrix,
           mode: :score
         %>
         <h4>Lines</h4>
@@ -105,7 +119,7 @@
                 </td>
               </tr>
               <tr>
-                <td>Needleman-Wunsch Alignments:</td>
+                <td>Alignments:</td>
                 <td>
                   <table class="alignments-table">
                     <tr>
