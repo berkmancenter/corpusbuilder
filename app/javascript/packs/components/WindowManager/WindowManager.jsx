@@ -103,7 +103,7 @@ export default class WindowManager extends React.Component {
     }
 
     get zoomLevel() {
-        return Math.round(window.outerWidth * 100 / window.innerWidth) / 100;
+        return 1; // Math.round(window.outerWidth * 100 / window.innerWidth) / 100;
     }
 
     get paneWidth() {
@@ -372,7 +372,7 @@ export default class WindowManager extends React.Component {
         };
 
         return (
-            <div className="corpusbuilder-global-options" style={ optionsStyles }>
+            <div className="corpusbuilder-global-options">
                 <div className="corpusbuilder-global-options-viewers">
                     <Button toggles={ true } toggled={ this.hasOneViewer } onClick={ this.setViewers.bind(this, 1) }>
                         <i className="fa fa-align-justify"></i>
