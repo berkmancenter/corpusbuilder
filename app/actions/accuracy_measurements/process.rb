@@ -8,7 +8,7 @@ module AccuracyMeasurements
       elsif measurement.summarizing?
         execute_summarize
       else
-        return errors.add(:measurement, "Should be in the state :scheduled or :ocred")
+        return errors.add(:measurement, "Should be in the state :ocring or :summarizing")
       end
 
       if !measurement.ready?

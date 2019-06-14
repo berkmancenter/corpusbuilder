@@ -51,16 +51,20 @@ describe AccuracyMeasurements::Process do
   end
 
   describe "ocring" do
+    before(:each) do
+      measurement.ocring!
+    end
+
     let(:line_measurements_transcriptions) do
       line_measurements.
-        map { |lm| [lm.zone_id, lm.zone_id] }.
+        map { |lm| [lm.zone_id, { result: lm.zone_id, image_path: Rails.root.join('spec/support/files/file_1.png') } ] }.
         to_h
     end
 
     before(:each) do
       allow(OcrModels::TranscribeZones).to \
         receive(:run!).
-        and_return(line_measurements_transcriptions)
+        and_return(OpenStruct.new(result: line_measurements_transcriptions))
 
       expect_any_instance_of(AccuracyMeasurements::Process).to \
         receive(:execute_ocr).
@@ -97,7 +101,7 @@ describe AccuracyMeasurements::Process do
         receive(:text).
         and_return("abud")
 
-      measurement.ocred!
+      measurement.summarizing!
     end
 
     it "works" do
