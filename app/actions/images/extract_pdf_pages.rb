@@ -15,9 +15,7 @@ module Images
 
       `#{command}`
 
-      Dir[basedir.to_s + "*"].sort.map do |path|
-        File.new path
-      end
+      Dir[basedir.to_s + "*"].sort
     end
 
     def sanitized_name
