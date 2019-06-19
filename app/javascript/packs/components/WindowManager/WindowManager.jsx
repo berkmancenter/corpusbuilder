@@ -44,6 +44,9 @@ export default class WindowManager extends React.Component {
     dockMode = false;
 
     @observable
+    lastScrollTop = 0;
+
+    @observable
     _numberOfViewers = 2;
 
     get numberOfViewers() { return this._numberOfViewers; }
@@ -99,12 +102,20 @@ export default class WindowManager extends React.Component {
         return this.props.host;
     }
 
+    get zoomLevel() {
+        return 1; // Math.round(window.outerWidth * 100 / window.innerWidth) / 100;
+    }
+
     get paneWidth() {
         if(this.dockMode) {
-            return Math.floor(document.body.offsetWidth / this.numberOfViewers) - 40 - 20;
+            return this.zoomLevel * (
+              Math.floor(document.body.offsetWidth / this.numberOfViewers) - 40 - 20
+            );
         }
         else {
-            return Math.floor(this.host.offsetWidth / this.numberOfViewers) - 40;
+            return this.zoomLevel * (
+              Math.floor(this.host.offsetWidth / this.numberOfViewers) - 40
+            );
         }
     }
 
@@ -221,7 +232,19 @@ export default class WindowManager extends React.Component {
     }
 
     onToggleDockMode(isOn) {
+        let self = this;
+
+        if(isOn) {
+            self.lastScrollTop = document.documentElement.scrollTop;
+        }
+
         this.dockMode = isOn;
+
+        setTimeout(function() {
+            if(!isOn) {
+                document.documentElement.scrollTop = self.lastScrollTop;
+            }
+        }, 100);
     }
 
     renderDocumentPanes() {
@@ -283,15 +306,19 @@ export default class WindowManager extends React.Component {
     /* Computes the correct font-size to apply to graphemes
      * given the font and ratio - to make them visually fill
      * their union bounding box */
-    measureFontSize(graphemes, font, ratio) {
+    measureFontSize(graphemes, font, ratio, wordBoxes = null) {
+        if(wordBoxes === null || wordBoxes === undefined) {
+          wordBoxes = GraphemesUtils.wordBoxes(graphemes);
+        }
+
         let ids = graphemes.map(g => g.id).join('');
-        let key = `${ids}-${font.fontName}-${ratio}`;
+        let boxesKey = wordBoxes.map((i) => `${i.lrx}-${i.lry}-${i.ulx}-${i.uly}`).join('|');
+        let key = `${ids}-${font.fontName}-${ratio}-${boxesKey}`;
 
         if(font.ready && this.measureCache.has(key)) {
             return this.measureCache.get(key);
         }
 
-        let wordBoxes = GraphemesUtils.wordBoxes(graphemes);
         let lineBox = BoxesUtils.union(wordBoxes);
         let lineHeight = (lineBox.lry - lineBox.uly) * ratio;
 
@@ -340,6 +367,10 @@ export default class WindowManager extends React.Component {
     }
 
     renderNavigation() {
+        let optionsStyles = {
+            width: `${ this.zoomLevel * 100 }%`
+        };
+
         return (
             <div className="corpusbuilder-global-options">
                 <div className="corpusbuilder-global-options-viewers">
@@ -374,7 +405,7 @@ export default class WindowManager extends React.Component {
                     }
                     <span className="corpusbuilder-global-options-separator"></span>
                     <Button toggles={ true } toggled={ this.dockMode } onToggle={ this.onToggleDockMode.bind(this) }>
-                        <i className="fa fa-expand"></i>
+                        <i className={"fa " + (this.dockMode ? "fa-compress" : "fa-expand")}></i>
                     </Button>
                 </div>
             </div>

@@ -186,7 +186,11 @@ module Documents
     end
 
     def create_development_dumps?
-      true
+      false
+    end
+
+    def transaction?
+      false
     end
   end
 end

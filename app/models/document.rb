@@ -7,7 +7,7 @@ class Document < ApplicationRecord
   has_many :revisions, dependent: :destroy
   has_many :branches, through: :revisions
   has_many :surfaces, dependent: :destroy
-  has_many :images
+  has_many :images, dependent: :destroy
   belongs_to :app
 
   def master

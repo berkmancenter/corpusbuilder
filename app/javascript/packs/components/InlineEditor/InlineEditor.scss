@@ -4,8 +4,14 @@
     &-dir {
       text-align: center;
 
+      span {
+        font-size: 0.75em;
+        padding-right: 1em;
+        color: #999;
+      }
+
       .corpusbuilder-button {
-        font-size: 11px;
+        font-size: 14px;
         line-height: 12px;
         height: 20px;
       }
@@ -29,17 +35,32 @@
     }
 
     &-messages {
-      font-size: 12px;
+      font-size: 14px;
       text-align: center;
       background: white;
-      color: #780000;
       margin-bottom: 10px;
       position: absolute;
-      top: -17px;
+      top: -28px;
       width: 100%;
       margin-left: 0px;
       left: 0px;
       padding: 5px;
+      padding-top: 10px;
+
+      span {
+        color: white;
+        background: rgba(200, 20, 20, 0.5);
+        border: 1px solid rgba(200, 20, 20, 0.1);
+        padding: 3px;
+        border-radius: 2px;
+      }
+
+      button {
+        font-size: 12px !important;
+        height: 20px !important;
+        line-height: 20px !important;
+        margin-left: 5px !important;
+      }
     }
 
     &-shell {
@@ -82,7 +103,9 @@
     }
 
     &-help {
-      font-size: 12px;
+      font-size: 10px;
+      text-shadow: 1px 1px rgba(0, 0, 0, 0.15);
+      box-shadow: inset 1px 1px rgba(0, 0, 0, 0.08);
       display: inline-block;
       position: absolute;
       right: 0px;

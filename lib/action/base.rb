@@ -6,6 +6,8 @@ module Action
     include Memoizable
     include Benchmarkable
 
+    attr_accessor :transaction
+
     def self.finally(*method_symbols)
       @__finally ||= []
 
@@ -38,8 +40,12 @@ module Action
       end
 
       if instance.valid?
-        App.connection.transaction do
-          result = instance.time "[Action] #{instance.class.name}#execute", true do
+        instance.time "[Action] #{instance.class.name}#execute", true do
+          result = if instance.transaction?
+            App.connection.transaction do
+              instance.execute
+            end
+          else
             instance.execute
           end
           instance.instance_variable_set "@_result", result
@@ -89,6 +95,10 @@ module Action
 
     def create_development_dumps?
       false
+    end
+
+    def transaction?
+      @transaction || true
     end
 
     def dump_path

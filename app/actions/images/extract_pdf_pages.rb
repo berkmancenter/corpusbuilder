@@ -9,11 +9,13 @@ module Images
     def execute
       basedir = Rails.root.join "tmp", (sanitized_name + SecureRandom.uuid)
 
-      `pdfimages -png '#{file.path}' '#{basedir}'`
+      command = "pdfimages -p -png '#{file.path}' '#{basedir}'"
 
-      Dir[basedir.to_s + "*"].map do |path|
-        File.new path
-      end
+      Rails.logger.info "Extracting images from PDF with: #{command}"
+
+      `#{command}`
+
+      Dir[basedir.to_s + "*"].sort
     end
 
     def sanitized_name

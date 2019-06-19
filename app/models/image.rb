@@ -5,7 +5,7 @@ class Image < ApplicationRecord
 
   belongs_to :document, required: false
 
-  validates :image_scan, presence: true
+  #validates :image_scan, presence: true
 
   def has_document?
     document_id.present?

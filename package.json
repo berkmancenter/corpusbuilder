@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "autoprefixer": "^7.1.2",
+    "axios": "^0.18.0",
     "babel-core": "^6.26.0",
     "babel-loader": "7.x",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
@@ -29,6 +30,7 @@
     "mobx": "^3.3.1",
     "mobx-react": "^4.3.3",
     "node-sass": "^4.5.3",
+    "paper": "^0.12.1",
     "path-complete-extname": "^0.1.0",
     "postcss-loader": "^2.0.6",
     "postcss-smart-import": "^0.7.5",

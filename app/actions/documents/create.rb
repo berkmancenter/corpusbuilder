@@ -6,7 +6,6 @@ module Documents
     validates :images, presence: true
     validates :metadata, presence: true
     validates :editor_email, presence: true
-    validates :ocr_model_ids, presence: true
 
     validate :editor_exists
 

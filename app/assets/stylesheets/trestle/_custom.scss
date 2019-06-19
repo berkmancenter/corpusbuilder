@@ -6,3 +6,31 @@
 //
 //    @import "trestle/custom/my_custom_css";
 //
+
+table.lines-table {
+  img {
+    height: 25px;
+  }
+
+  td {
+    background: white;
+  }
+
+  td:first-child {
+    font-size: 0.8em;
+    color: #bbb;
+  }
+}
+
+table.alignments-table {
+  background: white;
+  border-collapse: collapse;
+
+  td {
+    padding: 2px;
+  }
+
+  td.wrong {
+    background-color: rgba(200, 0, 0, 0.25);
+  }
+}

@@ -70,6 +70,48 @@ SET default_tablespace = '';
 
 SET default_with_oids = false;
 
+CREATE TABLE public.accuracy_document_measurements (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    accuracy_measurement_id uuid,
+    document_id uuid,
+    status integer DEFAULT 0,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    bootstraps jsonb DEFAULT '[]'::jsonb,
+    confusion_matrix jsonb
+);
+
+CREATE TABLE public.accuracy_document_measurements_line_measurements (
+    accuracy_line_measurement_id bigint NOT NULL,
+    accuracy_document_measurement_id bigint NOT NULL
+);
+
+CREATE TABLE public.accuracy_line_measurements (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    zone_id uuid,
+    status integer DEFAULT 0,
+    confusion_matrix json DEFAULT '{}'::json,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    accuracy_document_measurement_id uuid,
+    transcription text DEFAULT ''::text,
+    ground_truth text DEFAULT ''::text,
+    processed_image character varying,
+    alignment jsonb DEFAULT '[]'::jsonb
+);
+
+CREATE TABLE public.accuracy_measurements (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    ocr_model_id uuid NOT NULL,
+    bootstrap_sample_size integer NOT NULL,
+    bootstrap_number integer NOT NULL,
+    seed integer,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    status integer DEFAULT 0,
+    confusion_matrix jsonb DEFAULT '{}'::jsonb
+);
+
 CREATE TABLE public.administrators (
     id bigint NOT NULL,
     email character varying,
@@ -307,6 +349,15 @@ ALTER TABLE ONLY public.administrators ALTER COLUMN id SET DEFAULT nextval('publ
 
 ALTER TABLE ONLY public.delayed_jobs ALTER COLUMN id SET DEFAULT nextval('public.delayed_jobs_id_seq'::regclass);
 
+ALTER TABLE ONLY public.accuracy_document_measurements
+    ADD CONSTRAINT accuracy_document_measurements_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.accuracy_line_measurements
+    ADD CONSTRAINT accuracy_line_measurements_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.accuracy_measurements
+    ADD CONSTRAINT accuracy_measurements_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY public.administrators
     ADD CONSTRAINT administrators_pkey PRIMARY KEY (id);
 
@@ -375,6 +426,10 @@ CREATE INDEX index_zones_on_area ON public.zones USING gist (area);
 
 CREATE INDEX index_zones_on_surface_id ON public.zones USING btree (surface_id);
 
+CREATE INDEX line_document_document_ix ON public.accuracy_document_measurements_line_measurements USING btree (accuracy_document_measurement_id);
+
+CREATE INDEX line_document_line_ix ON public.accuracy_document_measurements_line_measurements USING btree (accuracy_line_measurement_id);
+
 CREATE TRIGGER graphemes_revisions_drop BEFORE DELETE ON public.revisions FOR EACH ROW EXECUTE PROCEDURE public.graphemes_revisions_drop_trigger();
 
 SET search_path TO "$user", public;
@@ -434,5 +489,18 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20180803154451'),
 ('20181009101443'),
 ('20181023114004'),
-('20181029151147');
+('20181029151147'),
+('20190531120036'),
+('20190531133312'),
+('20190531155841'),
+('20190531160526'),
+('20190531160946'),
+('20190603155526'),
+('20190605092634'),
+('20190605134433'),
+('20190605161958'),
+('20190606082543'),
+('20190612070032'),
+('20190612070317'),
+('20190612090852');
 

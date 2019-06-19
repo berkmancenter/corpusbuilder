@@ -4,8 +4,8 @@ module Images
 
     def execute
       images = page_files.map do |page_file|
-        Image.create! image_scan: page_file,
-          name: File.basename(page_file.path)
+        Image.create! image_scan: File.new(page_file),
+          name: File.basename(page_file)
       end.to_a
 
       Image::Short.represent images

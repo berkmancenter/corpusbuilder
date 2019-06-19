@@ -4,7 +4,7 @@ FactoryGirl.define do
   end
   factory :image do
     name { generate(:image_name) }
-    image_scan ""
+    image_scan { Rack::Test::UploadedFile.new(Rails.root.join('spec/support/files/file_1.png'), 'image/png') }
   end
 end
 

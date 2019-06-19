@@ -1,6 +1,8 @@
 require_relative 'boot'
 
 require 'rails/all'
+require 'tabulo'
+require "unicode/name"
 
 Bundler.require(*Rails.groups)
 

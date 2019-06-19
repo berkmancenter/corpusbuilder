@@ -1,0 +1,145 @@
+<% title = "Accuracy Metrics Report" %>
+
+<% content_for(:title, title) %>
+
+<header class="content-header">
+  <div class="content-header-title">
+    <h1>
+      <%= title %>
+    </h1>
+  </div>
+</header>
+
+<div class="main-content-area">
+  <div class="main-content-container"><div class="main-content">
+      <div class="table-container">
+        <h4>Setup</h4>
+        <table class="trestle-table">
+          <tbody>
+            <tr>
+              <td><b>OCR Backend</b></td>
+              <td>
+                <%= @measurement.ocr_model.backend.to_s.titleize %>
+              </td>
+            </tr>
+            <tr>
+              <td><b>OCR Model</b></td>
+              <td>
+                <b><%= @measurement.ocr_model.name %></b>
+                <br />
+                version: <%= @measurement.ocr_model.version_code %>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Boostrapping</b></td>
+              <td>
+                Samples: <%= @measurement.bootstrap_number %>
+                <br />
+                Sample size: <%= @measurement.bootstrap_sample_size %>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Updated at</b></td>
+              <td>
+                <%= time_ago_in_words @measurement.updated_at %> ago
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <br />
+        <hr />
+        <br />
+        <h4>General metrics</h4>
+        <table class="trestle-table">
+          <thead>
+            <tr>
+              <th>Scope</th>
+              <th>Accuracy</th>
+              <th>Normalized grapheme-level edit distance</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                <% if params[:accuracy_document_measurement_id].nil? %>
+                  All documents
+                <% else %>
+                  <%= link_to "All documents",
+                    admin.path(:stats, id: @measurement.id) %>
+                <% end %>
+              </td>
+              <td><%= '%.2f%' % ((1 - @measurement.confusion_matrix.normalized_edit_distance) * 100) %></td>
+              <td><%= @measurement.confusion_matrix.normalized_edit_distance %></td>
+            </tr>
+            <% @measurement.accuracy_document_measurements.each do |dm| %>
+              <tr>
+                <td>
+                  <% if params[:accuracy_document_measurement_id] == dm.id %>
+                    <%= dm.document.title %>
+                  <% else %>
+                    <%= link_to dm.document.title,
+                      admin.path(:stats, id: @measurement.id, accuracy_document_measurement_id: dm.id) %>
+                  <% end %>
+                </td>
+                <td><%= '%.2f%' % ((1 - dm.confusion_matrix.normalized_edit_distance) * 100) %></td>
+                <td><%= dm.confusion_matrix.normalized_edit_distance %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <br />
+        <hr />
+        <br />
+        <h4>Summary Matrix</h4>
+        <%= summary_matrix \
+          confusion_matrix: @current_facet.confusion_matrix,
+          mode: :score
+        %>
+        <h4>Lines</h4>
+        <table class="trestle-table lines-table">
+          <% @lines.each do |line| %>
+            <tbody>
+              <tr>
+                <td>Image:</td>
+                <td>
+                  <%= image_tag line.processed_image.url %>
+                </td>
+              </tr>
+              <tr>
+                <td>Ground Truth:</td>
+                <td>
+                  <%= line.ground_truth %>
+                </td>
+              </tr>
+              <tr>
+                <td>Prediction:</td>
+                <td>
+                  <%= line.transcription %>
+                </td>
+              </tr>
+              <tr>
+                <td>Alignments:</td>
+                <td>
+                  <table class="alignments-table">
+                    <tr>
+                      <% line.alignment.map(&:first).each_with_index do |gt, ix| %>
+                        <td class="<%= gt.nil? ? 'empty' : '' %> <%= gt != line.alignment[ix].last ? 'wrong' : '' %>"><%= gt || '∅' %></td>
+                      <% end %>
+                    </tr>
+                    <tr>
+                      <% line.alignment.map(&:last).each_with_index do |p, ix| %>
+                        <td class="<%= p.nil? ? 'empty' : '' %> <%= p != line.alignment[ix].first ? 'wrong' : '' %>"><%= p || '∅' %></td>
+                      <% end %>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          <% end %>
+        </table>
+        <%= paginate @lines %>
+      </div>
+    </div>
+  </div>
+</div>

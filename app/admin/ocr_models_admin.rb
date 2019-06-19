@@ -1,6 +1,6 @@
 Trestle.resource(:ocr_models) do
   menu do
-    item :ocr_models, icon: "fa fa-star"
+    item :ocr_models, icon: "fa fa-calculator", label: 'Models'
   end
 
   build_instance do |attrs, params|
@@ -35,6 +35,17 @@ Trestle.resource(:ocr_models) do
     end
 
     action.result
+  end
+
+  table do
+    column :id do |model|
+      link_to excerpt(model.id, '', radius: 4),
+        trestle.edit_ocr_models_admin_path(id: model.id)
+    end
+    column :backend
+    column :name
+    column :languages
+    actions
   end
 
   form do |ocr_model|

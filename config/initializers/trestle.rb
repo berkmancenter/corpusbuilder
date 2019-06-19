@@ -59,6 +59,8 @@ Trestle.configure do |config|
   #
   # config.helper :all
 
+  config.helpers = [AdminHelper]
+
   # Register callbacks to run before, after or around all Trestle actions.
   #
   # config.before_action do |controller|
@@ -84,7 +86,7 @@ Trestle.configure do |config|
   # Toggle whether Turbolinks is enabled within the admin.
   # Defaults to true if Turbolinks is available.
   #
-  # config.turbolinks = false
+  config.turbolinks = true
 
   # Specify the parameters that should persist across requests when
   # paginating or reordering. Defaults to [:sort, :order, :scope].

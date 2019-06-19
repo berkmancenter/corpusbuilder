@@ -1,41 +1,39 @@
 module Images
   class OCR < Action::Base
-    attr_accessor :image, :ocr_models
+    attr_accessor :images, :ocr_models
 
-    validates :image, presence: true
+    validates :images, presence: true
 
     def execute
-      file_path = backend_action.run!(
-        image: image,
-        ocr_models: ocr_models
-      ).result
+      results = ocr_backend.ocr \
+        image_file_paths: image_file_paths,
+        ocr_models: ocr_models,
+        format: 'hocr'
 
-      Rails.logger.debug "The OCR results file returned: #{file_path}"
+      images.zip(results).map do |image, hocr_string|
+        path = TempfileUtils.next_path('hocr_output')
+        File.write path, hocr_string
 
-      if !File.exist?(file_path)
-        raise StandardError, "Tesseract seems to have returned the results but the outpout file has not been found. Output file path: #{file_path}"
+        file = File.new(path)
+
+        image.hocr = file
+        image.save!
+
+        file.close
       end
 
-      file = File.new(file_path)
-      image.hocr = file
-      image.save!
-      file.close
-      image
+      images
     end
 
-    def backend
-      ocr_models.first.backend
-    end
-
-    def backend_action
-      case backend.to_s
-      when 'tesseract'
-        Images::TesseractOCR
-      when 'kraken'
-        Images::KrakenOCR
-      else
-        raise ArgumentError, "Backend should be tesseract or kraken but #{backend} was given"
+    def image_file_paths
+      memoized do
+        images.map(&:processed_image).
+          map(&:path)
       end
+    end
+
+    def ocr_backend
+      ocr_models.first.ocr_backend
     end
   end
 end

@@ -1,15 +1,27 @@
 Trestle.resource(:ocr_model_samples) do
   menu do
-    item :ocr_model_samples, icon: "fa fa-star"
+    item :ocr_model_samples, icon: "fa fa-image", label: 'Model Image Examples'
   end
 
   # Customize the table columns shown on the index view.
   #
-  # table do
-  #   column :name
-  #   column :created_at, align: :center
-  #   actions
-  # end
+  table do
+    column :id do |sample|
+      link_to excerpt(sample.id, '', radius: 4),
+        trestle.edit_ocr_model_samples_admin_path(id: sample.id)
+    end
+    column :model do |sample|
+      if sample.ocr_model.present?
+        "#{sample.ocr_model.backend}: #{sample.ocr_model.name}"
+      else
+        "---"
+      end
+    end
+    column :sample_image do |sample|
+      image_tag sample.sample_image
+    end
+    actions
+  end
 
   # Customize the form fields shown on the new/edit views.
   #

@@ -22,6 +22,10 @@ export default class BoxesUtils {
                box.lry > 0;
     }
 
+    static area(box) {
+        return (box.lrx - box.ulx) * (box.lry - box.uly);
+    }
+
     static union(boxes) {
         if(boxes.length === 0) {
             return BoxesUtils.empty();

@@ -13,12 +13,10 @@ export default class FloatingWindow extends React.Component {
 
     lastPositionWhenInvisible = null;
 
-    @computed
     get offsetTop() {
         return this.props.offsetTop || 0;
     }
 
-    @computed
     get mousePosition() {
         if(this.lastPositionWhenInvisible === null) {
             this.lastPositionWhenInvisible = GetMousePosition.run(this.props.appState, { select: '' });
@@ -27,7 +25,6 @@ export default class FloatingWindow extends React.Component {
         return this.lastPositionWhenInvisible;
     }
 
-    @computed
     get adjustedTop() {
         return this.mousePosition.y + this.offsetTop;
     }

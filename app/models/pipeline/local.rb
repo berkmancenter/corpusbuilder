@@ -66,24 +66,12 @@ class Pipeline::Local < Pipeline
   def ocr
     Rails.logger.debug "Doing ocr in the local pipeline"
 
-    next_image, one_after = document.images.lazy.select do |i|
-      !i.ocred?
-    end.take(2).to_a
+    Images::OCR.run!(
+      images: document.images.to_a,
+      ocr_models: document.ocr_models
+    )
 
-    Rails.logger.debug "Next: #{next_image.try(:name)} One After: #{one_after.try(:name)}"
-
-    if next_image.present?
-      Rails.logger.debug "Doing OCR on: #{next_image.name}"
-
-      Images::OCR.run!(
-        image: next_image,
-        ocr_models: document.ocr_models
-      )
-      return one_after.present? ? :more : :done
-    else
-      return :done
-    end
-
+    return :done
   end
 
   def cleanup!
