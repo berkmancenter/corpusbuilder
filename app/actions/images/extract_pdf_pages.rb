@@ -9,13 +9,20 @@ module Images
     def execute
       basedir = Rails.root.join "tmp", (sanitized_name + SecureRandom.uuid)
 
-      command = "pdfimages -p -png '#{file.path}' '#{basedir}'"
+      basedir.mkpath
+
+      #command = "pdfimages -p -png '#{file.path}' '#{basedir}'"
+      command = "gs -q -dNOPAUSE -sDEVICE=png256 -r300 -sOutputFile='#{basedir}/#{Pathname.new(file.path).basename}-%07d.png' '#{file.path}' -c quit"
 
       Rails.logger.info "Extracting images from PDF with: #{command}"
 
       `#{command}`
 
-      Dir[basedir.to_s + "*"].sort
+      Dir[basedir.to_s + "/*"].sort.select do |path|
+        ImageHelper.image_area(image_path: path).width > 100
+      end.tap do |paths|
+        Rails.logger.info "Extracted #{paths.count} pages"
+      end
     end
 
     def sanitized_name
