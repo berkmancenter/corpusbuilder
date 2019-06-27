@@ -11,7 +11,7 @@ class OcrBackend::Kraken < OcrBackend::Base
 
       format_switch = format == 'hocr' ? '-h' : '-t'
 
-      command = "nice -19 kraken #{inputs} segment ocr #{format_switch} #{model}"
+      command = "nice -19 kraken #{inputs} binarize segment ocr #{format_switch} #{model}"
 
       run_command(command).tap do |result|
         if !result.status.success?
