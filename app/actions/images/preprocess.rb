@@ -5,7 +5,7 @@ module Images
     validates :image, presence: true
 
     def execute
-      #binarize
+      binarize
       deskew
       dewarp
       store
@@ -19,7 +19,7 @@ module Images
     end
 
     def deskew
-      Leptonica::Tools.deskew image.image_scan.path, deskewed_temp_path
+      Leptonica::Tools.deskew binarized_temp_path, deskewed_temp_path
     end
 
     def dewarp
