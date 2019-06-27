@@ -42,7 +42,7 @@ module Images
             name: name
           ).result
         else
-          [ attachment ]
+          [ attachment.path ]
         end
       end
     end
