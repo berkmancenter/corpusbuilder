@@ -378,7 +378,7 @@ export default class Uploader extends React.Component {
 
     onFileUnpickClicked(file) {
         this.files = this.files.filter((f) => {
-            return f.file !== file;
+            return f.file.name !== file.name;
         });
     }
 
@@ -540,7 +540,7 @@ export default class Uploader extends React.Component {
                     <div key="explain" className="corpusbuilder-uploader-explain">
                       No similar document has been found for given metadata. Please click next to continue
                     </div>,
-                    <div className="corpusbuilder-uploader-similar-documents-list">
+                    <div key="docItems" className="corpusbuilder-uploader-similar-documents-list">
                         { docItems }
                     </div>
                 ];
@@ -561,6 +561,7 @@ export default class Uploader extends React.Component {
 
             if(this.files.length > 0) {
                 files = <SortableFileList items={ this.files }
+                                          pressDelay={ 200 }
                                           onSortEnd={ this.onSortEnd.bind(this) }
                                           onFileUnpickClicked={ this.onFileUnpickClicked.bind(this) }
                                           />;
