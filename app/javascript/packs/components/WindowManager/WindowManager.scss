@@ -20,10 +20,6 @@
     z-index: 9999999999999999;
   }
 
-  &-tooltip::after {
-    border-top-color: white !important;
-  }
-
   &-ruler {
     color: transparent;
     height: 0px;
