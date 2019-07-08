@@ -145,7 +145,8 @@ export default class WindowManager extends React.Component {
         return [
             {
                 name: 'follow-next',
-                title: 'Follow Next',
+                title: 'Sequential',
+                tooltip: 'Display pages sequentially',
                 arrange: ((_countAll, ix = 0, _page = null) => {
                     let page = _page === null ? this.viewers[ ix ].page : _page;
                     let countAll = _countAll || this.lastCountAll;
@@ -166,6 +167,7 @@ export default class WindowManager extends React.Component {
             {
                 name: 'follow-current',
                 title: 'Follow Page',
+                tooltip: 'Consecutive viewers show the same page',
                 arrange: ((countAll, ix = 0, _page = null) => {
                     let page = _page === null ? this.viewers[ ix ].page : _page;
 
@@ -176,7 +178,8 @@ export default class WindowManager extends React.Component {
             },
             {
                 name: 'independent',
-                title: 'Independent',
+                title: 'Select Pages Independently',
+                tooltip: 'Choose each page you want to view independently of sequence. What you choose is what you see in each panel',
                 arrange: () => { /* no-op */ }
             }
         ];
@@ -375,15 +378,19 @@ export default class WindowManager extends React.Component {
         return (
             <div className="corpusbuilder-global-options">
                 <div className="corpusbuilder-global-options-viewers">
-                    <Button toggles={ true } toggled={ this.hasOneViewer } onClick={ this.setViewers.bind(this, 1) }>
+                    <span className="label">Pages Layout:</span>
+                    <Button tooltip="Single page view"
+                            toggles={ true } toggled={ this.hasOneViewer } onClick={ this.setViewers.bind(this, 1) }>
                         <i className="fa fa-align-justify"></i>
                     </Button>
-                    <Button toggles={ true } toggled={ this.hasTwoViewers } onClick={ this.setViewers.bind(this, 2) }>
+                    <Button tooltip="Two pages view"
+                            toggles={ true } toggled={ this.hasTwoViewers } onClick={ this.setViewers.bind(this, 2) }>
                         <i className="fa fa-align-justify"></i>
                         &nbsp;
                         <i className="fa fa-align-justify"></i>
                     </Button>
-                    <Button toggles={ true } toggled={ this.hasThreeViewers } onClick={ this.setViewers.bind(this, 3) }>
+                    <Button tooltip="Three pages view"
+                            toggles={ true } toggled={ this.hasThreeViewers } onClick={ this.setViewers.bind(this, 3) }>
                         <i className="fa fa-align-justify"></i>
                         &nbsp;
                         <i className="fa fa-align-justify"></i>
@@ -396,6 +403,7 @@ export default class WindowManager extends React.Component {
                             return (
                                 <Button toggles={ true }
                                         toggled={ this.currentMode.name === mode.name }
+                                        tooltip={ mode.tooltip }
                                         onToggle={ this.onModeSwitch.bind(this, mode) }
                                         key={ ix }
                                         >
@@ -405,7 +413,8 @@ export default class WindowManager extends React.Component {
                         })
                     }
                     <span className="corpusbuilder-global-options-separator"></span>
-                    <Button toggles={ true } toggled={ this.dockMode } onToggle={ this.onToggleDockMode.bind(this) }>
+                    <Button tooltip='Toggles full screen mode'
+                            toggles={ true } toggled={ this.dockMode } onToggle={ this.onToggleDockMode.bind(this) }>
                         <i className={"fa " + (this.dockMode ? "fa-compress" : "fa-expand")}></i>
                     </Button>
                 </div>

@@ -71,6 +71,20 @@
     padding: 10px;
     font-size: 14px;
 
+    span.label {
+      font-size: 12px;
+      border-radius: 2px;
+      font-weight: normal;
+      padding: 5px;
+      display: inline-block;
+      text-shadow: 1px 1px rgba(0, 0, 0, 0.15);
+      -webkit-box-shadow: inset 1px 1px rgba(0, 0, 0, 0.08);
+      box-shadow: inset 1px 1px rgba(0, 0, 0, 0.08);
+      color: white;
+      background-color: #cacaca;
+      margin-right: 10px;
+    }
+
     &-separator {
       width: 10px;
       display: inline-block;
