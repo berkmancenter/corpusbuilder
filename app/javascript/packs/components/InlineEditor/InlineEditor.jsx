@@ -746,13 +746,16 @@ export default class InlineEditor extends React.Component {
                         }
                         <div className="corpusbuilder-inline-editor-dir">
                             <span>Text Direction:</span>
-                            <Button onToggle={ this.onToggleDir.bind(this, "ltr") }
+                            <Button
+                              tooltip="Select to choose the left-to-right direction of the text"
+                              onToggle={ this.onToggleDir.bind(this, "ltr") }
                               toggles={ true }
                               toggled={ this.dir === "ltr" }
                               >
                               ⇢
                             </Button>
                             <Button onToggle={ this.onToggleDir.bind(this, "rtl") }
+                              tooltip="Select to choose the right-to-left direction of the text"
                               toggles={ true }
                               toggled={ this.dir === "rtl" }
                               >

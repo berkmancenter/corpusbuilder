@@ -1,6 +1,9 @@
 import React from 'react';
+import ReactTooltip from 'react-tooltip';
+
 import { observable, computed } from 'mobx';
 import { observer } from 'mobx-react';
+
 import styles from './Button.scss';
 
 export default class Button extends React.Component {
@@ -19,10 +22,14 @@ export default class Button extends React.Component {
 
     componentWillMount() {
         this.initProps(this.props);
+
+        ReactTooltip.rebuild();
     }
 
     componentWillUpdate(props) {
         this.initProps(props);
+
+        ReactTooltip.rebuild();
     }
 
     initProps(props) {
@@ -84,6 +91,7 @@ export default class Button extends React.Component {
             return (
                 <button className={ this.classes }
                         onClick={ this.onClick.bind(this) }
+                        data-tip={ this.props.tooltip }
                         disabled={ this.disabled ? 'disabled' : '' }
                         >
                     { this.props.children }

@@ -3,8 +3,9 @@ import React from 'react';
 import State from '../../stores/State'
 
 import { observable, computed } from 'mobx';
-import { Provider, observer } from 'mobx-react'
-import { Viewer } from '../Viewer'
+import { Provider, observer } from 'mobx-react';
+import ReactTooltip from 'react-tooltip';
+import { Viewer } from '../Viewer';
 
 import { Button } from '../Button';
 import { DocumentInfo } from '../DocumentInfo'
@@ -426,6 +427,7 @@ export default class WindowManager extends React.Component {
               </Provider>
               { this.renderNavigation() }
               <div id={ this.rulerId } className={ 'corpusbuilder-ruler' }>&nbsp;</div>
+              <ReactTooltip className="corpusbuilder-tooltip" />
           </div>
         )
     }
