@@ -33,30 +33,35 @@ export default class DocumentPageSwitcher extends React.Component {
     };
 
     periods(from, to) {
-        let nP10 = (n, base = 0) => {
-            if(n > Math.pow(10, base)) {
-                return nP10(n, base + 1);
-            }
-            else {
-                return Math.pow(10, base);
-            }
-        };
-
-        let upperBound = nP10(to - from);
-        let step = upperBound / 10;
-        let results = [ ];
-        let lastFrom = 0;
-        let lastTo = from - 1;
-        let iter = 1;
-
-        while(lastTo < to) {
-            lastFrom = lastTo + 1;
-            lastTo = from + iter++ * step - 1;
-
-            results.push([ lastFrom, Math.min(lastTo, to) ]);
+        if(to <= 10) {
+            return [[ from, to ]];
         }
+        else {
+            let nP10 = (n, base = 0) => {
+                if(n > Math.pow(10, base)) {
+                    return nP10(n, base + 1);
+                }
+                else {
+                    return Math.pow(10, base);
+                }
+            };
 
-        return results;
+            let upperBound = nP10(to - from);
+            let step = upperBound / 10;
+            let results = [ ];
+            let lastFrom = 0;
+            let lastTo = from - 1;
+            let iter = 1;
+
+            while(lastTo < to) {
+                lastFrom = lastTo + 1;
+                lastTo = from + iter++ * step - 1;
+
+                results.push([ lastFrom, Math.min(lastTo, to) ]);
+            }
+
+            return results;
+        }
     }
 
     renderOptions(from = null, to = null) {
@@ -100,13 +105,18 @@ export default class DocumentPageSwitcher extends React.Component {
                       </li>
                     )
                 });
-                return (
-                    <div className={ className } key={ `page-dropdown-${ period.join('-') }` }>
-                        <NestedDropdownMenu {...submenu}>
-                            { subItems }
-                        </NestedDropdownMenu>
-                    </div>
-                );
+                if(to <= 10) {
+                    return subItems;
+                }
+                else {
+                    return (
+                        <div className={ className } key={ `page-dropdown-${ period.join('-') }` }>
+                            <NestedDropdownMenu {...submenu}>
+                                { subItems }
+                            </NestedDropdownMenu>
+                        </div>
+                    );
+                }
             }
             else {
                 return (
