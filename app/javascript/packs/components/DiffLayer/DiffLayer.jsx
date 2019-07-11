@@ -136,7 +136,7 @@ export default class DiffLayer extends React.Component {
                         width: textWidth,
                         transform: `scaleX(${ scale })`,
                         fontSize: fontSize,
-                        fontFamily: font
+                        fontFamily: font.fontName
                     };
                 }
 
