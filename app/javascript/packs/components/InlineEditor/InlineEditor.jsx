@@ -66,6 +66,8 @@ export default class InlineEditor extends React.Component {
     @observable
     selectedBox = null;
 
+    selectionProcessing = false;
+
     originalBoxes = null;
 
     @computed
@@ -125,7 +127,6 @@ export default class InlineEditor extends React.Component {
 
     @computed
     get boxesOverlap() {
-        console.log(this.overlappingBoxes.map(function(b) { return BoxesUtils.area(b) }));
         return this.overlappingBoxes.length > 0;
     }
 
@@ -244,6 +245,8 @@ export default class InlineEditor extends React.Component {
     }
 
     removeBox(e) {
+        this.selectionProcessing = true;
+
         let ix = this.boxes.findIndex((b) => {
             return BoxesUtils.boxesEqual(b, this.selectedBox);
         });
@@ -253,6 +256,8 @@ export default class InlineEditor extends React.Component {
         this.graphemeWords.splice(ix, 1);
         this.boxes.splice(ix, 1);
         this.selectedBox = null;
+
+        this.selectionProcessing = false;
     }
 
     lineDir(props) {
@@ -359,9 +364,11 @@ export default class InlineEditor extends React.Component {
     }
 
     onInputBlur() {
+      if(!this.selectionProcessing) {
         setTimeout(_ => {
             this.selectedBox = null;
-        }, 100);
+        }, 300);
+      }
     }
 
     onShellClick(e) {
