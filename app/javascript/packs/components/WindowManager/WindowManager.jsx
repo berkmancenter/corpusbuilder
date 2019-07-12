@@ -436,7 +436,7 @@ export default class WindowManager extends React.Component {
               </Provider>
               { this.renderNavigation() }
               <div id={ this.rulerId } className={ 'corpusbuilder-ruler' }>&nbsp;</div>
-              <ReactTooltip className="corpusbuilder-tooltip" />
+              <ReactTooltip className="corpusbuilder-tooltip" multiline={true} />
           </div>
         )
     }

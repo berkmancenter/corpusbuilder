@@ -7,10 +7,12 @@ import { PageFlowItem } from '../PageFlowItem';
 import { Button } from '../Button';
 import { LanguagesInput } from '../LanguagesInput';
 import { ProgressIndicator } from '../ProgressIndicator';
+import { HelpIcon } from '../HelpIcon';
 import { Line } from 'rc-progress';
 import Spinner from 'react-spinkit';
 import { SortableContainer, SortableElement, arrayMove } from 'react-sortable-hoc';
 import DropdownMenu, { NestedDropdownMenu } from 'react-dd-menu';
+import ReactTooltip from 'react-tooltip';
 
 import State from '../../stores/State'
 import FetchSimilarDocuments from '../../actions/FetchSimilarDocuments';
@@ -704,7 +706,10 @@ export default class Uploader extends React.Component {
 
             return (
                 <div className="corpusbuilder-uploader-model-selection">
-                    <div className="corpusbuilder-uploader-model-selection-title">OCR Models found:</div>
+                    <div className="corpusbuilder-uploader-model-selection-title">
+                      OCR Models found:
+                      <HelpIcon message="An OCR model contains the trained-information about <br /> the text found on images and about how to turn it into a digitalized-textual form. <br /> Usually each language has its own model, with some having many." />
+                    </div>
                     { modelItems }
                 </div>
             );
@@ -735,6 +740,7 @@ export default class Uploader extends React.Component {
                             { this.renderImagesReady() }
                         </PageFlowItem>
                     </PageFlow>
+                    <ReactTooltip className="corpusbuilder-tooltip" multiline={true} />
                 </div>
             </Provider>
         );
