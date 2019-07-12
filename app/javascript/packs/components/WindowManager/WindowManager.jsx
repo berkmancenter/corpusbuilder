@@ -399,7 +399,7 @@ export default class WindowManager extends React.Component {
                     </Button>
                     <span className="corpusbuilder-global-options-separator"></span>
                     {
-                        this.modes.map((mode, ix) => {
+                        this.hasOneViewer ? [] : this.modes.map((mode, ix) => {
                             return (
                                 <Button toggles={ true }
                                         toggled={ this.currentMode.name === mode.name }
