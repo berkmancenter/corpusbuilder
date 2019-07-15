@@ -1,6 +1,7 @@
 import React from 'react'
 import { computed, observable } from 'mobx'
 import { inject, observer } from 'mobx-react'
+import { flatten } from 'lodash';
 
 import GraphemesUtils from '../../lib/GraphemesUtils';
 import MathUtils from '../../lib/MathUtils';
@@ -214,7 +215,7 @@ export default class DocumentLine extends React.Component {
         return this.props.line[0].zone_direction === 1 ? "rtl" : "ltr";
     }
 
-    renderWord(word, ix) {
+    wordRender(word, ix, last) {
         let text = GraphemesUtils.wordText(word);
         let box = GraphemesUtils.wordToBox(word);
         let boxWidth = (box.lrx - box.ulx) * this.ratio;
@@ -234,16 +235,52 @@ export default class DocumentLine extends React.Component {
             styles.backgroundColor = this.percentageToHsl(word[0].certainty);
         }
 
-        let result = [
+        let result = [];
+
+        if(last !== null) {
+            let textWidth = this.measureText(' ', this.fontSize);
+            let boxWidth = (box.ulx < last.box.ulx ? box.lrx - last.box.ulx : box.ulx - last.box.lrx) * this.ratio;
+            let scale = textWidth > 0 ? boxWidth / textWidth : 1;
+            let left = 0;
+
+            if(box.ulx < last.box.ulx) {
+                left = ((box.lrx - boxWidth / this.ratio) - this.lineLeft) * this.ratio;
+            }
+            else {
+                left = (last.box.lrx - this.lineLeft) * this.ratio;
+            }
+
+            let spaceStyles = {
+                fontSize: this.fontSize,
+                fontFamily: this.fontFamily,
+                width: this.measureText(' ', this.fontSize),
+                transform: `scaleX(${ scale })`,
+                left: left
+            };
+
+            result.push(
+                <span style={ spaceStyles }
+                      className="corpusbuilder-document-line-word"
+                      key={ `${ix-1}-${ix}` }
+                      >
+                    &nbsp;
+                </span>
+            );
+        }
+
+        result.push(
             <span style={ styles }
                   className="corpusbuilder-document-line-word"
                   key={ ix }
                   >
                 { text }
             </span>
-        ];
+        );
 
-        return result;
+        return {
+            ui: result,
+            box: box
+        };
     }
 
     render() {
@@ -267,9 +304,16 @@ export default class DocumentLine extends React.Component {
                  onMouseLeave={ this.onWordMouseLeave.bind(this) }
                  >
                {
-                   this.words.map((word, ix) => {
-                       return this.renderWord(word, ix)
-                   })
+                   flatten(
+                       this.words.reduce((acc, word, ix) => {
+                           let render = this.wordRender(word, ix, acc.last);
+
+                           acc.result.push(render.ui);
+                           acc.last = render;
+
+                           return acc;
+                       }, { result: [], last: null }).result
+                   )
                }
             </div>
         );

@@ -60,12 +60,12 @@
 /******/ 	__webpack_require__.p = "/packs/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1192);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1193);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 1192:
+/***/ 1193:
 /*!*********************************************!*\
   !*** ./app/javascript/packs/application.js ***!
   \*********************************************/
