@@ -788,12 +788,13 @@ export default class InlineEditor extends React.Component {
                         </div>
                         <div className="corpusbuilder-inline-editor-buttons">
                             <Button onClick={ this.deleteLine.bind(this) }
+                                    tooltip="Deletes the whole line along with all boxes and text."
                                     classes={ this.deleteButtonClasses }
                                     >
                               { this.deleteButtonTitle }
                             </Button>
                             <Button
-                              tooltip="This will clear the boxes from the OCR version. New boxes can then be drawn to capture the text as the user sees fit"
+                              tooltip="Clears the boxes from the OCR version. <br /> New boxes can then be drawn to capture the text as the user sees fit"
                               onClick={ this.clearLine.bind(this) }
                               >
                               Clear Line
