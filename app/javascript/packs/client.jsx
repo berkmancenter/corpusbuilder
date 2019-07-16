@@ -35,10 +35,15 @@ class CorpusBuilderDocumentStatus {
     options = { };
     element = null;
 
+    onFinished(isSuccess) {
+        this.options.onFinished(isSuccess);
+    }
+
     render() {
         ReactDOM.render(
             <DocumentStatus baseUrl={ this.options.baseUrl }
                             host={ this.element }
+                            onFinished={ this.onFinished.bind(this) }
                             editorEmail={ this.options.editorEmail }
                             documentId={ this.options.documentId }
                             />,

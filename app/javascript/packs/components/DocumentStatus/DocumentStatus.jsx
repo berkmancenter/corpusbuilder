@@ -17,6 +17,8 @@ export default class DocumentStatus extends React.Component {
     @observable
     state = null;
 
+    polls = 0;
+
     constructor(props) {
         super(props);
 
@@ -36,10 +38,16 @@ export default class DocumentStatus extends React.Component {
                 }
             }
         ).then(action((state) => {
+            this.polls++;
             this.state = state;
 
             if(state === 'initial' || state === 'processing') {
                 setTimeout(this.fetchStatus.bind(this), 2000);
+            }
+            else {
+                if(this.polls > 1 && this.props.onFinished !== undefined) {
+                    this.props.onFinished(state === 'ready');
+                }
             }
         }));
     }
