@@ -19,6 +19,11 @@
     position: relative;
     transition: transform 0.75s ease-in-out;
 
+    &-help {
+      position: relative;
+      padding-top: 10px;
+    }
+
     &-visual-selection {
       position: absolute;
       background: rgba(50, 80, 200, 0.5);

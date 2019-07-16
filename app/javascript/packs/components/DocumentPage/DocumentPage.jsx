@@ -7,6 +7,7 @@ import s from './DocumentPage.scss'
 import { DocumentLine } from '../DocumentLine'
 import { FakePage } from '../FakePage'
 import { SelectionManager } from '../SelectionManager'
+import { HelpIcon } from '../HelpIcon';
 
 import GraphemesUtils from '../../lib/GraphemesUtils'
 
@@ -240,6 +241,11 @@ export default class DocumentPage extends React.Component {
             }, 0);
         }
 
+        let certaintyMapHelp = !this.showCertainties ? null :
+            <div className="corpusbuilder-document-page-help">
+                <HelpIcon message="Red means less certainty and green means more. <br /> Hover over the lines to see the assigned certainty values by the OCR backend. <br /> Note that the values do not meant the probability of the word <br />being correct or erroneous." />
+            </div>;
+
         return (
           <div>
             <FakePage style={ page1Style }>
@@ -258,6 +264,9 @@ export default class DocumentPage extends React.Component {
                                 onSelected={ this.onSelected.bind(this) }
                                 onDeselected={ this.onDeselected.bind(this) }
                                 >
+                {
+                    certaintyMapHelp
+                }
                 {
                   this.ruler === null ? [] : this.lines.map(
                       (line, index) => {

@@ -271,6 +271,7 @@ export default class DocumentLine extends React.Component {
         result.push(
             <span style={ styles }
                   className="corpusbuilder-document-line-word"
+                  data-tip={ this.showCertainties ? `Certainty assigned by the algorithm: <br />${parseFloat(word[0].certainty).toFixed(2)}%` : undefined }
                   key={ ix }
                   >
                 { text }
