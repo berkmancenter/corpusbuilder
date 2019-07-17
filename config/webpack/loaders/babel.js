@@ -5,14 +5,7 @@ module.exports = {
   query: {
     plugins: [
       'transform-decorators-legacy',
-      'babel-plugin-transform-runtime',
-      ['contracts', {
-        'env': {
-          'production': {
-            'strip': true
-          }
-        }
-      }]
+      'babel-plugin-transform-runtime'
     ],
     presets: ['es2015', 'stage-1', 'react']
   }

@@ -63,7 +63,8 @@ export default class DocumentLine extends React.Component {
 
     @computed
     get fontSize() {
-        return this.props.measureFontSize(this.props.line, this.font, this.ratio);
+        return this.props.enforcedFontSize ||
+            this.props.measureFontSize(this.props.line, this.font, this.ratio);
     }
 
     @computed

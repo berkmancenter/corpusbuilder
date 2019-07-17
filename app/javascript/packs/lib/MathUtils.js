@@ -5,6 +5,22 @@ export default class MathUtils {
         );
     }
 
+    static median(arrays){
+        if(arrays.length === 0) return 0;
+
+        arrays.sort(function(a,b){
+            return a - b;
+        });
+
+        var half = Math.floor(arrays.length / 2);
+
+        if (arrays.length % 2) {
+            return arrays[half];
+        }
+
+        return (arrays[half - 1] + arrays[half]) / 2.0;
+    }
+
     static variance(array) {
         let scaleLength = array.length - 1;
 

@@ -12,13 +12,6 @@
 
   "plugins": [
     "syntax-dynamic-import",
-    ["transform-class-properties", { "spec": true }],
-    ["contracts", {
-      "env": {
-        "production": {
-          "strip": true
-        }
-      }
-    }]
+    ["transform-class-properties", { "spec": true }]
   ]
 }

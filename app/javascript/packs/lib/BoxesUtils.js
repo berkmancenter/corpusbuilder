@@ -22,6 +22,10 @@ export default class BoxesUtils {
                box.lry > 0;
     }
 
+    static height(box) {
+        return box.lry - box.uly;
+    }
+
     static area(box) {
         return (box.lrx - box.ulx) * (box.lry - box.uly);
     }

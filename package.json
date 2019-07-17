@@ -27,6 +27,7 @@
     "glob": "^7.1.2",
     "interactjs": "^1.2.9",
     "js-yaml": "^3.9.1",
+    "ml-hclust": "^3.0.0",
     "mobx": "^3.3.1",
     "mobx-react": "^4.3.3",
     "node-sass": "^4.5.3",
@@ -59,7 +60,6 @@
     "yarn": "^1.2.1"
   },
   "devDependencies": {
-    "babel-plugin-contracts": "^1.2.0",
     "webpack-dev-server": "^2.7.1"
   }
 }

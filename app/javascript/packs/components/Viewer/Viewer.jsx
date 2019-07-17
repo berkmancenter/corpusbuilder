@@ -927,6 +927,7 @@ export default class Viewer extends React.Component {
                                   documentMaxHeight={ this.documentMaxHeight }
                                   showCertainties={ this.showCertainties }
                                   showImage={ this.showImage }
+                                  fontUniformityMode={ true }
                                   onSelected={ this.onSelected.bind(this) }
                                   onLineClick={ this.onLineClick.bind(this) }
                                   onLineDrew={ this.onLineDrew.bind(this) }

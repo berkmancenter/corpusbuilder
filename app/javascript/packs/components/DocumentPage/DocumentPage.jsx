@@ -3,13 +3,16 @@ import { computed, observable } from 'mobx';
 import { observer } from 'mobx-react'
 import state from '../../stores/State'
 import s from './DocumentPage.scss'
+import { agnes } from 'ml-hclust';
 
 import { DocumentLine } from '../DocumentLine'
 import { FakePage } from '../FakePage'
 import { SelectionManager } from '../SelectionManager'
 import { HelpIcon } from '../HelpIcon';
 
-import GraphemesUtils from '../../lib/GraphemesUtils'
+import GraphemesUtils from '../../lib/GraphemesUtils';
+import BoxesUtils from '../../lib/BoxesUtils';
+import MathUtils from '../../lib/MathUtils';
 
 @observer
 export default class DocumentPage extends React.Component {
@@ -123,6 +126,71 @@ export default class DocumentPage extends React.Component {
     @computed
     get page2Rotate() {
         return this.graphemes && Math.random() * (3 - -3) + -3;
+    }
+
+    lineId(line) {
+        if(line === undefined) {
+            return undefined;
+        }
+
+        return `${line[0].id}=>${line[line.length - 1].id}`;
+    }
+
+    @computed
+    get lineMedianHeights() {
+        let lineId = this.lineId;
+
+        return this.lines.reduce((acc, line) => {
+            let words = GraphemesUtils.wordBoxes(line);
+
+            acc[lineId(line)] = MathUtils.median(
+                words.map(BoxesUtils.height)
+                     .map(Math.abs)
+            );
+
+            return acc;
+        }, {});
+    }
+
+    @computed
+    get clusters() {
+        let lineId = this.lineId;
+        let heights = this.lineMedianHeights;
+
+        let distance = function(left, right) {
+            return Math.abs(heights[lineId(left)] - heights[lineId(right)]);
+        };
+
+        // let's split clusters if their height deviates by more than 2 standard deviations:
+        let inClusterIndices = agnes(this.lines, { distanceFunction: distance })
+            .cut(2 * MathUtils.std(Object.values(this.lineMedianHeights)))
+            .map(c => c.indices());
+
+        let clusterIndices = inClusterIndices.reduce(function(acc, ixs, ix) {
+            ixs.forEach(i => acc[i] = ix); return acc;
+        }, {});
+
+        let clusters = inClusterIndices.map(ixs => {
+            let lines = this.lines.filter((_, ix) => ixs.includes(ix));
+
+            // add 10% to accomodate the fact that the lines are usually cutting the type
+            // aggressively at the top and bottom:
+            return {
+                fontSize: MathUtils.median(
+                    lines.map(line => heights[lineId(line)])
+                ) * this.ratio * 1.1
+            }
+        });
+
+        return this.lines.map((_, ix) => clusters[clusterIndices[ix]]);
+    }
+
+    enforcedFontSize(line, index) {
+        if(this.props.fontUniformityMode) {
+            return this.clusters[index].fontSize;
+        }
+
+        return null;
     }
 
     draw(y) {
@@ -273,6 +341,7 @@ export default class DocumentPage extends React.Component {
                           return <DocumentLine key={ `document-line-${index}` }
                                                line={ line }
                                                number={ index + 1 }
+                                               enforcedFontSize={ this.enforcedFontSize(line, index) }
                                                ratio={ this.ratio }
                                                editing={ this.props.editing }
                                                showCertainties={ this.showCertainties }
@@ -283,8 +352,8 @@ export default class DocumentPage extends React.Component {
                 }
               </SelectionManager>
               { this.renderVisualSelection() }
-            </div>
           </div>
+            </div>
         );
     }
 }

@@ -292,19 +292,6 @@ babel-core@^6.26.0:
     slash "^1.0.0"
     source-map "^0.5.6"
 
-babel-generator@^6.1.2:
-  version "6.26.1"
-  resolved "https://registry.yarnpkg.com/babel-generator/-/babel-generator-6.26.1.tgz#1844408d3b8f0d35a404ea7ac180f087a601bd90"
-  dependencies:
-    babel-messages "^6.23.0"
-    babel-runtime "^6.26.0"
-    babel-types "^6.26.0"
-    detect-indent "^4.0.0"
-    jsesc "^1.3.0"
-    lodash "^4.17.4"
-    source-map "^0.5.7"
-    trim-right "^1.0.1"
-
 babel-generator@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-generator/-/babel-generator-6.26.0.tgz#ac1ae20070b79f6e3ca1d3269613053774f20dc5"
@@ -463,12 +450,6 @@ babel-plugin-check-es2015-constants@^6.22.0:
   resolved "https://registry.yarnpkg.com/babel-plugin-check-es2015-constants/-/babel-plugin-check-es2015-constants-6.22.0.tgz#35157b101426fd2ffd3da3f75c7d1e91835bbf8a"
   dependencies:
     babel-runtime "^6.22.0"
-
-babel-plugin-contracts@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-contracts/-/babel-plugin-contracts-1.2.0.tgz#3d343d115408777c0cb8295be8b23ec23cd9292f"
-  dependencies:
-    babel-generator "^6.1.2"
 
 babel-plugin-syntax-async-functions@^6.8.0:
   version "6.13.0"
@@ -2441,6 +2422,10 @@ hawk@~3.1.3:
     hoek "2.x.x"
     sntp "1.x.x"
 
+heap@^0.2.6:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/heap/-/heap-0.2.6.tgz#087e1f10b046932fc8594dd9e6d378afc9d1e5ac"
+
 hmac-drbg@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/hmac-drbg/-/hmac-drbg-1.0.1.tgz#d2745701025a6c775a6c545793ed502fc0c649a1"
@@ -2622,6 +2607,10 @@ ipaddr.js@1.4.0:
 is-absolute-url@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/is-absolute-url/-/is-absolute-url-2.1.0.tgz#50530dfb84fcc9aa7dbe7852e83a37b93b9f2aa6"
+
+is-any-array@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/is-any-array/-/is-any-array-0.0.3.tgz#cbdd8c7189d47b53b050969245f4ef7e55550b9b"
 
 is-arrayish@^0.2.1:
   version "0.2.1"
@@ -3270,6 +3259,49 @@ mkdirp@0.5.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkd
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
+
+ml-array-max@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ml-array-max/-/ml-array-max-1.1.1.tgz#0192a646853a5cd1085133def02c1271101ddd86"
+  dependencies:
+    is-any-array "^0.0.3"
+
+ml-array-min@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ml-array-min/-/ml-array-min-1.1.1.tgz#52bb6315325cd28e39b412282ef5a44416bd2e11"
+  dependencies:
+    is-any-array "^0.0.3"
+
+ml-array-rescale@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ml-array-rescale/-/ml-array-rescale-1.2.1.tgz#8fc10ef0472a3bf27602d6089e6f93a2fb7d9fe5"
+  dependencies:
+    is-any-array "^0.0.3"
+    ml-array-max "^1.1.1"
+    ml-array-min "^1.1.1"
+
+ml-distance-euclidean@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ml-distance-euclidean/-/ml-distance-euclidean-2.0.0.tgz#3a668d236649d1b8fec96380b9435c6f42c9a817"
+
+ml-distance-matrix@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ml-distance-matrix/-/ml-distance-matrix-2.0.0.tgz#cee8274b93241e0f1c918e03785a011bacc20f9f"
+
+ml-hclust@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ml-hclust/-/ml-hclust-3.0.0.tgz#2eedbe107524ab85f5efe09ea5ef0ee224e8a9fb"
+  dependencies:
+    heap "^0.2.6"
+    ml-distance-euclidean "^2.0.0"
+    ml-distance-matrix "^2.0.0"
+    ml-matrix "^6.1.2"
+
+ml-matrix@^6.1.2:
+  version "6.1.2"
+  resolved "https://registry.yarnpkg.com/ml-matrix/-/ml-matrix-6.1.2.tgz#a862febc3e5d05d756ae7a02c03114d644b5ee48"
+  dependencies:
+    ml-array-rescale "^1.2.1"
 
 mobx-react@^4.3.3:
   version "4.3.3"
@@ -4944,10 +4976,6 @@ source-map@^0.4.2:
 source-map@^0.5.3, source-map@^0.5.6, source-map@~0.5.1, source-map@~0.5.3:
   version "0.5.6"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.6.tgz#75ce38f52bf0733c5a7f0c118d81334a2bb5f412"
-
-source-map@^0.5.7:
-  version "0.5.7"
-  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
 
 spdx-correct@~1.0.0:
   version "1.0.2"
