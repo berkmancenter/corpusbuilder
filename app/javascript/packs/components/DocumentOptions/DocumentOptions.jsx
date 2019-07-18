@@ -145,6 +145,11 @@ export default class DocumentOptions extends React.Component {
                       { this.props.showAnnotations ? '✓' : '' } Annotations Map
                   </button>
               </li>
+              <li>
+                  <button type="button" onClick={ this.props.onToggleFontUniformity.bind(this, !this.props.fontUniformityMode) }>
+                      { this.props.fontUniformityMode ? '✓' : '' } Font Uniformity Mode
+                  </button>
+              </li>
           </DropdownMenu>
         );
     }

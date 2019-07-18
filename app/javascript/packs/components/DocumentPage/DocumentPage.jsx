@@ -173,12 +173,12 @@ export default class DocumentPage extends React.Component {
         let clusters = inClusterIndices.map(ixs => {
             let lines = this.lines.filter((_, ix) => ixs.includes(ix));
 
-            // add 10% to accomodate the fact that the lines are usually cutting the type
+            // add 15% to accomodate the fact that the lines are usually cutting the type
             // aggressively at the top and bottom:
             return {
                 fontSize: MathUtils.median(
                     lines.map(line => heights[lineId(line)])
-                ) * this.ratio * 1.1
+                ) * this.ratio * 1.15
             }
         });
 

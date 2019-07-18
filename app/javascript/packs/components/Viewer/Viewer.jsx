@@ -115,6 +115,9 @@ export default class Viewer extends React.Component {
     showInlineEditor = false;
 
     @observable
+    fontUniformityMode = true;
+
+    @observable
     showNewBranchWindow = false;
 
     @observable
@@ -407,6 +410,10 @@ export default class Viewer extends React.Component {
 
     toggleAnnotations(isOn) {
         this.showAnnotations = isOn;
+    }
+
+    toggleFontUniformity(isOn) {
+        this.fontUniformityMode = isOn;
     }
 
     toggleBackground(isOn) {
@@ -900,12 +907,14 @@ export default class Viewer extends React.Component {
                                    editing={ this.editing }
                                    showCertainties={ this.showCertainties }
                                    showAnnotations={ this.showAnnotations }
+                                   fontUniformityMode={ this.fontUniformityMode }
                                    showBackground={ this.showImage }
                                    showDiff={ this.showDiff }
                                    onBranchSwitch={ this.chooseBranch.bind(this) }
                                    onBranchModeToggle={ this.toggleBranchMode.bind(this) }
                                    onToggleCertainties={ this.toggleCertainties.bind(this) }
                                    onToggleAnnotations={ this.toggleAnnotations.bind(this) }
+                                   onToggleFontUniformity={ this.toggleFontUniformity.bind(this) }
                                    onToggleBackground={ this.toggleBackground.bind(this) }
                                    onToggleDiff={ this.toggleDiff.bind(this) }
                                    onResetChangesRequest={ this.resetChanges.bind(this) }
@@ -927,7 +936,7 @@ export default class Viewer extends React.Component {
                                   documentMaxHeight={ this.documentMaxHeight }
                                   showCertainties={ this.showCertainties }
                                   showImage={ this.showImage }
-                                  fontUniformityMode={ true }
+                                  fontUniformityMode={ this.fontUniformityMode }
                                   onSelected={ this.onSelected.bind(this) }
                                   onLineClick={ this.onLineClick.bind(this) }
                                   onLineDrew={ this.onLineDrew.bind(this) }
