@@ -186,20 +186,16 @@ export default class Uploader extends React.Component {
         {
             code: 'tesseract',
             label: 'Tesseract',
-            description: <p>
+            description: `
               Tesseract OCR engine by Google
-              <br />
-              <a href="https://github.com/tesseract-ocr/tesseract">GitHub</a>
-            </p>
+            `
         },
         {
             code: 'kraken',
             label: 'Kraken',
-            description: <p>
+            description: `
               Kraken OCR engine by Benjamin Kiessling
-              <br />
-              <a href="https://github.com/mittagessen/kraken">GitHub</a>
-            </p>
+            `
         }
     ];
 
@@ -362,6 +358,10 @@ export default class Uploader extends React.Component {
             });
             this.preloaded = true;
         }
+
+        setTimeout(function() {
+            ReactTooltip.rebuild();
+        }, 200);
     }
 
     onDocumentPicked(doc) {
@@ -633,7 +633,7 @@ export default class Uploader extends React.Component {
                                     onClick={ this.onBackendChosen.bind(this, backend) }
                                     data-tip={ backend.description }
                                     >
-                                { this.backend.label }
+                                { backend.label }
                             </button>
                         </li>
                 );
