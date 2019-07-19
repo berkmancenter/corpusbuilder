@@ -182,6 +182,27 @@ export default class Uploader extends React.Component {
         }
     ];
 
+    allBackends = [
+        {
+            code: 'tesseract',
+            label: 'Tesseract',
+            description: <p>
+              Tesseract OCR engine by Google
+              <br />
+              <a href="https://github.com/tesseract-ocr/tesseract">GitHub</a>
+            </p>
+        },
+        {
+            code: 'kraken',
+            label: 'Kraken',
+            description: <p>
+              Kraken OCR engine by Benjamin Kiessling
+              <br />
+              <a href="https://github.com/mittagessen/kraken">GitHub</a>
+            </p>
+        }
+    ];
+
     @observable
     isUploading = false;
 
@@ -213,12 +234,7 @@ export default class Uploader extends React.Component {
     backendMenuOpen = false;
 
     @observable
-    backend = "tesseract";
-
-    @computed
-    get chosenBackendName() {
-        return this.backend === "tesseract" ? "Tesseract" : "Kraken";
-    }
+    backend = this.availableBackends[0];
 
     @computed
     get backendMenu()  {
@@ -228,7 +244,7 @@ export default class Uploader extends React.Component {
             toggle: (
               <Button toggles={ true }
                       onToggle={ (() => { this.backendMenuOpen = !this.backendMenuOpen }).bind(this) }>
-                  { this.chosenBackendName }
+                  { this.backend.title }
               </Button>
             ),
             align: 'left'
@@ -259,16 +275,27 @@ export default class Uploader extends React.Component {
                 this.appState,
                 {
                   select: {
-                    backend: this.backend,
+                    backend: this.backend.code,
                     languages: this.languages.map(lang => lang.code)
                   },
-                  backend: this.backend,
+                  backend: this.backend.code,
                   languages: this.languages.map(lang => lang.code)
                 }
             )
         }
 
         return null;
+    }
+
+    @computed
+    get availableBackends() {
+        if(this.props.backends !== undefined) {
+            return this.allBackends.filter(backend => {
+                return this.props.backends.includes(backend.code);
+            });
+        }
+
+        return this.allBackends;
     }
 
     @computed
@@ -606,20 +633,19 @@ export default class Uploader extends React.Component {
 
                     <div className="corpusbuilder-uploader-images-ready-backend">
                         <DropdownMenu {...this.backendMenu}>
-                            <li>
-                                <button type="button"
-                                        onClick={ this.onBackendChosen.bind(this, "tesseract") }
-                                        >
-                                        Tesseract
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        onClick={ this.onBackendChosen.bind(this, "kraken") }
-                                        >
-                                        Kraken
-                                </button>
-                            </li>
+                            {
+                                this.availableBackends.map((backend, ix) => {
+                                    return
+                                        <li key={ `backend-${ix}` }>
+                                            <button type="button"
+                                                    onClick={ this.onBackendChosen.bind(this, backend) }
+                                                    data-tip={ backend.description }
+                                                    >
+                                                { this.backend.title }
+                                            </button>
+                                        </li>
+                                })
+                            }
                         </DropdownMenu>
                         <LanguagesInput languages={ this.languages } onChange={ this.onLanguagesPicked.bind(this) } />
                     </div>

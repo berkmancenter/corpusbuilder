@@ -124,6 +124,7 @@ class CorpusBuilderUploader {
             <Uploader baseUrl={ this.options.baseUrl }
                       host={ this.element }
                       editorEmail={ this.options.editorEmail }
+                      backends={ this.options.backends }
                       metadata={ this.metadata }
                       images={ this.images }
                       onDocumentPicked={ this.onDocumentPicked.bind(this) }
