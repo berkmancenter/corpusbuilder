@@ -233,9 +233,6 @@ export default class Uploader extends React.Component {
     @observable
     backendMenuOpen = false;
 
-    @observable
-    backend = this.availableBackends[0];
-
     @computed
     get backendMenu()  {
         return {
@@ -244,7 +241,7 @@ export default class Uploader extends React.Component {
             toggle: (
               <Button toggles={ true }
                       onToggle={ (() => { this.backendMenuOpen = !this.backendMenuOpen }).bind(this) }>
-                  { this.backend.title }
+                  { this.backend.label }
               </Button>
             ),
             align: 'left'
@@ -298,6 +295,9 @@ export default class Uploader extends React.Component {
         return this.allBackends;
     }
 
+    @observable
+    backend = this.availableBackends[0];
+
     @computed
     get isMetadataReady() {
         return this.metadata !== undefined &&
@@ -336,7 +336,7 @@ export default class Uploader extends React.Component {
 
         this.appState = new State(this.props.baseUrl);
         Request.setBaseUrl(props.baseUrl);
-        this.onBackendChosen("tesseract");
+        this.onBackendChosen(this.backend);
     }
 
     componentWillUpdate(props) {
@@ -433,7 +433,7 @@ export default class Uploader extends React.Component {
         this.backend = backend;
 
         if(typeof this.props.onBackendChosen === 'function') {
-            this.props.onBackendChosen(backend);
+            this.props.onBackendChosen(backend.code);
         }
     }
 
@@ -626,27 +626,32 @@ export default class Uploader extends React.Component {
 
     renderImagesReady() {
         if(this.currentLevel === 'images-ready') {
+            let items =
+                this.availableBackends.map((backend, ix) =>
+                        <li key={ `backend-${ix}` }>
+                            <button type="button"
+                                    onClick={ this.onBackendChosen.bind(this, backend) }
+                                    data-tip={ backend.description }
+                                    >
+                                { this.backend.label }
+                            </button>
+                        </li>
+                );
+
+            let menu = items.length < 2 ? null :
+                        <DropdownMenu {...this.backendMenu}>
+                            {
+                                items
+                            }
+                        </DropdownMenu>;
+
             return (
                 <div className="corpusbuilder-uploader-images-ready">
                     Your uploads are ready. Please provide the list of languages being used
                     in the uploaded scans:
 
                     <div className="corpusbuilder-uploader-images-ready-backend">
-                        <DropdownMenu {...this.backendMenu}>
-                            {
-                                this.availableBackends.map((backend, ix) => {
-                                    return
-                                        <li key={ `backend-${ix}` }>
-                                            <button type="button"
-                                                    onClick={ this.onBackendChosen.bind(this, backend) }
-                                                    data-tip={ backend.description }
-                                                    >
-                                                { this.backend.title }
-                                            </button>
-                                        </li>
-                                })
-                            }
-                        </DropdownMenu>
+                        { menu }
                         <LanguagesInput languages={ this.languages } onChange={ this.onLanguagesPicked.bind(this) } />
                     </div>
                     { this.renderModelSelection() }
