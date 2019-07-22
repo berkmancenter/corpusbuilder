@@ -639,11 +639,14 @@ export default class Uploader extends React.Component {
                 );
 
             let menu = items.length < 2 ? null :
-                        <DropdownMenu {...this.backendMenu}>
-                            {
-                                items
-                            }
-                        </DropdownMenu>;
+                        <span>
+                            <HelpIcon message="There are many OCR engines. They can differ in the algorithmic approach they employ. <br /> They also all have their own trained 'models' for different languages. <br /> Availability of those models vary per OCR backend. <br /> The following drop-down allows you to choose one to use on this document." />
+                            <DropdownMenu {...this.backendMenu}>
+                                {
+                                    items
+                                }
+                            </DropdownMenu>
+                        </span>;
 
             return (
                 <div className="corpusbuilder-uploader-images-ready">
