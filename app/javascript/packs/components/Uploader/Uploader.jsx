@@ -203,6 +203,9 @@ export default class Uploader extends React.Component {
     isUploading = false;
 
     @observable
+    showAllModels = false;
+
+    @observable
     files = [ ];
 
     @observable
@@ -463,6 +466,10 @@ export default class Uploader extends React.Component {
 
     onSortEnd({oldIndex, newIndex}) {
         this.files = arrayMove(this.files, oldIndex, newIndex);
+    }
+
+    onAllModelsToggle(_) {
+        this.showAllModels = !this.showAllModels;
     }
 
     renderPreMeta() {
@@ -736,15 +743,38 @@ export default class Uploader extends React.Component {
 
     renderModelSelection() {
         if(this.models !== null && this.models !== undefined) {
-            let modelItems = this.models.map(this.renderModel.bind(this));
+            let models = this.showAllModels ? this.models : this.models.slice(0, 4);
+
+            let modelItems = models.map(this.renderModel.bind(this));
+
+            let moreModelsToggle = this.models.length <= 5 ? null :
+                <span className="corpusbuilder-uploader-model-selection-toggle">
+                    <Button onClick={ this.onAllModelsToggle.bind(this) }>
+                        { this.showAllModels ? 'Show First 5' : 'Show All' }
+                    </Button>
+                </span>;
+
+            let moreModelsInfo = this.models.length <= 5 ? null :
+                <div className="corpusbuilder-uploader-model-selection-more-models-bottom">
+                    <span className="corpusbuilder-uploader-model-selection-more-models">
+                        { this.models.length - 5 } models were omitted
+                    </span>
+                    <span className="corpusbuilder-uploader-model-selection-toggle">
+                        <Button onClick={ this.onAllModelsToggle.bind(this) }>
+                            { this.showAllModels ? 'Show first 5 only' : 'Show All' }
+                        </Button>
+                    </span>
+                </div>;
 
             return (
                 <div className="corpusbuilder-uploader-model-selection">
                     <div className="corpusbuilder-uploader-model-selection-title">
-                      OCR Models found:
-                      <HelpIcon message="An OCR model contains the trained-information about <br /> the text found on images and about how to turn it into a digitalized-textual form. <br /> Usually each language has its own model, with some having many." />
+                        OCR Models found: ({ this.models.length })
+                        <HelpIcon message="An OCR model contains the trained-information about <br /> the text found on images and about how to turn it into a digitalized-textual form. <br /> Usually each language has its own model, with some having many." />
+                        { moreModelsToggle }
                     </div>
                     { modelItems }
+                    { moreModelsInfo }
                 </div>
             );
         }
