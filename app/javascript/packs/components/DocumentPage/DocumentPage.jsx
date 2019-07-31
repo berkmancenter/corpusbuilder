@@ -186,7 +186,10 @@ export default class DocumentPage extends React.Component {
     }
 
     enforcedFontSize(line, index) {
-        if(this.props.fontUniformityMode) {
+        if(this.props.fontUniformityMode &&
+           this.clusters !== undefined &&
+           this.clusters.length !== 0 &&
+           this.clusters[0] !== undefined) {
             return this.clusters[index].fontSize;
         }
 
