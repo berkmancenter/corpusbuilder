@@ -169,16 +169,28 @@ export default class Viewer extends React.Component {
             return null;
         }
         else {
-            return FetchDocumentPage.run(
-              this.props.appState,
-              {
-                select: {
-                    document: { id: this.documentId },
-                    version: this.currentVersion,
-                    pageNumber: this.page
+            let doc = FetchDocumentPage.run(
+                this.props.appState,
+                {
+                  select: {
+                      document: { id: this.documentId },
+                      version: this.currentVersion,
+                      pageNumber: this.page
+                  }
                 }
-              }
             );
+
+            if(doc !== undefined && doc !== null) {
+                if(this.props.onPageFetched !== undefined) {
+                    let self = this;
+
+                    setTimeout(function() {
+                        self.props.onPageFetched(doc);
+                    });
+                }
+            }
+
+            return doc;
         }
     }
 

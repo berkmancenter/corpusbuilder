@@ -217,6 +217,12 @@ export default class WindowManager extends React.Component {
        this.currentMode.arrange(countAll, ix, page);
     }
 
+    onPageFetched(doc) {
+        if(doc.global.surfaces_count < 2) {
+            this.setViewers(1);
+        }
+    }
+
     get rulerId() {
         return `corpusbuilder-page-ruler-${this.props.documentId}`;
     }
@@ -261,6 +267,7 @@ export default class WindowManager extends React.Component {
                     allowImage={ this.allowImage }
                     onRendered={ this.onViewerRendered.bind(this) }
                     onPageSwitch={ this.onPageSwitch.bind(this, viewer, ix) }
+                    onPageFetched={ this.onPageFetched.bind(this) }
                     />
             )
         })

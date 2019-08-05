@@ -119,13 +119,30 @@ export default class DocumentPageSwitcher extends React.Component {
                 }
             }
             else {
-                return (
-                    <div className={ className } key={ `page-dropdown-${ period.join('-') }` }>
-                        <NestedDropdownMenu {...submenu}>
-                            { this.renderOptions( periodFrom, periodTo ) }
-                        </NestedDropdownMenu>
-                    </div>
-                );
+                if(periodTo === 1) {
+                    return (
+                        <div className={ className } key={ `page-dropdown-${ period.join('-') }` }>
+                            <NestedDropdownMenu {...submenu}>
+                                <li key={ `page-dropdown-${ period.join('-') }` }>
+                                    <button type="button"
+                                            onClick={ () => this.props.onPageSwitch(1) }
+                                            >
+                                        { 1 === this.props.page ? `➜  1` : 1 }
+                                    </button>
+                                </li>
+                            </NestedDropdownMenu>
+                        </div>
+                    );
+                }
+                else {
+                    return (
+                        <div className={ className } key={ `page-dropdown-${ period.join('-') }` }>
+                            <NestedDropdownMenu {...submenu}>
+                                { this.renderOptions( periodFrom, periodTo ) }
+                            </NestedDropdownMenu>
+                        </div>
+                    );
+                }
             }
         });
     }
