@@ -218,8 +218,8 @@ export default class WindowManager extends React.Component {
     }
 
     onPageFetched(doc) {
-        if(doc.global.surfaces_count < 2) {
-            this.setViewers(1);
+        if(doc.global.surfaces_count < 2 && this.currentMode.name !== this.modes[1].name) {
+            this.onModeSwitch(this.modes[1]);
         }
     }
 
