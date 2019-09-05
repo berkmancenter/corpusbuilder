@@ -31,6 +31,7 @@ module CorpusBuilder
 
     config.active_job.queue_adapter = :delayed_job
     config.active_record.schema_format = :sql
+    ActiveRecord::Base.logger = Logger.new(File.join(Rails.root, 'log', 'activerecord.log'))
 
     if Rails.env.development?
       config.web_console.whitelisted_ips = '194.28.12.52'

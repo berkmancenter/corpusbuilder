@@ -3310,8 +3310,8 @@ mobx-react@^4.3.3:
     hoist-non-react-statics "^2.3.1"
 
 mobx@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/mobx/-/mobx-3.3.1.tgz#c38fc1a287a0dda3f5d4b85efe1137fedd9dcdf0"
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-3.6.2.tgz#fb9f5ff5090539a1ad54e75dc4c098b602693320"
 
 ms@2.0.0:
   version "2.0.0"
