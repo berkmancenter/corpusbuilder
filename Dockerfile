@@ -4,12 +4,12 @@ RUN mkdir -p /corpus_builder
 WORKDIR /corpus_builder
 
 COPY Gemfile Gemfile.lock ./
-COPY . ./
+COPY . ./corpusbuilder/
 
-RUN curl -sL https://deb.nodesource.com/setup_7.x | bash -
-RUN apt-get install nodejs
-RUN npm -g install yarn
-RUN gem install bundler && bundle install
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+  apt-get install nodejs && \
+  npm -g install yarn && \
+  gem install bundler
 
 EXPOSE 3000
 

@@ -3,19 +3,35 @@ services:
   postgres:
     image: postgres:9.6.3
     volumes:
-      - ./postgres:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=zse45rdx
       - POSTGRES_USER=corpus_builder
       - POSTGRES_DB=corpus_builder
     ports:
       - "5432:5432"
-  app:
+  corpusbuilder:
     build: .
-    command: rails server -p 3000 -b '0.0.0.0'
+    command: ["/corpusbuilder/bin/app_ctl", "--init", "--migrate", "--run"]
+    environment:
+      - BUNDLE_PATH=/bundle
+      - BUNDLE_BIN=/bundle/bin
+      - GEM_HOME=/bundle
+      - CORPUS_BUILDER_HOST=corpusbuilder.dev
+      - CORPUS_BUILDER_PORT=3000
+      - CORPUS_BUILDER_DATABASE_NAME=corpus_builder
+      - CORPUS_BUILDER_DATABASE_USER=corpus_builder
+      - CORPUS_BUILDER_DATABASE_PASSWORD=zse45rdx
+      - CORPUS_BUILDER_DATABASE_URL=postgres
     volumes:
-      - .:/corpus_builder
+      - .:/corpusbuilder
+      - corpusbuilder-bundle:/bundle
+      - corpusbuilder-node-modules:/corpusbuilder/node_modules
     ports:
       - "3000:3000"
     links:
       - postgres
+volumes:
+  corpusbuilder-bundle:
+  corpusbuilder-node-modules:
+  postgres-data:

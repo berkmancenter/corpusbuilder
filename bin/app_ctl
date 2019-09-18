@@ -1,0 +1,18 @@
+#!/bin/bash -l
+
+cd /corpusbuilder
+
+if [[ "$*" == *--init* ]]; then
+  gem install bundler -v 2.0.2
+  bundle --binstubs="$BUNDLE_BIN"
+  yarn
+fi
+
+if [[ "$*" == *--migrate* ]]; then
+  bundle exec rails db:migrate
+fi
+
+if [[ "$*" == *--run* ]]; then
+  rm tmp/pids/*
+  bundle exec rails server -p $CORPUS_BUILDER_PORT -b '0.0.0.0'
+fi
