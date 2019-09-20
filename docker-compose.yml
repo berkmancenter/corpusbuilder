@@ -23,10 +23,14 @@ services:
       - CORPUS_BUILDER_DATABASE_USER=corpus_builder
       - CORPUS_BUILDER_DATABASE_PASSWORD=zse45rdx
       - CORPUS_BUILDER_DATABASE_URL=postgres
+      - TESSDATA_PREFIX=/home/corpusbuilder/tesseract/tessdata
+      - KRAKEN_DATA_PREFIX=/home/corpusbuilder/.config/kraken
     volumes:
       - .:/corpusbuilder
       - corpusbuilder-bundle:/bundle
       - corpusbuilder-node-modules:/corpusbuilder/node_modules
+      - tesseract-models:/home/corpusbuilder/tesseract/tessdata
+      - kraken-models:/home/corpusbuilder/.config/kraken
     ports:
       - "3000:3000"
     links:
@@ -35,3 +39,5 @@ volumes:
   corpusbuilder-bundle:
   corpusbuilder-node-modules:
   postgres-data:
+  tesseract-models:
+  kraken-models:

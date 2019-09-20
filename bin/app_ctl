@@ -3,6 +3,7 @@
 cd /corpusbuilder
 
 if [[ "$*" == *--init* ]]; then
+  sudo chown -R corpusbuilder:corpusbuilder /bundle
   gem install bundler -v 2.0.2
   bundle --binstubs="$BUNDLE_BIN"
   yarn
