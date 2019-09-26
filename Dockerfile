@@ -1,60 +1,39 @@
-FROM ubuntu:18.04
+FROM minidocks/tesseract:4-eng AS tesseract
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV BUNDLE_PATH=/bundle
-ENV BUNDLE_BIN=/bundle/bin
-ENV GEM_HOME=/bundle
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
-RUN apt-get update && \
-    apt-get install -y \
-      software-properties-common \
-      curl && \
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
-    apt-get update && \
-    apt-get install -y \
-      git \
-      build-essential \
-      libssl-dev \
-      libreadline-dev \
-      zlib1g-dev \
-      tzdata \
+RUN microdnf install \
+      postgresql-devel \
       nodejs \
-      yarn \
-      postgresql-client \
-      postgresql-server-dev-10 \
-      python3.6 \
-      python3-pip \
-      tesseract-ocr && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+      npm \
+      ruby \
+      gcc \
+      gcc-c++ \
+      ruby-devel \
+      zlib-devel \
+      redhat-rpm-config \
+      tar \
+      patch \
+      make \
+      git \
+      wget \
+      GraphicsMagick \
+      python36 \
+      python3-pip
 
-RUN pip3 install kraken
+RUN npm install yarn -g
 
-ENV HOME /home/corpusbuilder
-ENV PATH $HOME/.rbenv/shims:$HOME/.rbenv/bin:$HOME/.rbenv/plugins/ruby-build/bin:$PATH
-
-RUN groupadd -r corpusbuilder && \
-    useradd -u 1000 -s /bin/bash -g corpusbuilder -g sudo -d /home/corpusbuilder corpusbuilder
-
-WORKDIR /home/corpusbuilder/deployment
+WORKDIR /corpusbuilder
 
 COPY Gemfile Gemfile.lock ./
+
 COPY . .
 
-RUN mkdir /home/corpusbuilder/.tessdata && \
-    cp -R /usr/share/tesseract-ocr/4.00/tessdata/* /home/corpusbuilder/.tessdata
+RUN gem install bundler -v 2.0.2
 
-ENV TESSDATA_PREFIX /home/corpusbuilder/.tessdata
-ENV LC_ALL C.UTF-8
-ENV LANG C.UTF-8
+COPY --from=tesseract /usr/lib/libtesseract* /usr/lib/
+COPY --from=tesseract /usr/lib/liblept* /usr/lib/
+COPY --from=tesseract /usr/bin/tesseract /usr/bin/
 
-RUN mkdir /bundle && \
-    chown -R corpusbuilder:corpusbuilder /home/corpusbuilder && \
-    chown -R corpusbuilder:corpusbuilder /bundle
-
-RUN apt-get update && apt-get install -y ruby-full && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-USER corpusbuilder
-
-CMD ["/home/corpusbuilder/deployment/bin/app_ctl", "--init", "--migrate", "--run"]
+CMD ["./bin/rails server --port 8000"]

@@ -31,3 +31,4 @@ tags
 config/database.yml
 /spec/support/uploads
 .irb_history
+/vendor/bundle

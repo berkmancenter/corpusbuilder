@@ -1,6 +1,6 @@
 version: '2'
 services:
-  postgres:
+  postgres_corpusbuilder:
     image: postgres:9.6.3
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -14,15 +14,16 @@ services:
     build: .
     command: ["/corpusbuilder/bin/app_ctl", "--init", "--migrate", "--run"]
     environment:
+      - APP_ROOT=/corpusbuilder
       - BUNDLE_PATH=/bundle
       - BUNDLE_BIN=/bundle/bin
       - GEM_HOME=/bundle
       - CORPUS_BUILDER_HOST=corpusbuilder.dev
       - CORPUS_BUILDER_PORT=3000
-      - CORPUS_BUILDER_DATABASE_NAME=corpus_builder
-      - CORPUS_BUILDER_DATABASE_USER=corpus_builder
-      - CORPUS_BUILDER_DATABASE_PASSWORD=zse45rdx
-      - CORPUS_BUILDER_DATABASE_URL=postgres
+      - APP_DATABASE_NAME=corpus_builder
+      - APP_DATABASE_USER=corpus_builder
+      - APP_DATABASE_PASSWORD=zse45rdx
+      - APP_DATABASE_URL=postgres_corpusbuilder
       - TESSDATA_PREFIX=/home/corpusbuilder/tesseract/tessdata
       - KRAKEN_DATA_PREFIX=/home/corpusbuilder/.config/kraken
     volumes:
@@ -33,8 +34,6 @@ services:
       - kraken-models:/home/corpusbuilder/.config/kraken
     ports:
       - "3000:3000"
-    links:
-      - postgres
 volumes:
   corpusbuilder-bundle:
   corpusbuilder-node-modules:
