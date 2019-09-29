@@ -1,4 +1,46 @@
-FROM minidocks/tesseract:4-eng AS tesseract
+FROM registry.access.redhat.com/ubi8/ubi AS build
+
+RUN yum install -y \
+  wget \
+  unzip \
+  libstdc++ \
+  autoconf \
+  automake \
+  libtool \
+  pkg-config \
+  gcc \
+  gcc-c++ \
+  make \
+  libjpeg-devel \
+  libpng-devel \
+  libtiff-devel \
+  zlib-devel
+
+RUN mkdir /build && \
+    mkdir /ocr && \
+    cd /build && \
+    wget http://www.leptonica.org/source/leptonica-1.75.3.tar.gz && \
+    wget https://github.com/tesseract-ocr/tesseract/archive/4.1.0.zip
+
+RUN cd /build && \
+    tar -xvf leptonica-1.75.3.tar.gz && \
+    unzip 4.1.0.zip
+
+RUN cd /build && \
+    cd leptonica-1.75.3 && \
+    ./autobuild && \
+    ./configure --prefix=/ocr/ && \
+    make && \
+    make install
+
+ENV PKG_CONFIG_PATH /ocr/lib/pkgconfig
+
+RUN cd /build/tesseract-4.1.0 && \
+    ./autogen.sh && \
+    LIBLEPT_HEADERSDIR=/ocr/include ./configure --prefix=/ocr/ --with-extra-libraries=/ocr/lib && \
+    make && \
+    make install
+
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 
 RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
@@ -20,7 +62,8 @@ RUN microdnf install \
       wget \
       GraphicsMagick \
       python36 \
-      python3-pip
+      python3-pip \
+      python2
 
 RUN npm install yarn -g
 
@@ -32,8 +75,6 @@ COPY . .
 
 RUN gem install bundler -v 2.0.2
 
-COPY --from=tesseract /usr/lib/libtesseract* /usr/lib/
-COPY --from=tesseract /usr/lib/liblept* /usr/lib/
-COPY --from=tesseract /usr/bin/tesseract /usr/bin/
+COPY --from=build /ocr /ocr
 
 CMD ["./bin/rails server --port 8000"]
