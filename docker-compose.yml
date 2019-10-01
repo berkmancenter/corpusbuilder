@@ -1,7 +1,7 @@
 version: '2'
 services:
   postgres_corpusbuilder:
-    image: postgres:9.6.3
+    image: postgres:11.5
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
   corpusbuilder:
-    build: .
+    image: corpusbuilder
     command: ["/corpusbuilder/bin/app_ctl", "--init", "--migrate", "--run"]
     environment:
       - APP_ROOT=/corpusbuilder

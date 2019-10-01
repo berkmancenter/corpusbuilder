@@ -41,6 +41,10 @@ RUN cd /build/tesseract-4.1.0 && \
     make && \
     make install
 
+FROM fedora:31 as fedora
+
+RUN yum install -y postgresql
+
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 
 RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
@@ -76,5 +80,7 @@ COPY . .
 RUN gem install bundler -v 2.0.2
 
 COPY --from=build /ocr /ocr
+COPY --from=fedora /usr/bin/pg_dump /usr/bin/pg_dump
+COPY --from=fedora /usr/bin/pg_restore /usr/bin/pg_restore
 
 CMD ["./bin/rails server --port 8000"]
