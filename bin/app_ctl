@@ -5,6 +5,7 @@ cd /corpusbuilder
 if [[ "$*" == *--init* ]]; then
   bundle
   yarn
+  [[ ! -f public/packs/client.js ]] && bundle exec rails webpacker:compile
 fi
 
 if [[ "$*" == *--migrate* ]]; then
