@@ -28,7 +28,6 @@ tags
 .env
 /bin/start
 /bin/stop
-config/database.yml
 /spec/support/uploads
 .irb_history
 /vendor/bundle

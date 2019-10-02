@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
   corpusbuilder:
-    image: corpusbuilder
+    image: ocr/corpusbuilder
     command: ["/corpusbuilder/bin/app_ctl", "--init", "--migrate", "--run"]
     environment:
       - APP_ROOT=/corpusbuilder
