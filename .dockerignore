@@ -18,5 +18,6 @@ tags
 .env
 config/database.yml
 spec/support/uploads
+db/structure.sql
 .irb_history
 vendor/bundle
