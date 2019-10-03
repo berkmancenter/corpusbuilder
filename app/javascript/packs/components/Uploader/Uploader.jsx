@@ -491,7 +491,7 @@ export default class Uploader extends React.Component {
             }
             else if(this.similarDocuments.length > 0) {
                 let docItems =
-                    this.similarDocuments.map((doc) => {
+                    this.similarDocuments.map((doc, ix) => {
                         let classes = [ "corpusbuilder-uploader-similar-documents-item" ];
 
                         if(doc == this.pickedDocument) {
@@ -499,7 +499,7 @@ export default class Uploader extends React.Component {
                         }
 
                         return [
-                            <div key="list" className={ classes.join(' ') }>
+                            <div key={ `list-${ix}` } className={ classes.join(' ') }>
                                 <div className="corpusbuilder-uploader-similar-documents-item-top-label">
                                     Existing document:
                                 </div>
