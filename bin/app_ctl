@@ -12,6 +12,10 @@ if [[ "$*" == *--migrate* ]]; then
   bundle exec rails db:migrate
 fi
 
+if [[ "$*" == *--seed* ]]; then
+  bundle exec rails db:seed
+fi
+
 if [[ "$*" == *--run* ]]; then
   bundle exec rails server -p $CORPUS_BUILDER_PORT -b '0.0.0.0' --pid `pwd`/tmp/pids/`date +'%s'`.pid
 fi
