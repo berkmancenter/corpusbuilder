@@ -44,6 +44,11 @@ module V1Base
         if app_id.present?
           @current_app = App.where(id: app_id).first
 
+          if @current_app.nil?
+            error!("App not found: #{app_id}", 403)
+            return
+          end
+
           token = headers['X-Token']
           if token.present?
             if BCrypt::Password.new(token) == @current_app.secret

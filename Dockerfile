@@ -67,7 +67,8 @@ RUN microdnf install \
       GraphicsMagick \
       python36 \
       python3-pip \
-      python2
+      python2 \
+      which
 
 RUN npm install yarn -g
 
