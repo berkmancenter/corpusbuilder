@@ -1,7 +1,7 @@
 version: '2'
 services:
   postgres_corpusbuilder:
-    image: postgres:11.5
+    image: postgres:11
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
