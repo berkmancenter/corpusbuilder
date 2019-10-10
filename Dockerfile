@@ -68,7 +68,8 @@ RUN microdnf install \
       python36 \
       python3-pip \
       python2 \
-      which
+      which \
+      ghostscript
 
 RUN npm install yarn -g
 

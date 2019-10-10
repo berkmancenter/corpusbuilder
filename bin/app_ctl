@@ -16,6 +16,10 @@ if [[ "$*" == *--seed* ]]; then
   bundle exec rails db:seed
 fi
 
+if [[ "$*" == *--jobs* ]]; then
+  bundle exec rails jobs:work
+fi
+
 if [[ "$*" == *--run* ]]; then
   bundle exec rails server -p $CORPUS_BUILDER_PORT -b '0.0.0.0' --pid `pwd`/tmp/pids/`date +'%s'`.pid
 fi

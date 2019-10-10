@@ -426,6 +426,10 @@ export default class Uploader extends React.Component {
         ).then((images) => {
             this.uploadedImages = images;
 
+            if(images.length == 0) {
+              console.error("Backend extracted zero pages!");
+            }
+
             if(typeof this.props.onImagesUploaded === 'function') {
                 this.props.onImagesUploaded(images);
             }
