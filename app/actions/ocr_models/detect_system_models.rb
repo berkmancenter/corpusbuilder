@@ -19,7 +19,7 @@ module OcrModels
         OcrModel.where(filename: filename).first.tap do |model|
           if model.nil?
             lang = LanguageList::LanguageInfo.find(
-              default_language || filename.split(/\p{P}/).first
+              filename.split(/\p{P}/).first || default_language
             )
 
             if lang.nil?

@@ -77,12 +77,17 @@ WORKDIR /corpusbuilder
 
 COPY Gemfile Gemfile.lock ./
 
-COPY . .
-
 RUN gem install bundler -v 2.0.2
 
 COPY --from=build /ocr /ocr
 COPY --from=fedora /usr/bin/pg_dump /usr/bin/pg_dump
 COPY --from=fedora /usr/bin/pg_restore /usr/bin/pg_restore
+
+RUN cd /ocr/share/tessdata && \
+    wget \
+      https://github.com/tesseract-ocr/tessdata_best/raw/master/eng.traineddata \
+      https://github.com/tesseract-ocr/tessdata_best/raw/master/ara.traineddata
+
+COPY . .
 
 CMD ["./bin/rails server --port 8000"]
