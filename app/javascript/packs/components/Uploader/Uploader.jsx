@@ -675,9 +675,11 @@ export default class Uploader extends React.Component {
     }
 
     renderList(name, items) {
-        let domItems = items.map(item => {
+        let domItems = items.map((item, ix) => {
             return (
-                <div className="corpusbuilder-uploader-model-selection-item-list-item">
+                <div className="corpusbuilder-uploader-model-selection-item-list-item"
+                     key={ `list-item-${ ix }` }
+                     >
                     { item.name }
                 </div>
             );
@@ -706,14 +708,16 @@ export default class Uploader extends React.Component {
         }
     }
 
-    renderModel(model) {
+    renderModel(model, ix) {
         let samplesLabel = (
             <div className="corpusbuilder-uploader-model-selection-item-images-label">
                 Samples of lines the model was trained on:
             </div>
         );
         return (
-            <div className="corpusbuilder-uploader-model-selection-item">
+            <div className="corpusbuilder-uploader-model-selection-item"
+                 key={ `model-${ ix }` }
+                 >
                 <div className="corpusbuilder-uploader-model-selection-item-actions">
                     <input type='checkbox'
                            onChange={ this.onModelChanged.bind(this, model)() }
