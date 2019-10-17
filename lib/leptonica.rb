@@ -133,7 +133,7 @@ module Leptonica
           output = FFI::MemoryPointer.new :pointer
           output.put_pointer(0, normed)
 
-          if Lib.dewarpSinglePage( pixels, 0, 1, 1, output, FFI::Pointer::NULL, 0 ) != 0
+          if Lib.dewarpSinglePage( pixels, 0, 1, 1, output, FFI::Pointer::NULL, 1 ) != 0
             raise StandardError, "Leptonica dewarpSinglePage has failed"
           end
 

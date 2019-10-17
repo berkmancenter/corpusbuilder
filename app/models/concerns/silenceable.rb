@@ -7,13 +7,13 @@ module Silenceable
       preverr = STDERR.dup
 
       begin
-        $stdout.reopen Rails.root.join("log", "silenced.log"), 'w'
-        $stderr.reopen Rails.root.join("log", "silenced.error.log"), 'w'
+        #$stdout.reopen Rails.root.join("log", "silenced.log"), 'w'
+        #$stderr.reopen Rails.root.join("log", "silenced.error.log"), 'w'
 
         block.call
       ensure
-        $stdout.reopen prevout
-        $stderr.reopen preverr
+        #$stdout.reopen prevout
+        #$stderr.reopen preverr
       end
     end
 

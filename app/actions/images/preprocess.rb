@@ -18,14 +18,19 @@ module Images
       Kraken.binarize image.image_scan.path, binarized_temp_path
     end
 
+    # todo: provide real alternatives to dewarp and deskew and leptonica
+    # seems very buggy
+
     def deskew
-      Leptonica::Tools.deskew binarized_temp_path, deskewed_temp_path
+      FileUtils.cp binarized_temp_path, deskewed_temp_path
+      # Leptonica::Tools.deskew binarized_temp_path, deskewed_temp_path
     end
 
     def dewarp
-      Leptonica::Tools.dewarp deskewed_temp_path, dewarped_temp_file
-    rescue
-      Leptonica::Tools.dewarp_simple deskewed_temp_path, dewarped_temp_file
+      FileUtils.cp deskewed_temp_path, dewarped_temp_file
+      #Leptonica::Tools.dewarp deskewed_temp_path, dewarped_temp_file
+      #rescue
+      #Leptonica::Tools.dewarp_simple deskewed_temp_path, dewarped_temp_file
     end
 
     def store

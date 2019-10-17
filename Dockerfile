@@ -19,15 +19,15 @@ RUN yum install -y \
 RUN mkdir /build && \
     mkdir /ocr && \
     cd /build && \
-    wget http://www.leptonica.org/source/leptonica-1.75.3.tar.gz && \
+    wget https://github.com/DanBloomberg/leptonica/archive/9e9a8aeb727b9f72ef7317ca4d5e4a6f1e637688.zip -O leptonica.zip && \
     wget https://github.com/tesseract-ocr/tesseract/archive/4.1.0.zip
 
 RUN cd /build && \
-    tar -xvf leptonica-1.75.3.tar.gz && \
+    unzip leptonica.zip && \
     unzip 4.1.0.zip
 
 RUN cd /build && \
-    cd leptonica-1.75.3 && \
+    cd leptonica-9e9a8aeb727b9f72ef7317ca4d5e4a6f1e637688 && \
     ./autobuild && \
     ./configure --prefix=/ocr/ && \
     make && \
@@ -67,9 +67,11 @@ RUN microdnf install \
       GraphicsMagick \
       python36 \
       python3-pip \
+      python3-devel \
       python2 \
       which \
-      ghostscript
+      ghostscript \
+      fribidi
 
 RUN npm install yarn -g
 
@@ -89,5 +91,11 @@ RUN cd /ocr/share/tessdata && \
       https://github.com/tesseract-ocr/tessdata_best/raw/master/ara.traineddata
 
 COPY . .
+
+ENV PATH="/ocr/bin:${PATH}"
+
+RUN pip3 install kraken
+
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/ocr/lib"
 
 CMD ["./bin/rails server --port 8000"]
