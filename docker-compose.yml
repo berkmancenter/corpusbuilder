@@ -18,7 +18,7 @@ services:
       - BUNDLE_PATH=/bundle
       - BUNDLE_BIN=/bundle/bin
       - GEM_HOME=/bundle
-      - CORPUS_BUILDER_HOST=corpusbuilder.dev
+      - CORPUS_BUILDER_HOST=http://corpusbuilder
       - CORPUS_BUILDER_PORT=3000
       - APP_DATABASE_NAME=corpus_builder
       - APP_DATABASE_USER=corpus_builder
@@ -40,7 +40,7 @@ services:
       - BUNDLE_PATH=/bundle
       - BUNDLE_BIN=/bundle/bin
       - GEM_HOME=/bundle
-      - CORPUS_BUILDER_HOST=corpusbuilder.dev
+      - CORPUS_BUILDER_HOST=http://corpusbuilder
       - CORPUS_BUILDER_PORT=3000
       - APP_DATABASE_NAME=corpus_builder
       - APP_DATABASE_USER=corpus_builder

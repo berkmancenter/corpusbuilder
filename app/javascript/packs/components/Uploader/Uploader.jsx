@@ -559,7 +559,7 @@ export default class Uploader extends React.Component {
                         in the metadata: please click on the "Pick" button.
                         Otherwise, please click on next to continue.
                     </div>,
-                    <div className="corpusbuilder-uploader-similar-documents-list">
+                    <div key="docitems" className="corpusbuilder-uploader-similar-documents-list">
                         { docItems }
                     </div>
                 ];
@@ -695,9 +695,11 @@ export default class Uploader extends React.Component {
 
     renderModelSamples(model) {
         if(model.samples.length > 0) {
-            return model.samples.map((sample) => {
+            return model.samples.map((sample, ix) => {
                 return (
-                    <div className="corpusbuilder-uploader-model-selection-item-images-item">
+                    <div className="corpusbuilder-uploader-model-selection-item-images-item"
+                         key={ `sample-${ ix }` }
+                         >
                         <img src={ sample } />
                     </div>
                 );
