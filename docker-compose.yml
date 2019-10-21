@@ -40,8 +40,8 @@ services:
       - BUNDLE_PATH=/bundle
       - BUNDLE_BIN=/bundle/bin
       - GEM_HOME=/bundle
-      - CORPUS_BUILDER_HOST=http://corpusbuilder
-      - CORPUS_BUILDER_PORT=3000
+      - CORPUS_BUILDER_HOST=http://localhost
+      - CORPUS_BUILDER_PORT=13001
       - APP_DATABASE_NAME=corpus_builder
       - APP_DATABASE_USER=corpus_builder
       - APP_DATABASE_PASSWORD=zse45rdx
@@ -55,7 +55,7 @@ services:
       - tesseract-models:/home/corpusbuilder/tesseract/tessdata
       - kraken-models:/home/corpusbuilder/.config/kraken
     ports:
-      - "3000:3000"
+      - "13001:13001"
 volumes:
   corpusbuilder-bundle:
   corpusbuilder-node-modules:

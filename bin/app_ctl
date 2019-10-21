@@ -15,6 +15,7 @@ fi
 
 if [[ "$*" == *--seed* ]]; then
   bundle exec rails db:seed
+  unzip -n db/seeds/example/images/image.zip -d public/uploads/
 fi
 
 if [[ "$*" == *--jobs* ]]; then

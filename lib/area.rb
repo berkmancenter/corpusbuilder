@@ -98,6 +98,10 @@ class Area
     new ulx: ulx, uly: uly, lrx: lrx, lry: lry
   end
 
+  def self.at(options)
+    self.new options
+  end
+
   def overlaps?(other)
     return false if other.nil?
 
@@ -122,6 +126,10 @@ class Area
 
   def to_s
     Serializer.dump(self)
+  end
+
+  def inspect
+    "Area.at(ulx: #{@ulx}, uly: #{@uly}, lrx: #{@lrx}, lry: #{@lry})"
   end
 
   class Tree < Grape::Entity
