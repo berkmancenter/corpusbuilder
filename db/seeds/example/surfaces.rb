@@ -1,7 +1,7 @@
 Surface.create!([
-  {id: "78f26c9e-199f-4b72-9234-a7cd8eecdd64", document_id: "ba30d3fb-7d27-4fe3-b180-f0a13bc28432", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 1, image_id: "51682abd-9ce0-44b2-9481-e07a6a1353b2"},
-  {id: "a5fa2f24-571a-4486-911d-efc824bdca2b", document_id: "ba30d3fb-7d27-4fe3-b180-f0a13bc28432", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 2, image_id: "c8af661f-561e-4d2a-b766-5d8967083df7"},
-  {id: "7868c9bf-b924-47f9-9a2f-6d8450631564", document_id: "ba30d3fb-7d27-4fe3-b180-f0a13bc28432", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 3, image_id: "2aa307f6-5cff-4e52-8c4b-4bb0ca740984"},
-  {id: "46a51484-c64f-477a-880e-4e84050dedc0", document_id: "ba30d3fb-7d27-4fe3-b180-f0a13bc28432", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 4, image_id: "31af8c4f-b409-41a0-8aa1-ef14025a71ae"},
-  {id: "495519dc-4653-4b61-8aed-47057b5526b0", document_id: "ba30d3fb-7d27-4fe3-b180-f0a13bc28432", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 5, image_id: "b95e7c57-3bd4-4863-80d3-eebfc7421e76"}
+  {id: "73d038c7-8d6e-4e33-9072-4e90ef901227", document_id: "669e1334-ec0e-4127-b7d5-b9214b758cab", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 1, image_id: "73e25ac9-1b94-40a9-a437-20e9d6070d25"},
+  {id: "dd4b514b-3d91-405a-9b0a-af7c68b6a89a", document_id: "669e1334-ec0e-4127-b7d5-b9214b758cab", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 2, image_id: "98283f02-88d6-47e3-9cf6-bc3f1ac43ab0"},
+  {id: "34c27cae-34de-4bc4-a0f1-db7ba5d6a707", document_id: "669e1334-ec0e-4127-b7d5-b9214b758cab", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 3, image_id: "3faa48b4-59e9-4351-b603-0ee7a9252f99"},
+  {id: "0547412b-d3de-4155-bd58-02fcc8c63d75", document_id: "669e1334-ec0e-4127-b7d5-b9214b758cab", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 4, image_id: "48dd9c3a-33a8-4960-b201-afb34f363c6a"},
+  {id: "1381b107-df89-4158-b262-ba9cb0fab58b", document_id: "669e1334-ec0e-4127-b7d5-b9214b758cab", area: Area.at(ulx: 0, uly: 0, lrx: 2480, lry: 3508), number: 5, image_id: "458863ce-d79e-474f-8687-7f28bf2a2c2d"}
 ])

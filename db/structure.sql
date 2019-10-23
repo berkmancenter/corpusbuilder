@@ -20,7 +20,7 @@ CREATE FUNCTION public.graphemes_revisions_drop_trigger() RETURNS trigger
         partition TEXT;
       BEGIN
           partition := TG_RELNAME || '_' || replace(OLD.id :: varchar, '-', '_');
-          EXECUTE 'DROP ' || partition;
+          EXECUTE 'DROP TABLE IF EXISTS ' || partition || ' CASCADE';
           RETURN NULL;
       END;
       $$;

@@ -14,7 +14,7 @@ class AddAutoRemovalOfPartitionTablesWithRevisions < ActiveRecord::Migration[5.1
         partition TEXT;
       BEGIN
           partition := TG_RELNAME || '_' || replace(OLD.id :: varchar, '-', '_');
-          EXECUTE 'DROP ' || partition;
+          EXECUTE 'DROP TABLE IF EXISTS ' || partition || ' CASCADE';
           RETURN NULL;
       END;
       $$
