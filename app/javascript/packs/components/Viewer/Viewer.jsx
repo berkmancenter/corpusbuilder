@@ -169,6 +169,7 @@ export default class Viewer extends React.Component {
             return null;
         }
         else {
+            console.log("About to fetch the document");
             let doc = FetchDocumentPage.run(
                 this.props.appState,
                 {
@@ -181,6 +182,7 @@ export default class Viewer extends React.Component {
             );
 
             if(doc !== undefined && doc !== null) {
+                console.log("Document fetched!");
                 if(this.props.onPageFetched !== undefined) {
                     let self = this;
 

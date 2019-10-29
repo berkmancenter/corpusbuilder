@@ -6,6 +6,8 @@ require "unicode/name"
 
 Bundler.require(*Rails.groups)
 
+Dir["#{Rails.root.to_s}/app/actions/**/*.rb"].each { |f| require f }
+
 Dotenv::Railtie.load if defined?(Dotenv) && !Rails.env.production?
 
 module CorpusBuilder
@@ -27,7 +29,39 @@ module CorpusBuilder
 
     config.autoload_paths += Dir["#{config.root}/app/actions"]
     config.autoload_paths += Dir["#{config.root}/lib"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/accuracy_line_measurements"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/accuracy_measurements"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/annotations"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/branches"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/documents"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/editors"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/files"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/graphemes"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/images"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/ocr_models"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/pipelines"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/revisions"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/shared"]
+    config.autoload_paths += Dir["#{config.root}/app/actions/zones"]
     config.autoload_paths += Dir["#{config.root}/lib/trestle/form/fields/"]
+
+    config.eager_load_paths += Dir["#{config.root}/app/actions"]
+    config.eager_load_paths += Dir["#{config.root}/lib"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/accuracy_line_measurements"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/accuracy_measurements"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/annotations"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/branches"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/documents"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/editors"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/files"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/graphemes"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/images"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/ocr_models"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/pipelines"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/revisions"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/shared"]
+    config.eager_load_paths += Dir["#{config.root}/app/actions/zones"]
+    config.eager_load_paths += Dir["#{config.root}/lib/trestle/form/fields/"]
 
     config.active_job.queue_adapter = :delayed_job
     config.active_record.schema_format = :sql

@@ -1,5 +1,5 @@
 class Annotation < ApplicationRecord
-  serialize :areas, Area::ArraySerializer
+  serialize :areas, ::Area::ArraySerializer
 
   enum mode: [
     :comment, :category,

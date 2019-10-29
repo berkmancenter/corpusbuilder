@@ -31,6 +31,7 @@ export default class WindowManager extends React.Component {
     constructor(props) {
         super(props);
 
+        console.log("Setting upo the base url to ", props.baseUrl);
         Request.setBaseUrl(props.baseUrl);
 
         window.onresize = this.onWindowResize.bind(this);

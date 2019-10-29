@@ -71,7 +71,8 @@ RUN microdnf install \
       python2 \
       which \
       ghostscript \
-      fribidi
+      fribidi \
+      libtiff
 
 RUN npm install yarn -g
 
@@ -80,6 +81,8 @@ WORKDIR /corpusbuilder
 COPY Gemfile Gemfile.lock ./
 
 RUN gem install bundler -v 2.0.2
+
+RUN pip3 install kraken
 
 COPY --from=build /ocr /ocr
 COPY --from=fedora /usr/bin/pg_dump /usr/bin/pg_dump
@@ -93,8 +96,6 @@ RUN cd /ocr/share/tessdata && \
 COPY . .
 
 ENV PATH="/ocr/bin:${PATH}"
-
-RUN pip3 install kraken
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/ocr/lib"
 
