@@ -13,18 +13,6 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
-CREATE FUNCTION public.graphemes_revisions_drop_trigger() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-      DECLARE
-        partition TEXT;
-      BEGIN
-          partition := TG_RELNAME || '_' || replace(OLD.id :: varchar, '-', '_');
-          EXECUTE 'DROP TABLE IF EXISTS ' || partition || ' CASCADE';
-          RETURN NULL;
-      END;
-      $$;
-
 CREATE FUNCTION public.graphemes_revisions_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -427,8 +415,6 @@ CREATE INDEX line_document_document_ix ON public.accuracy_document_measurements_
 
 CREATE INDEX line_document_line_ix ON public.accuracy_document_measurements_line_measurements USING btree (accuracy_line_measurement_id);
 
-CREATE TRIGGER graphemes_revisions_drop BEFORE DELETE ON public.revisions FOR EACH ROW EXECUTE PROCEDURE public.graphemes_revisions_drop_trigger();
-
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
@@ -499,5 +485,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20190606082543'),
 ('20190612070032'),
 ('20190612070317'),
-('20190612090852');
+('20190612090852'),
+('20191031153215');
 

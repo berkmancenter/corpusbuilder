@@ -149,6 +149,7 @@ class Area
     end
 
     def self.dump(value)
+      return value if value.is_a?(String)
       return nil if value.nil?
 
       if value.lry < value.uly

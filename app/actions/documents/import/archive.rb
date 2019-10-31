@@ -4,15 +4,15 @@ module Documents::Import
 
     def execute
       Dir.mktmpdir do |dir|
-        copy_archive dir
-        extract_archive dir
+        copy_archive dir: dir
+        extract_archive dir: dir
 
         [:images, :documents, :surfaces, :zones, :graphemes, :revisions, :branches].each do |collection|
-          import_json collection, dir
+          import_json collection, dir: dir
         end
 
-        import_revisions_graphemes dir
-        copy_images dir
+        import_revisions_graphemes dir: dir
+        copy_images dir: dir
       end
     end
 
@@ -25,7 +25,7 @@ module Documents::Import
     end
 
     def extract_archive(dir:)
-      TTY::Command.new.run!("uzip #{archive_name}", chdir: dir)
+      TTY::Command.new.run!("unzip #{archive_name}", chdir: dir)
     end
 
     def import_json(collection, dir:)
@@ -37,7 +37,7 @@ module Documents::Import
     end
 
     def import_revisions_graphemes(dir:)
-      File.read(Pathname.new(dir).join("#{collection}.json").to_s).tap do |raw|
+      File.read(Pathname.new(dir).join("revisions_graphemes.json").to_s).tap do |raw|
         JSON.parse(raw).tap do |data|
           data.each do |revision_id, grapheme_ids|
             Revision.find(revision_id).tap do |revision|
