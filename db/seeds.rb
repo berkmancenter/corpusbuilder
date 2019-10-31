@@ -15,8 +15,7 @@ OcrModels::DetectSystemModels.run! \
   default_language: "english",
   backend: "kraken"
 
-Document.transaction do
-  ["images", "documents", "surfaces", "zones", "graphemes", "revisions", "branches"].each do |resource|
-    load Rails.root.join("db", "seeds", "example", "#{resource}.rb")
-  end
+if Document.where(id: "89fabadc-2593-4f02-b272-53287b05a920").empty?
+  Documents::Import::Archive.run! \
+    path: Rails.root.join("db", "seeds", "example", "abhath.zip").to_s
 end
