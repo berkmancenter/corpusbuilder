@@ -48,7 +48,7 @@ gem 'activerecord-import'
 gem 'turbolinks', '~> 5.2.0'
 gem 'unicode-name'
 gem 'tzinfo-data'
-gem 'seed_dump'
+gem 'tty-command'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

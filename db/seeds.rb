@@ -14,3 +14,9 @@ OcrModels::DetectSystemModels.run! \
 OcrModels::DetectSystemModels.run! \
   default_language: "english",
   backend: "kraken"
+
+Document.transaction do
+  ["images", "documents", "surfaces", "zones", "graphemes", "revisions", "branches"].each do |resource|
+    load Rails.root.join("db", "seeds", "example", "#{resource}.rb")
+  end
+end

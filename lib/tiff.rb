@@ -7,7 +7,7 @@ module Tiff
   module Lib
     extend FFI::Library
 
-    ffi_lib 'libtiff'
+    ffi_lib ['libtiff', 'libtiff.so.5']
 
     attach_function :_open, :TIFFOpen,
       [ :string, :string ], :pointer
