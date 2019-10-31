@@ -72,7 +72,8 @@ RUN microdnf install \
       which \
       ghostscript \
       fribidi \
-      libtiff
+      libtiff \
+      rsync
 
 RUN npm install yarn -g
 
