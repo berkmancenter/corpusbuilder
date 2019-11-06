@@ -5,4 +5,8 @@ class V1::Base < Grape::API
   mount V1::AnnotationsAPI
   mount V1::AsyncResponsesAPI
   mount V1::ModelsAPI
+
+  if ENV.fetch('TESTS_API', false)
+    mount V1::TestsAPI
+  end
 end
