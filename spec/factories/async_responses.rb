@@ -1,5 +1,5 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :async_response do
-    payload ""
+    payload { "" }
   end
 end

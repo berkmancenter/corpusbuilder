@@ -1,7 +1,7 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :grapheme do
-    area ""
-    zone_id ""
-    value ""
+    area { "" }
+    zone_id { "" }
+    value { "" }
   end
 end

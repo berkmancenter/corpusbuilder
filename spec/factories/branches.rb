@@ -1,6 +1,6 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :branch do
-    name "MyString"
-    revision_id ""
+    name { "MyString" }
+    revision_id { "" }
   end
 end

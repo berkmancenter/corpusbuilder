@@ -13,11 +13,11 @@ RSpec.describe Pipeline::Nidaba, type: :model do
   context "The start method" do
     context "when pipeline was already started" do
       let(:started_document) do
-        FactoryGirl.create :document, status: Document.statuses[:processing]
+        FactoryBot.create :document, status: Document.statuses[:processing]
       end
 
       let(:started_pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:processing],
           document: started_document
       end
@@ -29,13 +29,13 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline ended with error" do
       let(:error_pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:error],
           document: error_document
       end
 
       let(:error_document) do
-        FactoryGirl.create :document, status: Document.statuses[:error]
+        FactoryBot.create :document, status: Document.statuses[:error]
       end
 
       it "raises the error" do
@@ -45,13 +45,13 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline ended with success" do
       let(:success_pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:success],
           document: success_document
       end
 
       let(:success_document) do
-        FactoryGirl.create :document, status: Document.statuses[:ready]
+        FactoryBot.create :document, status: Document.statuses[:ready]
       end
 
       it "raises the error" do
@@ -61,13 +61,13 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline wasn't started yet" do
       let(:initial_document) do
-        FactoryGirl.create :document,
+        FactoryBot.create :document,
           status: Document.statuses[:initial],
           title: "Initial pipeline document"
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:initial],
           document: initial_document
       end
@@ -113,7 +113,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       let(:image_1) do
-        image = FactoryGirl.build :image,
+        image = FactoryBot.build :image,
           name: "image_1.png",
           order: 1,
           image_scan: File.new(Rails.root.join("spec", "support", "files", "file_1.png")),
@@ -123,7 +123,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       let(:image_2) do
-        image = FactoryGirl.build :image,
+        image = FactoryBot.build :image,
           name: "image_2.png",
           order: 2,
           image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),
@@ -307,11 +307,11 @@ RSpec.describe Pipeline::Nidaba, type: :model do
   context "The poll method" do
     context "when pipeline is in initial state" do
       let(:document) do
-        FactoryGirl.create :document, status: Document.statuses[:initial]
+        FactoryBot.create :document, status: Document.statuses[:initial]
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:initial],
           document: document
       end
@@ -323,11 +323,11 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline is in error state" do
       let(:document) do
-        FactoryGirl.create :document, status: Document.statuses[:error]
+        FactoryBot.create :document, status: Document.statuses[:error]
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:error],
           document: document
       end
@@ -339,11 +339,11 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline is in the success state" do
       let(:document) do
-        FactoryGirl.create :document, status: Document.statuses[:ready]
+        FactoryBot.create :document, status: Document.statuses[:ready]
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:success],
           document: document
       end
@@ -355,11 +355,11 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline is in the processing state" do
       let(:document) do
-        FactoryGirl.create :document, status: Document.statuses[:processing]
+        FactoryBot.create :document, status: Document.statuses[:processing]
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:processing],
           document: document
       end
@@ -477,11 +477,11 @@ RSpec.describe Pipeline::Nidaba, type: :model do
   context "The result method" do
     context "when pipeline is in initial state" do
       let(:document) do
-        FactoryGirl.create :document, status: Document.statuses[:initial]
+        FactoryBot.create :document, status: Document.statuses[:initial]
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:initial],
           document: document
       end
@@ -493,11 +493,11 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline is in error state" do
       let(:document) do
-        FactoryGirl.create :document, status: Document.statuses[:error]
+        FactoryBot.create :document, status: Document.statuses[:error]
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:error],
           document: document
       end
@@ -509,11 +509,11 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline is in the processing state" do
       let(:document) do
-        FactoryGirl.create :document, status: Document.statuses[:processing]
+        FactoryBot.create :document, status: Document.statuses[:processing]
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:processing],
           document: document
       end
@@ -525,17 +525,17 @@ RSpec.describe Pipeline::Nidaba, type: :model do
 
     context "when pipeline is in the success state" do
       let(:document) do
-        FactoryGirl.create :document, status: Document.statuses[:ready]
+        FactoryBot.create :document, status: Document.statuses[:ready]
       end
 
       let(:pipeline) do
-        FactoryGirl.create :nidaba_pipeline,
+        FactoryBot.create :nidaba_pipeline,
           status: Pipeline.statuses[:success],
           document: document
       end
 
       let(:image_1) do
-        image = FactoryGirl.build :image,
+        image = FactoryBot.build :image,
           name: "image_1.png",
           order: 1,
           image_scan: File.new(Rails.root.join("spec", "support", "files", "file_1.png")),
@@ -545,7 +545,7 @@ RSpec.describe Pipeline::Nidaba, type: :model do
       end
 
       let(:image_2) do
-        image = FactoryGirl.build :image,
+        image = FactoryBot.build :image,
           name: "image_2.png",
           order: 2,
           image_scan: File.new(Rails.root.join("spec", "support", "files", "file_2.png")),

@@ -18,7 +18,7 @@ RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
   config.filter_rails_from_backtrace!
 
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
 
   config.after(:each) do
     if Rails.env.test?
@@ -28,7 +28,7 @@ RSpec.configure do |config|
 
   config.include(ActiveJob::TestHelper)
 
-  config.before(:suite) { FactoryGirl.reload }
+  config.before(:suite) { FactoryBot.reload }
 
   config.include RSpec::Rails::RequestExampleGroup,
     type: :request,

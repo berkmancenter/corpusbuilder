@@ -1,6 +1,6 @@
 require 'securerandom'
 
-FactoryGirl.define do
+FactoryBot.define do
 
   sequence :document_title do |i|
     "Good Read vol #{i}"
@@ -8,7 +8,7 @@ FactoryGirl.define do
 
   factory :document do
     title { generate(:document_title) }
-    status Document.statuses[:initial]
+    status { Document.statuses[:initial] }
     association :app, factory: :app
   end
 end

@@ -40,7 +40,7 @@
     "qwest": "^4.5.0",
     "rails-erb-loader": "^5.1.0",
     "rc-progress": "^2.2.5",
-    "react": "^15.6.1",
+    "react": "15.4.2",
     "react-content-loader": "^1.4.1",
     "react-dd-menu": "^2.0.2",
     "react-dom": "^15.6.1",

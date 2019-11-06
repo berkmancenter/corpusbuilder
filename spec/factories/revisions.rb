@@ -1,6 +1,6 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :revision do
-    document_id ""
+    document_id { "" }
 
     after(:create) do |revision|
       Revisions::CreatePartition.run! revision: revision

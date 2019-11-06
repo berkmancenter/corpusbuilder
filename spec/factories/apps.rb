@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
 
   sequence :app_name do |i|
     "App#{i}"
