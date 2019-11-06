@@ -66,8 +66,13 @@ export default class UploadDocumentImages extends Action {
                             current = null;
                         }).then((images) => {
                             console.log("Got processed images:", images);
-                            for(let image of images) {
-                                result.push(image);
+                            if(Array.isArray(images)) {
+                                for(let image of images) {
+                                    result.push(image);
+                                }
+                            }
+                            else {
+                                result.push(images);
                             }
                             resolved += 1;
                         })

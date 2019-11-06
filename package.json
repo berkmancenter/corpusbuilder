@@ -26,7 +26,7 @@
     "font-awesome": "^4.7.0",
     "glob": "^7.1.2",
     "node-sass": "^4.12.0",
-    "interactjs": "^1.2.9",
+    "interactjs": "1.2.9",
     "js-yaml": "^3.9.1",
     "ml-hclust": "^3.0.0",
     "mobx": "^3.3.1",
