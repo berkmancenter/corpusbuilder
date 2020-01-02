@@ -12,18 +12,16 @@ services:
       - "5432:5432"
   corpusbuilder_background_jobs:
     image: ocr/corpusbuilder
+    user: ${CURRENT_UID}
     command: ["/corpusbuilder/bin/app_ctl", "--jobs"]
     environment:
       - APP_ROOT=/corpusbuilder
-      - BUNDLE_PATH=/bundle
-      - BUNDLE_BIN=/bundle/bin
-      - GEM_HOME=/bundle
-      - CORPUS_BUILDER_HOST=http://corpusbuilder
-      - CORPUS_BUILDER_PORT=3000
       - APP_DATABASE_NAME=corpus_builder
       - APP_DATABASE_USER=corpus_builder
       - APP_DATABASE_PASSWORD=zse45rdx
       - APP_DATABASE_URL=postgres_corpusbuilder
+      - CORPUS_BUILDER_HOST=http://corpusbuilder
+      - CORPUS_BUILDER_PORT=3000
       - TESSDATA_PREFIX=/home/corpusbuilder/tesseract/tessdata
       - KRAKEN_DATA_PREFIX=/home/corpusbuilder/.config/kraken
     volumes:
@@ -34,18 +32,16 @@ services:
       - kraken-models:/home/corpusbuilder/.config/kraken
   corpusbuilder:
     image: ocr/corpusbuilder
+    user: ${CURRENT_UID}
     command: ["/corpusbuilder/bin/app_ctl", "--init", "--migrate", "--run"]
     environment:
       - APP_ROOT=/corpusbuilder
-      - BUNDLE_PATH=/bundle
-      - BUNDLE_BIN=/bundle/bin
-      - GEM_HOME=/bundle
-      - CORPUS_BUILDER_HOST=http://localhost
-      - CORPUS_BUILDER_PORT=13001
       - APP_DATABASE_NAME=corpus_builder
       - APP_DATABASE_USER=corpus_builder
       - APP_DATABASE_PASSWORD=zse45rdx
       - APP_DATABASE_URL=postgres_corpusbuilder
+      - CORPUS_BUILDER_HOST=http://localhost
+      - CORPUS_BUILDER_PORT=13001
       - TESSDATA_PREFIX=/home/corpusbuilder/tesseract/tessdata
       - KRAKEN_DATA_PREFIX=/home/corpusbuilder/.config/kraken
     volumes:

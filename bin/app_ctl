@@ -2,11 +2,14 @@
 
 cd /corpusbuilder
 
+if [[ "$*" == *--copy-tesseract-models* ]]; then
+  cp -r /ocr/share/tessdata/* /home/corpusbuilder/tesseract/tessdata/
+fi
+
 if [[ "$*" == *--init* ]]; then
   bundle
   yarn
   [[ ! -f public/packs/client.js ]] && bundle exec rails webpacker:compile
-  cp -r /ocr/share/tessdata/* /home/corpusbuilder/tesseract/tessdata/
 fi
 
 if [[ "$*" == *--migrate* ]]; then
