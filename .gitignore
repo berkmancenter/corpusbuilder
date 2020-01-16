@@ -31,3 +31,4 @@ tags
 /spec/support/uploads
 .irb_history
 /vendor/bundle
+/vendor/volumes
