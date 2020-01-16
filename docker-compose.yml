@@ -2,8 +2,9 @@ version: '2'
 services:
   postgres_corpusbuilder:
     image: postgres:11
+    restart: always
     volumes:
-      - ./vendor/volumes/postgres-data:/var/lib/postgresql/data
+      - corpusbuilder-postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=zse45rdx
       - POSTGRES_USER=corpus_builder
@@ -12,6 +13,7 @@ services:
     build: .
     user: ${CURRENT_UID}
     command: ["/corpusbuilder/bin/app_ctl", "--jobs"]
+    restart: always
     environment:
       - APP_ROOT=/corpusbuilder
       - APP_DATABASE_NAME=corpus_builder
@@ -32,6 +34,7 @@ services:
     build: .
     user: ${CURRENT_UID}
     command: ["/corpusbuilder/bin/app_ctl", "--init", "--migrate", "--run"]
+    restart: always
     environment:
       - APP_ROOT=/corpusbuilder
       - APP_DATABASE_NAME=corpus_builder
@@ -51,3 +54,5 @@ services:
       - ./vendor/volumes/kraken-models:/home/corpusbuilder/.config/kraken
     ports:
       - "13001:13001"
+volumes:
+  corpusbuilder-postgres-data:
