@@ -8,8 +8,6 @@ services:
       - POSTGRES_PASSWORD=zse45rdx
       - POSTGRES_USER=corpus_builder
       - POSTGRES_DB=corpus_builder
-    ports:
-      - "5432:5432"
   corpusbuilder_background_jobs:
     build: .
     user: ${CURRENT_UID}
@@ -40,6 +38,7 @@ services:
       - APP_DATABASE_USER=corpus_builder
       - APP_DATABASE_PASSWORD=zse45rdx
       - APP_DATABASE_URL=postgres_corpusbuilder
+      - APP_DATABASE_PORT=5432
       - CORPUS_BUILDER_HOST=http://localhost
       - CORPUS_BUILDER_PORT=13001
       - TESSDATA_PREFIX=/home/corpusbuilder/tesseract/tessdata
