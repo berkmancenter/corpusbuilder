@@ -31,3 +31,4 @@ tags
 .irb_history
 /vendor/bundle
 /vendor/volumes
+yarn-error.log
