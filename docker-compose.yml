@@ -46,6 +46,7 @@ services:
       - CORPUS_BUILDER_PORT=13001
       - TESSDATA_PREFIX=/home/corpusbuilder/tesseract/tessdata
       - KRAKEN_DATA_PREFIX=/home/corpusbuilder/.config/kraken
+      - HOME=/corpusbuilder
     volumes:
       - .:/corpusbuilder
       - ./vendor/volumes/bundle:/bundle
